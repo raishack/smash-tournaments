@@ -1,0 +1,26 @@
+{
+  "name": "smash-tournaments",
+  "private": true,
+  "version": "0.1.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "workspaces": [
+    "backend"
+  ],
+  "scripts": {
+    "configure": "node scripts/configure.mjs",
+    "test:template": "node --test scripts/tests/template.test.mjs",
+    "bootstrap:template": "powershell -ExecutionPolicy Bypass -File ./scripts/bootstrap-template.ps1",
+    "dev:backend": "npm --workspace backend run dev",
+    "build:backend": "npm --workspace backend run build",
+    "start:backend": "npm --workspace backend run start",
+    "audit:template": "node scripts/audit-template.mjs",
+    "check:docs": "node scripts/check-docs.mjs",
+    "screenshots": "npm run build:backend && node scripts/capture-examples.mjs",
+    "test:backend": "npm --workspace backend run test"
+  },
+  "devDependencies": {
+    "playwright": "^1.63.0"
+  }
+}

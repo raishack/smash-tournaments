@@ -1,0 +1,19 @@
+{
+  "key": "mario-kart",
+  "name": "Mario Kart",
+  "assets": {
+    "background": "./themes/assets/mario-kart-bg.png",
+    "bracketOverlay": "./themes/assets/mario-kart-bracket.png",
+    "resultOverlay": "./themes/assets/mario-kart-result.png",
+    "championOverlay": "./themes/assets/mario-kart-champion.png"
+  },
+  "cssVars": {
+    "--accent": "#facc15",
+    "--electric": "#38bdf8",
+    "--teal": "#2dd4bf",
+    "--gold": "#fb7185",
+    "--panel": "rgba(10, 26, 53, 0.88)",
+    "--panel-2": "rgba(16, 25, 51, 0.94)",
+    "--line": "rgba(125, 211, 252, 0.26)"
+  }
+}

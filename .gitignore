@@ -1,0 +1,71 @@
+# Node
+node_modules/
+dist/
+.env
+
+# IDE
+.idea/
+.vscode/
+*.iml
+.fleet/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Android / Gradle
+.gradle/
+.kotlin/
+local.properties
+build/
+captures/
+*.apk
+*.aab
+*.jks
+*.keystore
+keystore.properties
+/data/
+firebase-service-account.json
+android/app-player/google-services.json
+ios-player/TournamentPlayerIOS/GoogleService-Info.plist
+
+# Kotlin
+*.class
+
+# Desktop packaging
+release/
+out/
+
+# Apple / Xcode
+DerivedData/
+*.xcuserstate
+*.xcworkspace/xcuserdata/
+*.xcodeproj/project.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
+
+# Archives / exports
+*.zip
+
+# Local credentials, logs and generated tooling files
+.env.*
+!.env.example
+!.env.sample
+!.env.template
+*.p12
+*.pfx
+*.log
+/logs.txt
+__pycache__/
+*.py[cod]
+*.msi
+
+# Installation-specific branding and credentials
+/branding.local.json
+/branding/custom/
+/backups/
+/backend/.env*
+!/backend/.env.example
+/ios-manage/Generated/
+/ios-player/Generated/
+/ios-manage/*.xcodeproj/
+/ios-player/*.xcodeproj/

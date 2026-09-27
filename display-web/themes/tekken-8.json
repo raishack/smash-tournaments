@@ -1,0 +1,19 @@
+{
+  "key": "tekken-8",
+  "name": "Tekken 8",
+  "assets": {
+    "background": "./themes/assets/base-bg-tech.png",
+    "bracketOverlay": "./themes/assets/base-bracket-overlay.png",
+    "resultOverlay": "./themes/assets/base-result-overlay.png",
+    "championOverlay": "./themes/assets/base-champion-overlay.png"
+  },
+  "cssVars": {
+    "--accent": "#f97316",
+    "--electric": "#ef4444",
+    "--teal": "#fb7185",
+    "--gold": "#fbbf24",
+    "--panel": "rgba(35, 16, 16, 0.9)",
+    "--panel-2": "rgba(48, 18, 18, 0.94)",
+    "--line": "rgba(251, 113, 133, 0.28)"
+  }
+}

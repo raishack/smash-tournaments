@@ -1,0 +1,25 @@
+{
+  "default": "./themes/base.json",
+  "themes": [
+    {
+      "key": "mario-kart",
+      "matchers": ["mario kart", "mkart", "mariokart"],
+      "file": "./themes/mario-kart.json"
+    },
+    {
+      "key": "fc-26",
+      "matchers": ["fc 26", "ea sports fc", "fifa", "fc26"],
+      "file": "./themes/fc-26.json"
+    },
+    {
+      "key": "tekken-8",
+      "matchers": ["tekken 8", "tekken8"],
+      "file": "./themes/tekken-8.json"
+    },
+    {
+      "key": "smash",
+      "matchers": ["smash", "super smash bros", "ultimate"],
+      "file": "./themes/smash.json"
+    }
+  ]
+}

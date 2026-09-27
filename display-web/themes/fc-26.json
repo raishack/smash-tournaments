@@ -1,0 +1,19 @@
+{
+  "key": "fc-26",
+  "name": "EA Sports FC 26",
+  "assets": {
+    "background": "./themes/assets/base-bg-tech.png",
+    "bracketOverlay": "./themes/assets/base-bracket-overlay.png",
+    "resultOverlay": "./themes/assets/base-result-overlay.png",
+    "championOverlay": "./themes/assets/base-champion-overlay.png"
+  },
+  "cssVars": {
+    "--accent": "#86efac",
+    "--electric": "#22c55e",
+    "--teal": "#2dd4bf",
+    "--gold": "#facc15",
+    "--panel": "rgba(9, 28, 24, 0.88)",
+    "--panel-2": "rgba(12, 37, 31, 0.94)",
+    "--line": "rgba(134, 239, 172, 0.26)"
+  }
+}

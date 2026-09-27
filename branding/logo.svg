@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <title>Smash Tournaments — bracket spark</title>
+  <rect width="1024" height="1024" rx="210" fill="#111827"/>
+  <path d="M240 250h146v96H288v116h142v100H288v116h98v96H240a48 48 0 0 1-48-48V298a48 48 0 0 1 48-48Z" fill="#f8fafc"/>
+  <path d="M784 250H638v96h98v116H594v100h142v116h-98v96h146a48 48 0 0 0 48-48V298a48 48 0 0 0-48-48Z" fill="#f8fafc"/>
+  <path d="m555 211-154 339h106l-36 263 160-365H519Z" fill="#fb6340"/>
+</svg>

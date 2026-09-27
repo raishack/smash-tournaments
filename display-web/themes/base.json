@@ -1,0 +1,27 @@
+{
+  "key": "base",
+  "name": "Tema base",
+  "assets": {
+    "background": "./themes/assets/base-bg-tech.png",
+    "bracketOverlay": "./themes/assets/base-bracket-overlay.png",
+    "resultOverlay": "./themes/assets/base-result-overlay.png",
+    "championOverlay": "./themes/assets/base-champion-overlay.png"
+  },
+  "cssVars": {
+    "--bg": "#08111f",
+    "--panel": "rgba(15, 23, 42, 0.86)",
+    "--panel-2": "rgba(17, 24, 39, 0.92)",
+    "--line": "rgba(148, 163, 184, 0.24)",
+    "--text": "#f8fafc",
+    "--muted": "#cbd5e1",
+    "--soft": "#94a3b8",
+    "--win": "#22c55e",
+    "--lose": "#ef4444",
+    "--accent": "#93c5fd",
+    "--gold": "#fbbf24",
+    "--electric": "#60a5fa",
+    "--teal": "#2dd4bf",
+    "--idle-bg": "#ffffff",
+    "--idle-fit": "cover"
+  }
+}

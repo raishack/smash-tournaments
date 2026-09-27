@@ -1,0 +1,19 @@
+{
+  "key": "smash",
+  "name": "Smash",
+  "assets": {
+    "background": "./themes/assets/base-bg-tech.png",
+    "bracketOverlay": "./themes/assets/base-bracket-overlay.png",
+    "resultOverlay": "./themes/assets/base-result-overlay.png",
+    "championOverlay": "./themes/assets/base-champion-overlay.png"
+  },
+  "cssVars": {
+    "--accent": "#c084fc",
+    "--electric": "#818cf8",
+    "--teal": "#22d3ee",
+    "--gold": "#facc15",
+    "--panel": "rgba(23, 20, 45, 0.9)",
+    "--panel-2": "rgba(28, 22, 58, 0.94)",
+    "--line": "rgba(192, 132, 252, 0.28)"
+  }
+}

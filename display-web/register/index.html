@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <meta name="robots" content="noindex,nofollow">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'">
+  <title>Inscripción al torneo · Smash Tournaments</title>
+  <link rel="stylesheet" href="./registration.css?v=20260924-audit">
+  <script src="./registration.js?v=20260927-registration" defer></script>
+<link rel="icon" type="image/png" href="/favicon.png"></head>
+<body>
+  <main>
+    <header><span class="brand">SMASH TOURNAMENTS</span><span class="tag">Inscripción online</span></header>
+    <section class="card" aria-labelledby="tournament-title">
+      <p class="eyebrow">Nos vemos en el torneo</p>
+      <h1 id="tournament-title">Cargando torneo…</h1>
+      <p id="game" class="muted"></p>
+      <p id="format-rules" class="notice" hidden></p>
+      <dl id="details" hidden><div><dt>Fecha y hora</dt><dd id="date"></dd></div><div><dt>Plazas disponibles</dt><dd id="places"></dd></div></dl>
+      <p id="deadline" class="hint"></p><p id="availability" class="notice" role="status"></p>
+      <form id="registration" hidden>
+        <h2>Reserva tu sitio al confirmar el correo</h2>
+        <section id="team-fields" hidden>
+          <p id="team-rules" class="notice"></p>
+          <label for="registration-mode">Cómo te quieres inscribir</label>
+          <select id="registration-mode"><option value="TEAM_CREATE">Crear un equipo (capitán)</option><option value="TEAM_JOIN">Unirme a un equipo con código</option><option value="SOLO" id="solo-option">Vengo sin equipo</option></select>
+          <div id="create-team-fields"><label for="team-name">Nombre del equipo</label><input id="team-name" minlength="2" maxlength="80" autocomplete="off"></div>
+          <div id="join-team-fields" hidden><label for="team-code">Código facilitado por el capitán</label><input id="team-code" maxlength="32" autocomplete="off" autocapitalize="characters"><label for="team-role">Plaza solicitada</label><select id="team-role"><option value="PLAYER">Titular</option><option value="RESERVE" id="reserve-option">Reserva</option></select></div>
+          <label for="game-id">ID del juego / tag (opcional)</label><input id="game-id" maxlength="100"><label for="preferred-role">Posición preferida (opcional)</label><input id="preferred-role" maxlength="80" placeholder="Ej. soporte, jungla, controlador"><p id="team-help" class="hint"></p>
+        </section>
+        <label for="nickname">Nick de jugador</label>
+        <input id="nickname" name="nickname" autocomplete="nickname" minlength="2" maxlength="80" required placeholder="Tu nombre en la competición">
+        <label for="email">Correo electrónico</label>
+        <input id="email" name="email" type="email" autocomplete="email" maxlength="254" required placeholder="tu@correo.com">
+        <p class="hint">Tu nick será visible en el torneo. Usaremos el correo para verificar tu inscripción; no se mostrará en la bracket.</p>
+        <button type="submit">Enviar enlace de verificación</button>
+        <p class="hint">Revisa tu correo y confirma el registro. El enlace dura 24 horas. La plaza se asigna al confirmar, si quedan plazas y la inscripción sigue abierta.</p>
+      </form>
+      <section id="verification" hidden>
+        <h2>Solo queda confirmar</h2>
+        <p>Al continuar verificarás tu correo y completarás tu inscripción en este torneo.</p>
+        <button id="confirm" type="button">Confirmar inscripción</button>
+        <a id="new-link" href="./">Solicitar otro enlace</a>
+      </section>
+      <section id="success" hidden><span class="success-mark" aria-hidden="true">✓</span><h2 id="success-heading">Inscripción confirmada</h2><p id="success-text"></p><div id="team-invite" hidden><p>Comparte este código con tus compañeros para que verifiquen su correo y se unan a tu equipo:</p><p id="invite-code" class="notice"></p><button id="copy-invite" type="button" class="secondary">Copiar código</button></div><p id="success-hint" class="hint">Ya apareces en la lista de participantes de la organización. Esta inscripción no sustituye al check-in que pueda pedir el torneo.</p></section>
+      <button id="cancel" type="button" class="secondary" hidden>Cancelar mi inscripción</button><details><summary>Consultar o recuperar mi inscripción</summary><form id="recover"><label for="recover-email">Correo de inscripción</label><input id="recover-email" type="email" required maxlength="254"><button id="recover-button">Recibir enlace de acceso</button></form></details><p id="message" role="status" aria-live="polite" hidden></p>
+      <button id="retry" type="button" class="secondary" hidden>Volver a cargar</button>
+    </section>
+    <footer>Inscripción de torneos propios · Smash Tournaments</footer>
+  </main>
+</body>
+</html>

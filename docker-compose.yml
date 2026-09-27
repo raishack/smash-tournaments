@@ -1,0 +1,64 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-tournament_manager}
+      POSTGRES_USER: ${POSTGRES_USER:-tournament_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Run npm run configure -- --init first}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infra/postgres/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-tournament_user} -d ${POSTGRES_DB:-tournament_manager}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PORT: ${PORT:-4000}
+      DATABASE_URL: ${DATABASE_URL:?Configure DATABASE_URL in .env}
+      APP_CLIENT_KEY: ${APP_CLIENT_KEY:?Configure APP_CLIENT_KEY in .env}
+      ADMIN_DELETE_KEY: ${ADMIN_DELETE_KEY:-}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID:-}
+      WHATSAPP_GROUP_JID: ${WHATSAPP_GROUP_JID:-}
+      WHATSAPP_WACLI_BIN: ${WHATSAPP_WACLI_BIN:-/usr/local/bin/wacli}
+      WACLI_AUTO_UPDATE: ${WACLI_AUTO_UPDATE:-false}
+      MANAGEMENT_BOOTSTRAP_USERNAME: ${MANAGEMENT_BOOTSTRAP_USERNAME:-}
+      MANAGEMENT_BOOTSTRAP_PASSWORD: ${MANAGEMENT_BOOTSTRAP_PASSWORD:-}
+      DISPLAY_ADMIN_DATA_DIR: ${DISPLAY_ADMIN_DATA_DIR:-/app/data/display-admin}
+      ANDROID_APP_UPDATES_DIR: ${ANDROID_APP_UPDATES_DIR:-/app/data/android-updates}
+      WINDOWS_APP_UPDATES_DIR: ${WINDOWS_APP_UPDATES_DIR:-/app/data/windows-updates}
+      STARTGG_API_TOKEN: ${STARTGG_API_TOKEN:-}
+      STARTGG_OAUTH_CLIENT_ID: ${STARTGG_OAUTH_CLIENT_ID:-}
+      STARTGG_OAUTH_CLIENT_SECRET: ${STARTGG_OAUTH_CLIENT_SECRET:-}
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-}
+      SEED_DEMO_DATA: ${SEED_DEMO_DATA:-false}
+      REGISTRATION_MAIL_FROM: ${REGISTRATION_MAIL_FROM:-}
+      REGISTRATION_SMTP_HOST: ${REGISTRATION_SMTP_HOST:-}
+      REGISTRATION_SMTP_PORT: ${REGISTRATION_SMTP_PORT:-587}
+      REGISTRATION_SMTP_SECURE: ${REGISTRATION_SMTP_SECURE:-false}
+      REGISTRATION_SMTP_USER: ${REGISTRATION_SMTP_USER:-}
+      REGISTRATION_SMTP_PASSWORD: ${REGISTRATION_SMTP_PASSWORD:-}
+      FIREBASE_SERVICE_ACCOUNT_PATH: ${FIREBASE_SERVICE_ACCOUNT_PATH:-}
+      FIREBASE_SERVICE_ACCOUNT_JSON: ${FIREBASE_SERVICE_ACCOUNT_JSON:-}
+    ports:
+      - "127.0.0.1:${PORT:-4000}:${PORT:-4000}"
+    volumes:
+      - wacli_data:/root/.wacli
+      - ${DISPLAY_ADMIN_DATA_HOST_DIR:-./data/display-admin}:/app/data/display-admin
+      - ${ANDROID_APP_UPDATES_HOST_DIR:-./data/android-updates}:/app/data/android-updates
+      - ${WINDOWS_APP_UPDATES_HOST_DIR:-./data/windows-updates}:/app/data/windows-updates
+
+volumes:
+  postgres_data:
+  wacli_data:
