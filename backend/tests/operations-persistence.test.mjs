@@ -82,8 +82,8 @@ test('PostgreSQL: repeated operations are applied once and stale devices receive
   const first = await run(); const repeated = await run();
   assert.deepEqual(repeated, JSON.parse(JSON.stringify(first)));
   assert.equal((await repo.listMatches('t1'))[0].participants[0].score, 1);
-  await assert.rejects(operationRequest.run({ ...request, id: 'operation-two' }, () => service.recordGameWin('t1', 'm1', { participantId: 'p2' })), /otro dispositivo/);
-  await assert.rejects(operationRequest.run(request, () => service.recordGameWin('t1', 'm1', { participantId: 'p2' })), /otros datos/);
+  await assert.rejects(operationRequest.run({ ...request, id: 'operation-two' }, () => service.recordGameWin('t1', 'm1', { participantId: 'p2' })), /[Aa]nother device/);
+  await assert.rejects(operationRequest.run(request, () => service.recordGameWin('t1', 'm1', { participantId: 'p2' })), /different data/);
   assert.equal((await repo.listActivity('t1')).length, 1);
   assert.ok(trace.some(q => q.sql.includes('pg_advisory_xact_lock')));
 });
@@ -199,8 +199,8 @@ test('HTTP contract exposes revision conflicts, readable history and diagnostic 
     body: JSON.stringify({ expectedRevision: overview.matches[0].operationRevision, games }) });
   assert.equal(staleForm.status, 409, 'an open form must keep its revision even when polling refreshed the client cache');
   const activity = await (await fetch(`${base}/activity`)).json();
-  assert.equal(activity.entries[0].summary, 'Partida sumada');
-  assert.match(activity.entries[0].detail, /Antes:.*Después:/s);
+  assert.equal(activity.entries[0].summary, 'Game win added');
+  assert.match(activity.entries[0].detail, /Before:.*After:/s);
   assert.match(activity.diagnosticText, /iOS test/);
 });
 
@@ -268,7 +268,7 @@ test('PostgreSQL: streams persist and simultaneous devices cannot reserve the sa
   assert.match(results.find(r => r.status === 'rejected').reason.message, /already in use/);
   assert.equal((await repo.listMatches('t1')).filter(m => m.call?.stationLabel === 'Stream 1').length, 1);
   assert.ok(trace.some(q => q.sql.includes('pg_advisory_xact_lock')));
-  await assert.rejects(other.updateSetups('t1', 3, 0), /stream.*uso/);
+  await assert.rejects(other.updateSetups('t1', 3, 0), /stream.*in use/);
   assert.equal((await repo.getTournament('t1')).settings.streamCount, 2);
   await service.callMatch('t1', 'm3', { calledByUserId: 'one', stationLabel: 'Setup 1' });
   const stored = await repo.listMatches('t1');

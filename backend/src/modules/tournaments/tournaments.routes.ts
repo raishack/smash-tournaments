@@ -49,9 +49,9 @@ function shouldIgnoreLadderOverviewError(error: unknown): boolean {
     return false;
   }
 
-  return error.message === "La ladder no esta disponible en torneos cerrados"
-    || error.message === "La ladder solo esta disponible para torneos importados de start.gg"
-    || error.message === "La ladder no esta activa en este torneo";
+  return error.message === "The ladder is unavailable in closed tournaments"
+    || error.message === "The ladder is only available for tournaments imported from start.gg"
+    || error.message === "The ladder is not active in this tournament";
 }
 
 export function createTournamentRouter(service: TournamentsService, ladderService?: LadderService): Router {
@@ -72,22 +72,22 @@ export function createTournamentRouter(service: TournamentsService, ladderServic
 
   router.use("/:tournamentId", asyncRoute(async (request, response, next) => {
     if (request.method !== "GET" && await service.isImporting(takeFirstParam(request.params.tournamentId))) {
-      return response.status(409).json({ message: "La importacion sigue en curso. Espera a que termine antes de modificar el torneo." });
+      return response.status(409).json({ message: "The import is still running. Wait for it to finish before changing the tournament." });
     }
     next();
   }));
 
   router.get("/", asyncRoute(async (request, response) => {
     const includeArchived = request.query.includeArchived === 'true';
-    if (includeArchived && !response.locals.managementUser) return response.status(403).json({message:'Inicia sesión para consultar los torneos archivados'});
+    if (includeArchived && !response.locals.managementUser) return response.status(403).json({message:'Sign in to view archived tournaments'});
     response.json(await service.listTournaments(includeArchived));
   }));
 
   router.post('/:tournamentId/archive', asyncRoute(async (request,response) => {
-    if (!response.locals.managementUser) return response.status(403).json({message:'Inicia sesión con tu cuenta de gestión'});
-    if (typeof request.body?.archived !== 'boolean') return response.status(400).json({message:'Indica si quieres archivar o desarchivar'});
+    if (!response.locals.managementUser) return response.status(403).json({message:'Sign in with your management account'});
+    if (typeof request.body?.archived !== 'boolean') return response.status(400).json({message:'Specify whether to archive or unarchive'});
     try { return response.json(await service.setArchived(takeFirstParam(request.params.tournamentId),request.body.archived)); }
-    catch(error) { return response.status(409).json({message:error instanceof Error?error.message:'No se pudo cambiar el archivo'}); }
+    catch(error) { return response.status(409).json({message:error instanceof Error?error.message:'Could not change archive status'}); }
   }));
 
   router.post("/admin/validate-delete-key", asyncRoute(async (request, response) => {
@@ -123,7 +123,7 @@ export function createTournamentRouter(service: TournamentsService, ladderServic
   }));
 
   router.get('/:tournamentId/review', asyncRoute(async (request, response) => {
-    if (!response.locals.managementUser) return response.status(403).json({ message: 'Inicia sesión con tu cuenta de gestión' });
+    if (!response.locals.managementUser) return response.status(403).json({ message: 'Sign in with your management account' });
     response.setHeader('Cache-Control', 'no-store');
     const review = await service.getReview(takeFirstParam(request.params.tournamentId));
     return review ? response.json(review) : response.status(404).json({ message: 'Tournament not found' });
@@ -184,7 +184,7 @@ export function createTournamentRouter(service: TournamentsService, ladderServic
 
   router.post("/:tournamentId/setups", asyncRoute(async (request, response) => {
     const parsed = updateSetupsSchema.safeParse(request.body);
-    if (!parsed.success) return response.status(400).json({ message: "Los setups deben estar entre 1 y 256 y los streams entre 0 y 2" });
+    if (!parsed.success) return response.status(400).json({ message: "Setups must be between 1 and 256, and streams between 0 and 2" });
     try {
       return response.json(await service.updateSetups(takeFirstParam(request.params.tournamentId), parsed.data.setupCount, parsed.data.streamCount));
     } catch (error) {
@@ -226,7 +226,7 @@ export function createTournamentRouter(service: TournamentsService, ladderServic
   }));
 
   router.post("/:tournamentId/participants/:participantId/attendance", asyncRoute(async (request, response) => {
-    if (typeof request.body?.checkedIn !== 'boolean') return response.status(400).json({ message: 'Indica si la asistencia está confirmada' });
+    if (typeof request.body?.checkedIn !== 'boolean') return response.status(400).json({ message: 'Specify whether attendance is confirmed' });
     return response.json(await service.updateAttendance(takeFirstParam(request.params.tournamentId), takeFirstParam(request.params.participantId), request.body.checkedIn));
   }));
 
@@ -294,7 +294,7 @@ export function createTournamentRouter(service: TournamentsService, ladderServic
 
   router.use("/:tournamentId/ladder", (request, response, next) => {
     if (request.method === "GET" || response.locals.managementUser) return next();
-    return response.status(401).json({message:"Inicia sesión con tu cuenta de gestión"});
+    return response.status(401).json({message:"Sign in with your management account"});
     return next();
   });
   router.get("/:tournamentId/ladder", asyncRoute(async (request,response) => {

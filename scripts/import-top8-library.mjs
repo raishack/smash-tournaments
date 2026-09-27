@@ -51,7 +51,7 @@ for (const [id, summary] of Object.entries(upstream)) {
     const icon = types.some(t => /icon|css|profile|stat/.test(t));
     if (['ssbu', 'roa2'].includes(id) && (icon || types.includes('portrait'))) continue;
     const pack = summary.assets[dir.split('/').at(-1)] || {};
-    const collection = { id: collectionId, name: config.name || (icon ? 'Iconos' : collectionId), kind: icon ? 'icon' : types.some(t => /full|art|render|costume|website|mural/.test(t)) ? 'artwork' : 'portrait', description: config.description || pack.description || '', credits: config.credits || pack.credits || base.credits || '', source: `https://github.com/joaorb64/StreamHelperAssets/tree/${revision}/${dir}`, characters: {} };
+    const collection = { id: collectionId, name: config.name || (icon ? 'Icons' : collectionId), kind: icon ? 'icon' : types.some(t => /full|art|render|costume|website|mural/.test(t)) ? 'artwork' : 'portrait', description: config.description || pack.description || '', credits: config.credits || pack.credits || base.credits || '', source: `https://github.com/joaorb64/StreamHelperAssets/tree/${revision}/${dir}`, characters: {} };
     for (const character of characters) {
       const prefix = `${config.prefix || ''}${character.code}${config.postfix || ''}`;
       const available = [];

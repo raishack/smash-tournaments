@@ -26,7 +26,7 @@
           return 36 + entrants.reduce((sum, p) => {
             const iconWidth = options.showCharacters === false ? 0 : Math.min(4, characters(match, p.participantId).length) * 20;
             const chars = Math.max(14, Math.floor((cardWidth - 65 - iconWidth) / (line * 0.46)));
-            return sum + 6 + Math.max(1, Math.ceil(Array.from(p.displayName || "Pendiente").length / chars)) * line;
+            return sum + 6 + Math.max(1, Math.ceil(Array.from(p.displayName || "Pending").length / chars)) * line;
           }, 0);
         })));
         const rows = Math.max(1, Math.min(options.bracketRows || 6, Math.floor(clusterHeight / (largestCard + 12))));

@@ -68,14 +68,14 @@ export function buildTop8Data(tournament: Tournament, participants: TournamentPa
   const rows = standings?.length ? standings.slice(0,8).map(s => ({
     participant: participants.find(p => String(p.externalRef?.entrantId) === s.entrantId) ?? { id: `startgg-${s.entrantId}`, displayName: s.name }, placement: s.placement,
   })) : localTop8(tournament, participants, matches);
-  if (imported && !standings?.length) warnings.push('No se ha podido obtener la clasificación final de start.gg. Revisa los puestos calculados con los cruces disponibles.');
-  if (rows.some(r => r.placement === null)) warnings.push('Hay puestos que no se pueden determinar con estos cruces. Complétalos antes de exportar.');
-  if (matches.some(m => m.syncStatus && m.syncStatus.state !== 'SYNCED')) warnings.push('Hay resultados pendientes de sincronización. Revisa la clasificación antes de publicar.');
+  if (imported && !standings?.length) warnings.push('Could not fetch final start.gg standings. Review placements calculated from the available matches.');
+  if (rows.some(r => r.placement === null)) warnings.push('Some placements cannot be determined from these matches. Complete them before exporting.');
+  if (matches.some(m => m.syncStatus && m.syncStatus.state !== 'SYNCED')) warnings.push('Some results have not synchronized yet. Review standings before publishing.');
   const catalog = top8Catalog();
   const players = rows.map(({participant, placement}) => ({ id: participant.id, name: participant.displayName, placement,
     roster:[] as Array<{nickname:string;role:string}>,characters: imported && game !== 'custom' ? charactersFor(participant.id, matches) : [] }));
-  if (imported && game !== 'custom' && players.some(p => !p.characters.length)) warnings.push('Faltan personajes registrados para algunos jugadores. Puedes seleccionarlos o subir sus imágenes en el editor.');
-  if (players.some(p => p.characters.some(c => !catalog[game].some(entry => entry.id === c.id)))) warnings.push('Hay personajes que aún no están en el catálogo de imágenes. Selecciona una alternativa o sube su retrato.');
+  if (imported && game !== 'custom' && players.some(p => !p.characters.length)) warnings.push('Some players have no recorded characters. Select them or upload their images in the editor.');
+  if (players.some(p => p.characters.some(c => !catalog[game].some(entry => entry.id === c.id)))) warnings.push('Some characters are not in the image catalog yet. Choose an alternative or upload a portrait.');
   return {
     teamTournament:(tournament.settings.teamSize??1)>1,topCount:players.length,version: 1, tournamentId: tournament.id, title: tournament.title, gameTitle: tournament.gameTitle, game,
     date: tournament.startsAt, participantCount: participants.length, source: standings?.length ? 'start.gg' : 'bracket', warnings,

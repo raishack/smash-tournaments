@@ -122,6 +122,6 @@ test('real persistence preserves corrected results, eligibility, audit and archi
  assert.equal(buildTop8Data(await f.repo.getTournament(id),await f.repo.listParticipants(id),after).players.length,4);
  assert((await f.repo.listActivity(id)).some(a=>a.action==='reportResult'&&a.matchId===first.id));
  await f.tournaments.setArchived(id,true);
- await assert.rejects(f.tournaments.reportDetailedResult(id,first.id,{games:[0,1].map(()=>({winnerParticipantId:winner}))}),/archivado/i);
+ await assert.rejects(f.tournaments.reportDetailedResult(id,first.id,{games:[0,1].map(()=>({winnerParticipantId:winner}))}),/archived/i);
  assert.deepEqual(await f.repo.listMatches(id),after);
 });

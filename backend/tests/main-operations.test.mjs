@@ -136,7 +136,7 @@ test('team selections keep every member including identical characters', () => {
   assert.deepEqual(gameData[0].selections.map(s => s.entrantId), ['101', '101', '102', '102']);
   assert.throws(() => service.normalizeDetailedGameSelections(tournament(), match(), [
     { participantId: 'p1', characterName: 'Mario' }, { participantId: 'p2', characterName: 'Peach / Luigi' },
-  ]), /Selecciona los 2/);
+  ]), /Select the 2/);
 });
 
 test('Rivals reports validate against Rivals characters', () => {
@@ -156,7 +156,7 @@ test('bracket labels preserve imported identifiers and link loser placeholders w
     match('target', { bracketStage: 'LOSERS', participants: [{ participantId: 'loser_of_source', displayName: 'old placeholder' }] })];
   const result = withBracketLabels(original);
   assert.equal(result[0].displayLabel, 'A7 · Winners Semi-Final');
-  assert.equal(result[1].participants[0].displayName, 'Perdedor de A7');
+  assert.equal(result[1].participants[0].displayName, 'Loser of A7');
   assert.equal(result[1].participants[0].participantId, 'loser_of_source');
   assert.equal(original[1].participants[0].displayName, 'old placeholder');
   assert.equal(withBracketLabels([match()], 'ROUND_ROBIN')[0].roundLabel, 'Round 1');
@@ -223,7 +223,7 @@ test('all result entry points reject writes during import even without the manag
     () => service.updateMatchCharacters('t1', 'm1', { selections: [] }),
     () => service.resetMatch('t1', 'm1'),
   ];
-  for (const operation of operations) await assert.rejects(operation(), /termine la importacion/);
+  for (const operation of operations) await assert.rejects(operation(), /import to finish/);
   assert.equal(repo.matchWrites, 0);
 });
 

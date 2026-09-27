@@ -12,7 +12,7 @@ const browser = process.env.CHROME_PATH || chromium.executablePath();
 function cluster(id, title) {
   const card = (round, n) => {
     const state = ['CALLED', 'PLAYING', 'COMPLETED', 'WALKOVER'][n % 4];
-    const names = round ? ['Ganador de A1', 'Ganador de A2'] : ['Community Team | Equipo de Alejandro y María del Mar', 'Northern Lights | Equipo de Lucía y José Antonio'];
+    const names = round ? ['Winner de A1', 'Winner de A2'] : ['Community Team | Equipo de Alejandro y María del Mar', 'Northern Lights | Equipo de Lucía y José Antonio'];
     return `<article class="match-card ${state.toLowerCase()}" data-match-id="${id}-${round}-${n}" data-match-index="${n}" data-round-index="${round}" data-source-match-ids="${round ? `${id}-${round - 1}-${n * 2},${id}-${round - 1}-${n * 2 + 1}` : ''}" data-connection-group="${id}">
       <div class="match-header"><span>${String.fromCharCode(65 + round)}${n + 1}</span><span class="status-pill">${state}</span></div>
       ${names.map((name,i) => `<div class="entrant-row ${n > 1 ? i ? 'loser' : 'winner' : ''}"><div class="entrant-main"><div class="entrant-name">${name}</div></div><div class="entrant-score ${n === 3 && i ? 'dq' : ''}">${n === 3 && i ? 'DQ' : i ? '1' : '2'}</div></div>`).join('')}
@@ -22,7 +22,7 @@ function cluster(id, title) {
   return `<div class="bracket-cluster"><div class="cluster-title">${title}</div><div class="bracket-scroll"><div class="bracket-scale-wrap"><div class="bracket-canvas" data-section-id="${id}" data-round-count="3"><svg class="connector-layer"></svg>${[0, 1, 2].map(round => `<div class="round-column" data-round-index="${round}"><div class="round-title">${title} Round ${round + 1}</div>${Array.from({ length: 4 >> round }, (_, n) => card(round, n)).join('')}</div>`).join('')}</div></div></div></div>`;
 }
 const content = `<section id="bracket-final" class="bracket-section">${cluster('winners', 'Winners')}${cluster('losers', 'Losers')}</section>`;
-const buttons = '<button class="section-tab" data-target="bracket-final">Bracket final</button>';
+const buttons = '<button class="section-tab" data-target="bracket-final">Final bracket</button>';
 for (const [platform, source] of [
   ['ios-player', 'ios-player/TournamentPlayerIOS/AppViews.swift'],
   ['android', 'android/shared-bracket/src/main/kotlin/com/gestortorneos/bracket/ModernBracketBoard.kt'],

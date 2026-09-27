@@ -40,23 +40,23 @@ test('Fortnite: full multi-game tournament, safe corrections, finalists reset po
   const f=await fortniteFixture(t);assert(createTournamentSchema.safeParse(f.tournament).success);
   let view=await f.action({action:'GENERATE'});assert.equal(view.state.rounds[0].groups.length,3);
   assert.equal((await f.repo.getTournament(f.tournament.id)).settings.registrationEnabled,false);
-  await assert.rejects(f.action({action:'GENERATE'}),/ya están generados/);
-  await assert.rejects(f.action({action:'ADVANCE',acceptTies:true,revision:view.state.revision}),/todas las partidas/);
+  await assert.rejects(f.action({action:'GENERATE'}),/already been generated/);
+  await assert.rejects(f.action({action:'ADVANCE',acceptTies:true,revision:view.state.revision}),/all games/);
   const round=view.state.rounds[0];
   for(const originalGroup of round.groups)for(let gameNumber=1;gameNumber<=2;gameNumber++){
     const group=(await f.view()).state.rounds.at(-1).groups.find(g=>g.id===originalGroup.id);
     view=await f.action(report(group,gameNumber));
   }
   const old=report(view.state.rounds[0].groups[0]);
-  view=await f.action(old);await assert.rejects(f.action(old),/Otro dispositivo/);
+  view=await f.action(old);await assert.rejects(f.action(old),/Another device/);
   view=await f.action({action:'ADVANCE',acceptTies:true,revision:view.state.revision});
   assert(view.state.rounds[1].final);assert.equal(view.state.rounds[1].groups[0].slots.length,20);
   assert(view.summary.rounds[1].groups[0].standings.every(r=>r.points===0));
-  await assert.rejects(f.action(report(round.groups[0])),/ronda actual/);
+  await assert.rejects(f.action(report(round.groups[0])),/current round/);
   view=await f.action(report(view.state.rounds[1].groups[0],1));view=await f.action(report(view.state.rounds[1].groups[0],2));
   view=await f.action({action:'ADVANCE',acceptTies:true,revision:view.state.revision});assert.equal(view.tournament.status,'COMPLETED');
   assert.equal((await f.repo.listParticipants(f.tournament.id)).filter(p=>p.status==='ACTIVE').length,1);
-  await assert.rejects(f.action(report(view.state.rounds[1].groups[0],2)),/estado actual/);
+  await assert.rejects(f.action(report(view.state.rounds[1].groups[0],2)),/current tournament state/);
   const detail=await f.tournaments.getTournamentOverview(f.tournament.id);assert.equal(detail.fortnite.rounds[1].groups[0].standings[0].rank,1);
   assert(!('rows' in detail.fortnite.rounds[0].groups[0].games[0]),'Display payload omits full score sheets');
 });
@@ -69,7 +69,7 @@ test('Fortnite: invalid podium, kills, VIP, player substitution and out-of-order
   await bad(i=>{i.rows[0].vipKill=true;i.rows[0].kills=1;i.rows[1].vipKill=true;i.rows[1].kills=1;});
   await bad(i=>{i.vipName='';});
   await bad(i=>{i.rows[4].participantId='outsider';});await bad(i=>{i.rows.pop();});
-  await assert.rejects(f.action(report(group,2)),/anteriores/);
+  await assert.rejects(f.action(report(group,2)),/earlier/);
   const started=await f.action({action:'START',groupId:group.id,gameNumber:1,revision:group.games[0].revision,vipName:'VIP externo'});
   const input=report(started.state.rounds[0].groups[0]);input.vipName='VIP externo';input.rows[0].kills=1;input.rows[0].vipKill=true;
   const done=await f.action(input);assert.equal(done.summary.rounds[0].groups[0].standings[0].points,16);
@@ -82,7 +82,7 @@ test('Fortnite: simultaneous different groups succeed; same game conflicts; rese
   const c=(await f.view()).state.rounds[0].groups[2],same=report(c);
   const collision=await Promise.allSettled([f.action(same),f.action(same)]);assert.equal(collision.filter(r=>r.status==='fulfilled').length,1);
   await f.tournaments.resetTournament(f.tournament.id);assert.equal((await f.view()).state,null);assert.equal((await f.repo.listParticipants(f.tournament.id)).length,11);
-  await f.action({action:'GENERATE'});await assert.rejects(f.action(same),/ronda actual/);
+  await f.action({action:'GENERATE'});await assert.rejects(f.action(same),/current round/);
   await f.repo.deleteTournament(f.tournament.id);assert.equal((await f.db.query('select count(*)::int as count from tournament_fortnite')).rows[0].count,0);
 });
 
@@ -95,12 +95,12 @@ test('Fortnite: signup cap, closing, legacy settings preservation and exclusion 
   await f.action({action:'GENERATE'});
   const registration=new RegistrationService(f.repo,f.tournaments,{configured:true,async send(){}},'https://your-domain.example');
   assert.equal((await registration.publicInfo(f.tournament.id)).open,false);
-  await assert.rejects(registration.updateOptions(f.tournament.id,{registrationEnabled:true}),/antes de generar/);
-  await assert.rejects(f.tournaments.deleteParticipant(f.tournament.id,f.participants[0].id),/sorteados/);
-  await assert.rejects(f.tournaments.updateParticipant(f.tournament.id,f.participants[0].id,{displayName:'Change'}),/sorteados/);
-  await assert.rejects(f.tournaments.updateTournament(f.tournament.id,{...f.tournament,settings:{...f.tournament.settings,fortniteLobbySize:20}}),/sorteados/);
-  await assert.rejects(f.tournaments.generateBracket(f.tournament.id),/panel Fortnite/);
-  await assert.rejects(f.tournaments.startTournament(f.tournament.id),/panel Fortnite/);
+  await assert.rejects(registration.updateOptions(f.tournament.id,{registrationEnabled:true}),/before generating/);
+  await assert.rejects(f.tournaments.deleteParticipant(f.tournament.id,f.participants[0].id),/drawn/);
+  await assert.rejects(f.tournaments.updateParticipant(f.tournament.id,f.participants[0].id,{displayName:'Change'}),/drawn/);
+  await assert.rejects(f.tournaments.updateTournament(f.tournament.id,{...f.tournament,settings:{...f.tournament.settings,fortniteLobbySize:20}}),/drawn/);
+  await assert.rejects(f.tournaments.generateBracket(f.tournament.id),/Fortnite panel/);
+  await assert.rejects(f.tournaments.startTournament(f.tournament.id),/Fortnite panel/);
 });
 
 test('Fortnite: management tickets are one-use and bearer sessions remain scoped to one tournament',async t=>{

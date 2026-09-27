@@ -50,7 +50,7 @@ export function withBracketLabels(matches: Match[], format?: string): Match[] {
       participants: match.participants.map((participant) => {
         const dependency = /^(winner|loser)_of_(.+)$/.exec(participant.participantId);
         const sourceLabel = dependency && identifiers.get(dependency[2]!);
-        return sourceLabel ? { ...participant, displayName: `${dependency![1] === "loser" ? "Perdedor" : "Ganador"} de ${sourceLabel}` } : participant;
+        return sourceLabel ? { ...participant, displayName: `${dependency![1] === "loser" ? "Loser" : "Winner"} of ${sourceLabel}` } : participant;
       }),
     };
   });

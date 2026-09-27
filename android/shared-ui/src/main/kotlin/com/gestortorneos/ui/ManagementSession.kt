@@ -86,7 +86,7 @@ open class ManagementSessionController(private val now: () -> Long = System::cur
 
     suspend fun login(backend: String, username: String, password: String) = withContext(Dispatchers.IO) {
         val attempt = synchronized(lock) {
-            require(!initialized || backend.trimEnd('/') == baseUrl) { "El servidor de acceso ha cambiado" }
+            require(!initialized || backend.trimEnd('/') == baseUrl) { "The sign-in server has changed" }
             ++generation
         }
         val request = Request.Builder().url(backend.trimEnd('/') + "/api/management-auth/login").post(
@@ -96,15 +96,15 @@ open class ManagementSessionController(private val now: () -> Long = System::cur
             val body = response.body?.string().orEmpty()
             if (!response.isSuccessful) {
                 val message = runCatching { gson.fromJson(body, com.google.gson.JsonObject::class.java).get("message")?.asString }.getOrNull()
-                error(message ?: "No se pudo iniciar sesión. Comprueba la conexión y vuelve a intentarlo.")
+                error(message ?: "Could not sign in. Check your connection and try again.")
             }
             val session = gson.fromJson(body, ManagementLogin::class.java)
-            require(valid(session)) { "Respuesta de acceso no válida" }
+            require(valid(session)) { "Invalid sign-in response" }
             synchronized(lock) {
                 if (attempt != generation) return@synchronized
                 baseUrl = backend.trimEnd('/')
                 try { storage?.write(gson.toJson(SavedManagementSession(baseUrl, session))) }
-                catch (_: Exception) { error("No se pudo guardar la sesión de forma segura. Vuelve a intentarlo.") }
+                catch (_: Exception) { error("Could not save the session securely. Try again.") }
                 mutable.value = session
             }
         }

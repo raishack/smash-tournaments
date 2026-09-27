@@ -65,36 +65,36 @@ class BracketFullscreenInteractionTest {
                 SideEffect { inlineActions = inline }
                 val body: @Composable () -> Unit = {
                     MainMatchActionPanel(match.id, "Acciones A1", { selection = null }) {
-                        PublishMatchPrimaryAction("Anotar resultado", true) { report = true }
+                        PublishMatchPrimaryAction("Report result", true) { report = true }
                     }
                 }
                 if (inline) body() else Dialog(onDismissRequest = { selection = null }) { body() }
             })
             if (report) Dialog(onDismissRequest = { report = false }) {
                 Button(onClick = { current = current.copy(participantScores = listOf(2, 0), status = "COMPLETED"); report = false }) {
-                    Text("Guardar resultado de prueba")
+                    Text("Save result de prueba")
                 }
             }
         } } }
-        compose.onNodeWithText("Pantalla completa").performClick()
+        compose.onNodeWithText("Fullscreen").performClick()
         lateinit var board: WebView
         lateinit var host: Any
         compose.runOnIdle { board = visibleWebView(); host = board.parent }
         compose.runOnIdle {
             assertTrue(board.webViewClient.shouldOverrideUrlLoading(board, "gtt-match://select/m1"))
         }
-        compose.onNodeWithText("Anotar resultado").assertIsDisplayed().performClick()
+        compose.onNodeWithText("Report result").assertIsDisplayed().performClick()
         compose.runOnIdle { assertEquals(false, inlineActions); assertTrue(fullscreen) }
-        compose.onNodeWithText("Guardar resultado de prueba").assertIsDisplayed().performClick()
-        compose.onNodeWithText("Cerrar").assertIsDisplayed().performClick()
-        compose.onNodeWithText("Salir de pantalla completa").assertIsDisplayed()
+        compose.onNodeWithText("Save result de prueba").assertIsDisplayed().performClick()
+        compose.onNodeWithText("Close").assertIsDisplayed().performClick()
+        compose.onNodeWithText("Exit fullscreen").assertIsDisplayed()
         compose.runOnIdle { assertTrue(fullscreen); assertSame(board, visibleWebView()); assertSame(host, board.parent) }
         // Reopening and cancelling must also leave the fullscreen owner intact.
         compose.runOnIdle { board.webViewClient.shouldOverrideUrlLoading(board, "gtt-match://select/m1") }
-        compose.onNodeWithText("Cerrar").performClick()
-        compose.onNodeWithText("Salir de pantalla completa").assertIsDisplayed()
-        compose.onNodeWithText("Salir de pantalla completa").performClick()
-        compose.onNodeWithText("Pantalla completa").assertIsEnabled()
+        compose.onNodeWithText("Close").performClick()
+        compose.onNodeWithText("Exit fullscreen").assertIsDisplayed()
+        compose.onNodeWithText("Exit fullscreen").performClick()
+        compose.onNodeWithText("Fullscreen").assertIsEnabled()
         compose.runOnIdle { assertFalse(fullscreen); assertSame(board, visibleWebView()) }
     }
 }

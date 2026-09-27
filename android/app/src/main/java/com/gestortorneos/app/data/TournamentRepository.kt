@@ -75,10 +75,10 @@ class TournamentRepository(
             throw IllegalStateException(error.toBackendMessage())
         }
         val formatLabel = when (preview.format) {
-            "DOUBLE_ELIMINATION" -> "Doble eliminacion - W Bo${preview.winnersBestOf} / L Bo${preview.losersBestOf}"
+            "DOUBLE_ELIMINATION" -> "Double elimination - W Bo${preview.winnersBestOf} / L Bo${preview.losersBestOf}"
             "GROUPS_PLAYOFF" -> "Pools + bracket - W Bo${preview.winnersBestOf} / L Bo${preview.losersBestOf}"
             "ROUND_ROBIN" -> "Pools - Bo${preview.bestOf}"
-            else -> "Eliminacion simple - Bo${preview.bestOf}"
+            else -> "Single elimination - Bo${preview.bestOf}"
         }
         return StartggPreviewResult(
             eventName = preview.eventName,
@@ -91,7 +91,7 @@ class TournamentRepository(
                     displayName = participant.displayName,
                     seedLabel = "Seed ${participant.seed}",
                     seed = participant.seed,
-                    status = "IMPORTADO"
+                    status = "IMPORTED"
                 )
             }
         )
@@ -243,15 +243,15 @@ class TournamentRepository(
     }
 
     suspend fun createRegistrationAdminSession(tournamentId: String, adminKey: String): String {
-        return api.createRegistrationAdminSession(tournamentId, adminKey)["url"] ?: error("No se pudo abrir el panel")
+        return api.createRegistrationAdminSession(tournamentId, adminKey)["url"] ?: error("Could not open the panel")
     }
 
     suspend fun createFortniteSession(tournamentId: String): String {
-        return api.createFortniteSession(tournamentId)["url"] ?: error("No se pudo abrir Fortnite")
+        return api.createFortniteSession(tournamentId)["url"] ?: error("Could not open Fortnite")
     }
 
     suspend fun createTop8Session(tournamentId: String): String {
-        try { return api.createTop8Session(tournamentId)["url"] ?: error("No se pudo abrir el editor") }
+        try { return api.createTop8Session(tournamentId)["url"] ?: error("Could not open the editor") }
         catch (error: HttpException) { throw IllegalStateException(error.toBackendMessage()) }
     }
 
@@ -589,7 +589,7 @@ private fun TournamentListItemDto.toSummary(): TournamentSummary {
         status = com.gestortorneos.ui.tournamentClientStatus(status, settings.importJob?.state),
         participants = maxParticipants,
         format = settings.toFormatLabel(),
-        nextAction = "Abrir torneo"
+        nextAction = "Open tournament"
     )
 }
 
@@ -634,7 +634,7 @@ private fun TournamentDetailDto.toDetail(): TournamentDetail {
             TournamentParticipantSummary(
                 id = participant.id,
                 displayName = participant.displayName,
-                seedLabel = participant.seed?.let { "Seed $it" } ?: "Sin seed",
+                seedLabel = participant.seed?.let { "Seed $it" } ?: "No seed",
                 seed = participant.seed,
                 status = participant.status.replace('_', ' ')
             )
@@ -655,7 +655,7 @@ private fun TournamentDetailDto.toDetail(): TournamentDetail {
                 displayIdentifier = match.displayIdentifier,
                 startggStreamLabel = match.startggStreamLabel,
                 status = match.status.replace('_', ' '),
-                participantsLabel = match.participants.joinToString(" vs ") { it.displayName }.ifBlank { "Pendiente de definir" },
+                participantsLabel = match.participants.joinToString(" vs ") { it.displayName }.ifBlank { "To be determined" },
                 participantNames = match.participants.map { it.displayName },
                 participantIds = match.participants.map { it.participantId },
                 participantScores = match.participants.map { it.score },
@@ -689,7 +689,7 @@ private fun TournamentDetailDto.toDetail(): TournamentDetail {
                 startedAt = match.call?.startedAt,
                 stationLabel = match.call?.stationLabel,
                 calledElapsed = match.call?.let {
-                    val stationText = it.stationLabel?.takeIf { label -> label.isNotBlank() }?.let { label -> "Estacion $label" }
+                    val stationText = it.stationLabel?.takeIf { label -> label.isNotBlank() }?.let { label -> "Station $label" }
                     listOfNotNull(stationText).joinToString(" - ").ifBlank { null }
                 },
                 phaseId = match.externalRef?.phaseId,
@@ -714,14 +714,14 @@ private fun TournamentDetail.toSummary(): TournamentSummary {
         status = status,
         participants = participants.size,
         format = format,
-        nextAction = "Abrir torneo"
+        nextAction = "Open tournament"
     )
 }
 
 private fun TournamentSettingsDto.toFormatLabel(): String {
-    if (bracketMode == "FORTNITE") return "Fortnite · ${fortniteLobbySize ?: 20} puestos · ${fortniteGamesPerRound ?: 3} partidas por ronda"
+    if (bracketMode == "FORTNITE") return "Fortnite · ${fortniteLobbySize ?: 20} seats · ${fortniteGamesPerRound ?: 3} games per round"
     if ((bracketMode ?: "STANDARD") == "MKART") {
-        val formatBase = if (format == "DOUBLE_ELIMINATION") "MKART doble" else "MKART simple"
+        val formatBase = if (format == "DOUBLE_ELIMINATION") "MKART double" else "MKART single"
         val winnersAdvance = mkartAdvanceCount ?: 1
         val losersAdvance = mkartLosersAdvanceCount ?: winnersAdvance
         return if (format == "DOUBLE_ELIMINATION") {
@@ -732,8 +732,8 @@ private fun TournamentSettingsDto.toFormatLabel(): String {
     }
 
     val formatLabel = when (format) {
-        "SINGLE_ELIMINATION" -> "Eliminacion simple"
-        "DOUBLE_ELIMINATION" -> "Doble eliminacion"
+        "SINGLE_ELIMINATION" -> "Single elimination"
+        "DOUBLE_ELIMINATION" -> "Double elimination"
         "ROUND_ROBIN" -> "Round robin"
         "SWISS" -> "Swiss"
         "GROUPS_PLAYOFF" -> "Grupos + playoff"
@@ -755,7 +755,7 @@ private fun String.toStageLabel(roundNumber: Int, matchNumber: Int): String {
         "WINNERS" -> "Winners"
         "LOSERS" -> "Losers"
         "FINALS" -> "Final"
-        else -> "Ronda"
+        else -> "Round"
     }
 
     return if (this == "FINALS") {
@@ -772,7 +772,7 @@ private fun HttpException.toBackendMessage(): String {
 }
 
 internal fun Throwable.toTournamentErrorMessage(): String =
-    if (this is HttpException) toBackendMessage() else message?.takeIf { it.isNotBlank() } ?: "No se pudo completar la accion."
+    if (this is HttpException) toBackendMessage() else message?.takeIf { it.isNotBlank() } ?: "Could not complete the action."
 
 private fun NotificationSettingsDto.toModel(): TournamentRepository.AdminNotificationSettings {
     return TournamentRepository.AdminNotificationSettings(
@@ -820,7 +820,7 @@ private fun com.gestortorneos.app.data.remote.LadderMatchDto.toSummary(): Ladder
                 displayName = participant.displayName,
                 seedLabel = "Slot ${participant.slot}",
                 seed = participant.slot,
-                status = if (winnerParticipantId == participant.participantId) "GANADOR" else "LADDER"
+                status = if (winnerParticipantId == participant.participantId) "WINNER" else "LADDER"
             )
         },
         scores = participants.map { it.score },

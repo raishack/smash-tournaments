@@ -15,7 +15,7 @@ const publicUser = ({ id, username, role }: ManagementUser): ManagementUser => (
 const equal = (a: string, b: string) => a.length === b.length && timingSafeEqual(Buffer.from(a), Buffer.from(b));
 export function validUsername(value: string) { return /^[a-zA-Z0-9][a-zA-Z0-9_.-]{2,39}$/.test(value); }
 export async function passwordHash(password: string): Promise<string> {
-  if (password.length < 10 || password.length > 256) throw new AuthError('La contraseña debe tener entre 10 y 256 caracteres');
+  if (password.length < 10 || password.length > 256) throw new AuthError('The password must contain 10 to 256 characters');
   const salt = randomBytes(16).toString('hex');
   return `scrypt:${salt}:${(await scrypt(password, salt, 64) as Buffer).toString('hex')}`;
 }
@@ -46,7 +46,7 @@ export class ManagementAuthStore {
       return;
     }
     const username = process.env.MANAGEMENT_BOOTSTRAP_USERNAME?.trim() || bootstrapUsername;
-    if (!validUsername(username)) throw new AuthError('Usuario inicial no válido');
+    if (!validUsername(username)) throw new AuthError('Invalid initial username');
     const configured = process.env.MANAGEMENT_BOOTSTRAP_PASSWORD;
     // No known default password. Existing installations retain their display password.
     const hash = configured ? await passwordHash(configured)
@@ -72,7 +72,7 @@ export class ManagementAuthStore {
   async login(username: string, password: string) {
     return this.mutate(async state => {
       const account = state.users.find(u => u.username.toLowerCase() === username.trim().toLowerCase());
-      if (!account || !account.passwordHash || !await verify(password, account.passwordHash)) throw new AuthError('Usuario o contraseña incorrectos', 401);
+      if (!account || !account.passwordHash || !await verify(password, account.passwordHash)) throw new AuthError('Incorrect username or password', 401);
       // Upgrade SHA-256 hashes on first successful authentication, without storing plaintext.
       if (!account.passwordHash.startsWith('scrypt:')) {
         const salt = randomBytes(16).toString('hex');
@@ -94,19 +94,19 @@ export class ManagementAuthStore {
   async listUsers() { return (await this.read()).users.map(publicUser); }
   async createUser(username: string, password: string) {
     username = username.trim();
-    if (!validUsername(username)) throw new AuthError('Usa de 3 a 40 letras, números, puntos, guiones o guiones bajos');
+    if (!validUsername(username)) throw new AuthError('Use 3 to 40 letters, numbers, dots, hyphens or underscores');
     const hash = await passwordHash(password);
     return this.mutate(state => {
-      if (state.users.some(u => u.username.toLowerCase() === username.toLowerCase())) throw new AuthError('Ese usuario ya existe', 409);
-      if (state.users.length >= 500) throw new AuthError('Se ha alcanzado el límite de usuarios', 409);
+      if (state.users.some(u => u.username.toLowerCase() === username.toLowerCase())) throw new AuthError('That username already exists', 409);
+      if (state.users.length >= 500) throw new AuthError('The user limit has been reached', 409);
       const user: Account = { id: randomUUID(), username, role: 'MANAGER', passwordHash: hash }; state.users.push(user); return publicUser(user);
     });
   }
   async deleteUser(id: string, actorId: string) {
     await this.mutate(state => {
       const user = state.users.find(u => u.id === id);
-      if (!user) throw new AuthError('Usuario no encontrado', 404);
-      if (id === actorId || user.role === 'SUPER_ADMIN') throw new AuthError('No se puede eliminar al superadministrador', 409);
+      if (!user) throw new AuthError('User not found', 404);
+      if (id === actorId || user.role === 'SUPER_ADMIN') throw new AuthError('The superadmin cannot be deleted', 409);
       state.users = state.users.filter(u => u.id !== id); state.sessions = state.sessions.filter(s => s.userId !== id);
     });
   }
@@ -114,9 +114,9 @@ export class ManagementAuthStore {
     const hash = await passwordHash(next);
     await this.mutate(async state => {
       const user = state.users.find(u => u.id === id);
-      if (!user) throw new AuthError('La sesión ya no está disponible', 401);
+      if (!user) throw new AuthError('The session is no longer available', 401);
       // A mistyped current password does not revoke the authenticated session.
-      if (!await verify(current, user.passwordHash)) throw new AuthError('Contraseña actual incorrecta', 400);
+      if (!await verify(current, user.passwordHash)) throw new AuthError('Current password is incorrect', 400);
       user.passwordHash = hash; state.sessions = state.sessions.filter(s => s.userId !== id);
     });
   }
@@ -124,7 +124,7 @@ export class ManagementAuthStore {
     const hash = await passwordHash(password);
     await this.mutate(state => {
       const user = state.users.find(u => u.id === id);
-      if (!user || user.role === 'SUPER_ADMIN') throw new AuthError('Usa el cambio de contraseña de tu cuenta', 409);
+      if (!user || user.role === 'SUPER_ADMIN') throw new AuthError('Use the password change option in your account', 409);
       user.passwordHash = hash; state.sessions = state.sessions.filter(s => s.userId !== id);
     });
   }

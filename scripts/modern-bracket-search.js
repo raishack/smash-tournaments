@@ -14,17 +14,17 @@ function installModernBracketSearch(activateSection, layoutSections) {
   bar.className = 'bracket-search';
   bar.setAttribute('role', 'search');
   const input = document.createElement('input');
-  input.type = 'search'; input.placeholder = 'Buscar jugador o equipo';
-  input.setAttribute('aria-label', 'Buscar jugador o equipo en todas las fases');
+  input.type = 'search'; input.placeholder = 'Find player or team';
+  input.setAttribute('aria-label', 'Find player or team in all phases');
   input.autocomplete = 'off'; input.maxLength = 120;
   const button = (label, action) => {
     const node = document.createElement('button'); node.type = 'button'; node.textContent = label;
     node.addEventListener('click', action); return node;
   };
   let hits = [], currentId = null, focusRevision = 0;
-  const previous = button('Anterior', () => step(-1));
-  const next = button('Siguiente', () => step(1));
-  const clear = button('Limpiar', () => { input.value = ''; update(false); input.focus(); });
+  const previous = button('Previous', () => step(-1));
+  const next = button('Next', () => step(1));
+  const clear = button('Clear', () => { input.value = ''; update(false); input.focus(); });
   const output = document.createElement('output');
   output.setAttribute('aria-live', 'polite'); output.setAttribute('aria-atomic', 'true');
   bar.append(input, previous, next, clear, output); root.prepend(bar);
@@ -43,8 +43,8 @@ function installModernBracketSearch(activateSection, layoutSections) {
     const current = hits[index];
     const phase = current?.closest('.bracket-section')?.querySelector('.section-title')?.textContent || '';
     const matchLabel = current?.querySelector('.match-header span')?.textContent || '';
-    output.textContent = !query ? 'Busca en todas las fases. Enter: siguiente; Mayús + Enter: anterior.' :
-      current ? (index + 1) + ' de ' + hits.length + ' · ' + phase + ' · ' + matchLabel : 'Sin coincidencias';
+    output.textContent = !query ? 'Search all phases. Enter: next; Shift + Enter: previous.' :
+      current ? (index + 1) + ' of ' + hits.length + ' · ' + phase + ' · ' + matchLabel : 'No matches found';
     previous.disabled = next.disabled = hits.length < 2; clear.disabled = !input.value;
     if (center && current) centerCard(current);
   }

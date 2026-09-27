@@ -10,8 +10,8 @@ const route = (handler: RequestHandler): RequestHandler => (request, response, n
       response.status(error.status).json({ message: error.message });
     } else {
       // Never include raw request bodies, email addresses, tokens or SMTP errors in logs.
-      console.error("[registration] No se pudo completar la operación");
-      response.status(503).json({ message: "No se ha podido completar la operación. Inténtalo de nuevo" });
+      console.error("[registration] Could not complete the operation");
+      response.status(503).json({ message: "Could not complete the operation. Try again" });
     }
   });
 };
@@ -28,9 +28,9 @@ export function createRegistrationRouter(service: RegistrationService) {
   }));
   router.post("/:id/request", route(async (request, response) => {
     await service.request(String(request.params.id), request.body, request.ip || request.socket.remoteAddress || "unknown");
-    response.status(202).json({ message: "Si tu dirección aún no está confirmada y no has pedido otro enlace recientemente, recibirás un correo. Revisa también la carpeta de spam. La plaza se asigna al confirmar." });
+    response.status(202).json({ message: "If your email is not verified and you have not requested another link recently, you will receive an email. Check spam too. Your place is assigned on confirmation." });
   }));
-  router.post('/:id/recover',route(async(req,res)=>{await service.recover(String(req.params.id),req.body?.email,req.ip||'unknown');res.status(202).json({message:'Si ese correo tiene una inscripción, recibirás un enlace para consultarla. Revisa también spam.'});}));
+  router.post('/:id/recover',route(async(req,res)=>{await service.recover(String(req.params.id),req.body?.email,req.ip||'unknown');res.status(202).json({message:'If that email has a registration, you will receive a link to view it. Check spam too.'});}));
   router.post('/status',route(async(req,res)=>{res.json(await service.status(String(req.body?.token||'')));}));
   router.post('/cancel',route(async(req,res)=>{res.json(await service.cancel(String(req.body?.token||'')));}));
   router.post("/confirm", route(async (request, response) => {
@@ -43,11 +43,11 @@ export function createRegistrationOptionsRouter(service: RegistrationService) {
   const router = Router({ mergeParams: true });
   router.post("/", route(async (request, response) => {
     if (!response.locals.managementUser) {
-      response.status(403).json({ message: "Inicia sesión para cambiar estas opciones" });
+      response.status(403).json({ message: "Sign in to change these settings" });
       return;
     }
     const input = publicOptionsSchema.safeParse(request.body);
-    if (!input.success) { response.status(400).json({ message: "Opciones no válidas" }); return; }
+    if (!input.success) { response.status(400).json({ message: "Invalid options" }); return; }
     response.json(await service.updateOptions(String(request.params.tournamentId), input.data));
   }));
   return router;

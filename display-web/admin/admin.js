@@ -6,91 +6,91 @@
   const VIDEO_EXTENSIONS = [".mp4", ".webm", ".ogg", ".ogv", ".mov", ".m4v"];
 
   const COLOR_FIELDS = [
-    ["--bg", "Fondo general"],
+    ["--bg", "General background"],
     ["--panel", "Panel bracket"],
-    ["--panel-2", "Panel resultado"],
-    ["--line", "Bordes"],
-    ["--text", "Texto principal"],
-    ["--muted", "Texto secundario"],
-    ["--soft", "Texto suave"],
-    ["--accent", "Acento"],
-    ["--gold", "Dorado"],
-    ["--electric", "Azul electrico"],
-    ["--teal", "Verde agua"],
-    ["--win", "Color de victoria"],
-    ["--lose", "Color de derrota"],
-    ["--idle-bg", "Fondo idle"],
-    ["--scene-grid-strong", "Grid fuerte"],
-    ["--scene-grid-soft", "Grid suave"],
+    ["--panel-2", "Result panel"],
+    ["--line", "Borders"],
+    ["--text", "Primary text"],
+    ["--muted", "Secondary text"],
+    ["--soft", "Muted text"],
+    ["--accent", "Accent"],
+    ["--gold", "Gold"],
+    ["--electric", "Electric blue"],
+    ["--teal", "Teal"],
+    ["--win", "Victory color"],
+    ["--lose", "Defeat color"],
+    ["--idle-bg", "Idle background"],
+    ["--scene-grid-strong", "Strong grid"],
+    ["--scene-grid-soft", "Subtle grid"],
     ["--scene-bracket-glow-a", "Glow bracket A"],
     ["--scene-bracket-glow-b", "Glow bracket B"],
-    ["--scene-result-glow", "Glow resultado"],
-    ["--scene-champion-gold", "Glow campeon dorado"],
-    ["--scene-champion-green", "Glow campeon verde"],
-    ["--scene-champion-blue", "Glow campeon azul"],
+    ["--scene-result-glow", "Result glow"],
+    ["--scene-champion-gold", "Gold champion glow"],
+    ["--scene-champion-green", "Green champion glow"],
+    ["--scene-champion-blue", "Blue champion glow"],
     ["--match-card-highlight-a", "Highlight bracket A"],
     ["--match-card-highlight-b", "Highlight bracket B"],
-    ["--entrant-bg", "Entrada neutra"],
-    ["--entrant-border", "Borde entrada neutra"],
-    ["--entrant-win-bg", "Entrada ganador"],
-    ["--entrant-win-border", "Borde ganador"],
-    ["--entrant-win-text", "Texto ganador"],
-    ["--entrant-lose-bg", "Entrada perdedor"],
-    ["--entrant-lose-border", "Borde perdedor"],
-    ["--entrant-lose-text", "Texto perdedor"],
-    ["--result-card-highlight-a", "Highlight resultado A"],
-    ["--result-card-highlight-b", "Highlight resultado B"],
-    ["--player-neutral-bg", "Jugador neutro"],
-    ["--player-neutral-border", "Borde jugador neutro"],
-    ["--player-win-bg-top", "Jugador ganador arriba"],
-    ["--player-win-bg-bottom", "Jugador ganador abajo"],
-    ["--player-win-border", "Borde ganador"],
-    ["--player-lose-bg-top", "Jugador perdedor arriba"],
-    ["--player-lose-bg-bottom", "Jugador perdedor abajo"],
-    ["--player-lose-border", "Borde perdedor"],
+    ["--entrant-bg", "Neutral background"],
+    ["--entrant-border", "Neutral entry border"],
+    ["--entrant-win-bg", "Winner background"],
+    ["--entrant-win-border", "Winner border"],
+    ["--entrant-win-text", "Winner text"],
+    ["--entrant-lose-bg", "Loser background"],
+    ["--entrant-lose-border", "Loser border"],
+    ["--entrant-lose-text", "Loser text"],
+    ["--result-card-highlight-a", "Result A highlight"],
+    ["--result-card-highlight-b", "Result B highlight"],
+    ["--player-neutral-bg", "Neutral player"],
+    ["--player-neutral-border", "Neutral player border"],
+    ["--player-win-bg-top", "Winner top color"],
+    ["--player-win-bg-bottom", "Winner bottom color"],
+    ["--player-win-border", "Winner border"],
+    ["--player-lose-bg-top", "Loser top color"],
+    ["--player-lose-bg-bottom", "Loser bottom color"],
+    ["--player-lose-border", "Loser border"],
     ["--mkart-badge-bg", "Badge MKART"],
-    ["--call-toast-border", "Borde popup"],
+    ["--call-toast-border", "Popup border"],
     ["--call-toast-glow", "Glow popup"],
     ["--call-toast-highlight-a", "Popup A"],
     ["--call-toast-highlight-b", "Popup B"]
   ];
 
   const TEXT_FIELDS = [
-    ["--idle-fit", "Ajuste idle", "cover o contain"]
+    ["--idle-fit", "Idle fit", "cover or contain"]
   ];
 
   const ASSET_FIELDS = [
-    ["background", "Fondo general"],
+    ["background", "General background"],
     ["bracketOverlay", "Overlay bracket"],
-    ["resultOverlay", "Overlay resultado"],
-    ["championOverlay", "Overlay campeon"],
+    ["resultOverlay", "Result overlay"],
+    ["championOverlay", "Champion overlay"],
     ["idle", "Overlay idle"]
   ];
 
   const MESSAGE_FIELDS = [
-    ["telegramMatchCalled", "Telegram · llamada a jugar"],
-    ["telegramTournamentStartedCaption", "Telegram · caption inicio torneo"],
-    ["telegramGameWin", "Telegram · partida ganada"],
-    ["telegramMatchResolved", "Telegram · match resuelto"],
-    ["telegramRoundCompletedCaption", "Telegram · caption ronda completa"],
-    ["telegramTournamentCompleted", "Telegram · torneo completado"],
-    ["telegramTournamentCompletedCaption", "Telegram · caption campeon"],
-    ["telegramLadderCompleted", "Telegram · ladder completada"],
+    ["telegramMatchCalled", "Telegram · match call"],
+    ["telegramTournamentStartedCaption", "Telegram · tournament start caption"],
+    ["telegramGameWin", "Telegram · game won"],
+    ["telegramMatchResolved", "Telegram · match completed"],
+    ["telegramRoundCompletedCaption", "Telegram · round complete caption"],
+    ["telegramTournamentCompleted", "Telegram · tournament completed"],
+    ["telegramTournamentCompletedCaption", "Telegram · champion caption"],
+    ["telegramLadderCompleted", "Telegram · ladder completed"],
     ["telegramLadderCompletedCaption", "Telegram · caption ladder"],
-    ["whatsappMatchCalled", "WhatsApp · llamada a jugar"],
-    ["whatsappTournamentStartedCaption", "WhatsApp · caption inicio torneo"],
-    ["whatsappGameWin", "WhatsApp · partida ganada"],
-    ["whatsappMatchResolved", "WhatsApp · match resuelto"],
-    ["whatsappRoundCompletedCaption", "WhatsApp · caption ronda completa"],
-    ["whatsappTournamentCompleted", "WhatsApp · torneo completado"],
-    ["whatsappTournamentCompletedCaption", "WhatsApp · caption campeon"],
-    ["whatsappLadderCompleted", "WhatsApp · ladder completada"],
+    ["whatsappMatchCalled", "WhatsApp · match call"],
+    ["whatsappTournamentStartedCaption", "WhatsApp · tournament start caption"],
+    ["whatsappGameWin", "WhatsApp · game won"],
+    ["whatsappMatchResolved", "WhatsApp · match completed"],
+    ["whatsappRoundCompletedCaption", "WhatsApp · round complete caption"],
+    ["whatsappTournamentCompleted", "WhatsApp · tournament completed"],
+    ["whatsappTournamentCompletedCaption", "WhatsApp · champion caption"],
+    ["whatsappLadderCompleted", "WhatsApp · ladder completed"],
     ["whatsappLadderCompletedCaption", "WhatsApp · caption ladder"],
     ["webCallEyebrow", "Web popup · eyebrow"],
-    ["webCallTitle", "Web popup · titulo"],
-    ["webCallBody", "Web popup · cuerpo"],
+    ["webCallTitle", "Web popup · title"],
+    ["webCallBody", "Web popup · body"],
     ["webCallMeta", "Web popup · meta"],
-    ["webCallNote", "Web popup · nota"]
+    ["webCallNote", "Web popup · note"]
   ];
 
   let state = null;
@@ -104,7 +104,7 @@
     const form = event.target.closest("form");
     if (!form || !Object.values(formForPath).includes(form.id) || !event.target.name && event.target !== form) return;
     dirtyForms.add(draftKey(form));
-    form.querySelector("[data-form-status]")?.replaceChildren(document.createTextNode("Cambios sin guardar"));
+    form.querySelector("[data-form-status]")?.replaceChildren(document.createTextNode("Unsaved changes"));
   }
   app.addEventListener("input", markDirty);
   app.addEventListener("change", markDirty);
@@ -122,9 +122,9 @@
         const input = form.elements.namedItem(name);
         if (input) { if (input.type === "checkbox") input.checked = value; else input.value = value; }
       }
-      if (dirtyForms.has(draftKey(form))) form.querySelector("[data-form-status]")?.replaceChildren(document.createTextNode("Cambios sin guardar"));
+      if (dirtyForms.has(draftKey(form))) form.querySelector("[data-form-status]")?.replaceChildren(document.createTextNode("Unsaved changes"));
     });
-    if (dirtyForms.has("display-settings-form")) document.querySelector("[data-settings-status]").textContent = "Cambios sin guardar";
+    if (dirtyForms.has("display-settings-form")) document.querySelector("[data-settings-status]").textContent = "Unsaved changes";
   }
   function showSection(section) {
     activeSection = section;
@@ -149,7 +149,7 @@
     const form = formForPath[path] ? document.getElementById(formForPath[path]) : null;
     const key = form ? draftKey(form) : null;
     const sent = form ? JSON.stringify(formValues(form)) : null;
-    if (key && savingForms.has(key)) throw new Error("Este formulario ya se está guardando.");
+    if (key && savingForms.has(key)) throw new Error("This form is already being saved.");
     if (key) { savingForms.add(key); form.querySelectorAll('[type="submit"]').forEach(button => { button.disabled = true; }); }
     try {
     const headers = new Headers(options.headers || {});
@@ -239,7 +239,7 @@
     return {
       id: "",
       key: "",
-      name: "Tema nuevo",
+      name: "New theme",
       matchers: [],
       cssVars: {},
       assets: {}
@@ -257,7 +257,7 @@
     }));
     const options = [...builtin, ...uploaded];
     if (currentValue && !options.some((item) => item.value === currentValue)) {
-      options.unshift({ label: `Actual: ${currentValue}`, value: currentValue });
+      options.unshift({ label: `Current: ${currentValue}`, value: currentValue });
     }
     return options;
   }
@@ -268,7 +268,7 @@
       <div class="field">
         <label>${field[1]}</label>
         <select name="asset_${field[0]}">
-          <option value="">Sin asset</option>
+          <option value="">No asset</option>
           ${options.map((item) => `
             <option value="${escapeHtml(item.value)}" ${item.value === currentValue ? "selected" : ""}>
               ${escapeHtml(item.label)}
@@ -288,34 +288,34 @@
     const background = theme.assets?.background
       ? `<div class="theme-preview-bg">${renderMediaPreview(theme.assets.background, "", "theme-preview-media")}</div>`
       : "";
-    const winnerLabel = theme.matchers?.length ? theme.matchers.join(", ") : "Sin tags";
+    const winnerLabel = theme.matchers?.length ? theme.matchers.join(", ") : "No tags";
     return `
       <div class="theme-preview" style="${escapeHtml(style)}">
         ${background}
         <div class="theme-preview-inner">
           <div class="theme-preview-header">
             <div>
-              <div class="preview-eyebrow">Vista rapida</div>
-              <div class="preview-title">${escapeHtml(theme.name || "Tema nuevo")}</div>
+              <div class="preview-eyebrow">Quick view</div>
+              <div class="preview-title">${escapeHtml(theme.name || "New theme")}</div>
             </div>
             <div class="preview-chip">${escapeHtml(winnerLabel)}</div>
           </div>
           <div class="preview-body">
             <div class="preview-match">
               <div class="preview-match-head"><span>M1</span><span>COMPLETED</span></div>
-              <div class="preview-entrant win"><span>Jugador A</span><strong>Gana</strong></div>
-              <div class="preview-entrant lose"><span>Jugador B</span><strong>Pierde</strong></div>
+              <div class="preview-entrant win"><span>Player A</span><strong>Wins</strong></div>
+              <div class="preview-entrant lose"><span>Player B</span><strong>Loses</strong></div>
             </div>
             <div class="preview-result">
               <div class="preview-result-card">
-                <div class="preview-result-title">Resultado</div>
+                <div class="preview-result-title">Result</div>
                 <div class="preview-player winner">
-                  <span>Ganador</span>
-                  <strong>Jugador A</strong>
+                  <span>Winner</span>
+                  <strong>Player A</strong>
                 </div>
                 <div class="preview-player loser">
-                  <span>Perdedor</span>
-                  <strong>Jugador B</strong>
+                  <span>Loser</span>
+                  <strong>Player B</strong>
                 </div>
               </div>
             </div>
@@ -329,18 +329,18 @@
       <div class="login-wrap">
         <div class="login-card">
           <h1>Display Admin</h1>
-          <p class="muted">Panel de sonidos, imagenes y temas del display.</p>
+          <p class="muted">Display sounds, images and themes.</p>
           ${errorMessage ? `<div class="notice error">${escapeHtml(errorMessage)}</div>` : ""}
           <form id="login-form" class="grid">
             <div class="field">
-              <label>Usuario</label>
+              <label>Username</label>
               <input name="username" autocomplete="username" required>
             </div>
             <div class="field">
               <label>Contrasena</label>
               <input type="password" name="password" autocomplete="current-password" required>
             </div>
-            <button class="btn" type="submit">Entrar</button>
+            <button class="btn" type="submit">Sign in</button>
           </form>
         </div>
       </div>`;
@@ -372,13 +372,13 @@
       <div class="panel split" data-admin-section="themes">
         <div class="topbar">
           <div>
-            <h2>Editor de temas</h2>
-            <p class="muted">Crea temas nuevos, asigna tags y cambia colores o imagenes de forma visual.</p>
+            <h2>Theme editor</h2>
+            <p class="muted">Create themes, assign tags and change colors or images visually.</p>
           </div>
           <div class="actions">
-            <button class="btn secondary" id="new-theme-btn" type="button">Nuevo tema</button>
-            <button class="btn secondary" id="duplicate-theme-btn" type="button">Duplicar</button>
-            ${theme.id && theme.id !== "theme_base" ? `<button class="btn danger" id="delete-theme-btn" type="button">Eliminar tema</button>` : ""}
+            <button class="btn secondary" id="new-theme-btn" type="button">New theme</button>
+            <button class="btn secondary" id="duplicate-theme-btn" type="button">Duplicate</button>
+            ${theme.id && theme.id !== "theme_base" ? `<button class="btn danger" id="delete-theme-btn" type="button">Delete theme</button>` : ""}
           </div>
         </div>
         <div class="section-grid">
@@ -387,7 +387,7 @@
               <button type="button" class="list-item ${item.id === theme.id ? "active" : ""}" data-theme-id="${escapeHtml(item.id)}">
                 <strong>${escapeHtml(item.name)}</strong>
                 <div class="asset-meta">${escapeHtml(item.key)}</div>
-                <div class="asset-meta">${escapeHtml((item.matchers || []).join(", ") || "Sin tags")}</div>
+                <div class="asset-meta">${escapeHtml((item.matchers || []).join(", ") || "No tags")}</div>
               </button>`).join("")}
           </div>
           <div class="editor-stack">
@@ -395,29 +395,29 @@
             <form id="theme-form" class="grid">
               <input type="hidden" name="id" value="${escapeHtml(theme.id || "")}">
               <div class="grid two">
-                <div class="field"><label>Clave interna</label><input name="key" value="${escapeHtml(theme.key || "")}" placeholder="mario-kart" required></div>
-                <div class="field"><label>Nombre visible</label><input name="name" value="${escapeHtml(theme.name || "")}" placeholder="Mario Kart" required></div>
+                <div class="field"><label>Internal key</label><input name="key" value="${escapeHtml(theme.key || "")}" placeholder="mario-kart" required></div>
+                <div class="field"><label>Display name</label><input name="name" value="${escapeHtml(theme.name || "")}" placeholder="Mario Kart" required></div>
               </div>
               <div class="field">
-                <label>Tags de aplicacion</label>
+                <label>Matching tags</label>
                 <input name="matchers" value="${escapeHtml((theme.matchers || []).join(", "))}" placeholder="mario kart, mkart">
               </div>
               <div class="grid two">
                 ${ASSET_FIELDS.map((field) => renderAssetSelect(field, theme.assets?.[field[0]] || "")).join("")}
               </div>
               <details class="theme-section" open>
-                <summary>Colores y contraste</summary>
+                <summary>Colors and contrast</summary>
                 <div class="theme-vars">
                   ${COLOR_FIELDS.map(([key, label]) => `
                     <div class="color-field">
                       <label>${label}</label>
                       <input type="color" name="color_${escapeHtml(key)}" value="${escapeHtml(toColor(theme.cssVars?.[key]))}">
-                      <input name="raw_${escapeHtml(key)}" value="${escapeHtml(theme.cssVars?.[key] || "")}" placeholder="#000000 o rgba(...)">
+                      <input name="raw_${escapeHtml(key)}" value="${escapeHtml(theme.cssVars?.[key] || "")}" placeholder="#000000 or rgba(...)">
                     </div>`).join("")}
                 </div>
               </details>
               <div class="theme-section">
-                <h3>Ajustes de texto</h3>
+                <h3>Text settings</h3>
                 <div class="theme-vars text-vars">
                   ${TEXT_FIELDS.map(([key, label, placeholder]) => `
                     <div class="color-field">
@@ -426,8 +426,8 @@
                     </div>`).join("")}
                 </div>
               </div>
-              <div class="save-bar"><span data-form-status>Sin cambios pendientes</span>
-                <button class="btn" type="submit">Guardar tema</button>
+              <div class="save-bar"><span data-form-status>No pending changes</span>
+                <button class="btn" type="submit">Save theme</button>
               </div>
             </form>
           </div>
@@ -442,7 +442,7 @@
         <div><strong>${escapeHtml(sound.name)}</strong></div>
         <div class="asset-meta">${escapeHtml(sound.fileName)}</div>
         <audio controls src="${config.backendUrl}${sound.url}"></audio>
-        <div><input type="radio" name="soundChoice" value="${escapeHtml(sound.id)}" ${state.selectedSoundId === sound.id ? "checked" : ""}> Usar este sonido</div>
+        <div><input type="radio" name="soundChoice" value="${escapeHtml(sound.id)}" ${state.selectedSoundId === sound.id ? "checked" : ""}> Use this sound</div>
       </label>`).join("");
 
     const imageCards = [...(state.builtinImages || []), ...(state.images || [])].map((image) => `
@@ -459,9 +459,9 @@
         <div class="asset-meta">${escapeHtml(sponsor.fileName)}</div>
         <label class="toggle-row">
           <input type="checkbox" data-sponsor-active="${escapeHtml(sponsor.id)}" ${sponsor.active ? "checked" : ""}>
-          <span>${sponsor.active ? "Activo" : "Oculto"}</span>
+          <span>${sponsor.active ? "Active" : "Hidden"}</span>
         </label>
-        <button class="btn danger" type="button" data-sponsor-delete="${escapeHtml(sponsor.id)}">Eliminar</button>
+        <button class="btn danger" type="button" data-sponsor-delete="${escapeHtml(sponsor.id)}">Delete</button>
       </div>`).join("");
 
     app.innerHTML = `
@@ -470,78 +470,78 @@
           <div class="topbar">
             <div>
               <p class="overline">SMASH TOURNAMENTS</p>
-              <h1>Control de pantallas</h1>
-              <p>Bracket, identidad visual y avisos del evento.</p>
+              <h1>Display control</h1>
+              <p>Bracket, visual identity and event notifications.</p>
             </div>
             <div class="actions">
-              <button class="btn secondary" id="refresh-btn" type="button">Refrescar</button>
-              <a class="btn secondary" href="/" target="_blank" rel="noopener">Ver display ↗</a>
-              <button class="btn secondary" id="logout-btn" type="button">Salir</button>
+              <button class="btn secondary" id="refresh-btn" type="button">Refresh</button>
+              <a class="btn secondary" href="/" target="_blank" rel="noopener">View display ↗</a>
+              <button class="btn secondary" id="logout-btn" type="button">Sign out</button>
             </div>
           </div>
         </div>
 
-        <div class="admin-layout"><nav class="admin-nav" aria-label="Secciones del administrador">
-          ${[["display", "Pantalla y bracket", "Encuadre, densidad y tiempos"], ["themes", "Temas visuales", "Colores, fondos y overlays"], ["media", "Biblioteca", "Sonidos, imágenes y sponsors"], ["messages", "Mensajes", "Telegram, WhatsApp y pantalla"], ["access", "Acceso", "Usuario y contraseña"]].map(([key, title, detail]) => `<button type="button" data-nav="${key}"><strong>${title}</strong><span>${detail}</span></button>`).join("")}
+        <div class="admin-layout"><nav class="admin-nav" aria-label="Administration sections">
+          ${[["display", "Display and bracket", "Framing, density and timing"], ["themes", "Visual themes", "Colors, backgrounds and overlays"], ["media", "Library", "Sounds, images and sponsors"], ["messages", "Messages", "Telegram, WhatsApp and display"], ["access", "Access", "Username and password"]].map(([key, title, detail]) => `<button type="button" data-nav="${key}"><strong>${title}</strong><span>${detail}</span></button>`).join("")}
         </nav><main class="admin-content">
         ${window.GTAdminDisplay.render(state)}
         <div class="panel" data-admin-section="access">
-          <h2>Cuenta de gestión</h2><p class="muted">La misma cuenta sirve en las aplicaciones y en este panel.</p><a class="btn secondary" href="/account/">Mi cuenta y usuarios</a>
-          <p class="muted">Usuario actual: <strong>${escapeHtml(state.username)}</strong></p>
+          <h2>Management account</h2><p class="muted">The same account works in the apps and this panel.</p><a class="btn secondary" href="/account/">My account and users</a>
+          <p class="muted">Current username: <strong>${escapeHtml(state.username)}</strong></p>
           <form id="credentials-form" class="grid three">
-            <div class="field"><label>Clave actual</label><input type="password" name="currentPassword"></div>
-            <div class="field"><label>Usuario</label><input readonly name="username" value="${escapeHtml(state.username)}"></div>
-            <div class="field"><label>Nueva contrasena</label><input type="password" name="password"></div>
-            <div class="actions"><button class="btn" type="submit">Guardar acceso</button></div>
+            <div class="field"><label>Current password</label><input type="password" name="currentPassword"></div>
+            <div class="field"><label>Username</label><input readonly name="username" value="${escapeHtml(state.username)}"></div>
+            <div class="field"><label>New password</label><input type="password" name="password"></div>
+            <div class="actions"><button class="btn" type="submit">Save access</button></div>
           </form>
         </div>
 
         <div class="panel" data-admin-section="media">
-          <h2>Sonidos de llamada</h2>
-          <p class="muted">Sube audio en el formato que prefieras y elige que sonido debe usar el display.</p>
+          <h2>Match call sounds</h2>
+          <p class="muted">Upload audio in your preferred format and choose the sound for the display.</p>
           <form id="sound-upload-form" class="actions" enctype="multipart/form-data">
             <input type="file" name="file" accept="audio/*">
-            <input type="text" name="name" placeholder="Nombre del sonido">
-            <button class="btn" type="submit">Subir sonido</button>
+            <input type="text" name="name" placeholder="Sound name">
+            <button class="btn" type="submit">Upload sound</button>
           </form>
           <div class="asset-grid" style="margin-top:12px;">
             <label class="asset-card selectable">
-              <div><strong>Original del display</strong></div>
-              <div class="asset-meta">Usa el sonido configurado por defecto en la web</div>
-              <div><input type="radio" name="soundChoice" value="" ${!state.selectedSoundId ? "checked" : ""}> Usar original</div>
+              <div><strong>Default display sound</strong></div>
+              <div class="asset-meta">Use the default sound configured on the web</div>
+              <div><input type="radio" name="soundChoice" value="" ${!state.selectedSoundId ? "checked" : ""}> Use default</div>
             </label>
-            ${soundCards || '<div class="muted">Todavia no hay sonidos subidos.</div>'}
+            ${soundCards || '<div class="muted">No sounds uploaded yet.</div>'}
           </div>
         </div>
 
         <div class="panel" data-admin-section="media">
-          <h2>Media para temas</h2>
-          <p class="muted">Sube imagenes o videos para usar como fondos y overlays del display.</p>
+          <h2>Theme media</h2>
+          <p class="muted">Upload images or videos for display backgrounds and overlays.</p>
           <form id="image-upload-form" class="actions" enctype="multipart/form-data">
             <input type="file" name="file" accept="image/*,video/*">
-            <input type="text" name="name" placeholder="Nombre del asset">
-            <button class="btn" type="submit">Subir asset</button>
+            <input type="text" name="name" placeholder="Asset name">
+            <button class="btn" type="submit">Upload asset</button>
           </form>
-          <label class="field asset-search"><span>Buscar en la biblioteca</span><input id="asset-search" type="search" placeholder="Nombre de imagen o vídeo"></label>
-          <div class="asset-grid image-library" style="margin-top:14px;">${imageCards || '<div class="muted">Todavia no hay assets subidos.</div>'}</div>
+          <label class="field asset-search"><span>Search the library</span><input id="asset-search" type="search" placeholder="Image or video name"></label>
+          <div class="asset-grid image-library" style="margin-top:14px;">${imageCards || '<div class="muted">No assets uploaded yet.</div>'}</div>
         </div>
 
         <div class="panel" data-admin-section="media">
           <h2>Sponsors</h2>
-          <p class="muted">Sube logos PNG/WebP/JPG y activa solo los que quieras mostrar arriba del display.</p>
+          <p class="muted">Upload PNG/WebP/JPG logos and enable the ones to show at the top of the display.</p>
           <form id="sponsor-upload-form" class="actions" enctype="multipart/form-data">
             <input type="file" name="file" accept="image/*">
-            <input type="text" name="name" placeholder="Nombre del sponsor">
-            <button class="btn" type="submit">Subir sponsor</button>
+            <input type="text" name="name" placeholder="Sponsor name">
+            <button class="btn" type="submit">Upload sponsor</button>
           </form>
-          <div class="asset-grid" style="margin-top:14px;">${sponsorCards || '<div class="muted">Todavia no hay sponsors subidos.</div>'}</div>
+          <div class="asset-grid" style="margin-top:14px;">${sponsorCards || '<div class="muted">No sponsors uploaded yet.</div>'}</div>
         </div>
 
         <div class="panel" data-admin-section="messages">
-          <h2>Mensajes y avisos</h2>
-          <p class="muted">Puedes usar placeholders como <code>{{tournament_title}}</code>, <code>{{players_vs}}</code>, <code>{{station_label}}</code> (setup y zona), <code>{{setup_label}}</code>, <code>{{play_area_name}}</code>, <code>{{timeout_minutes}}</code>, <code>{{winner_name}}</code>, <code>{{match_label}}</code>, <code>{{score_text}}</code> y <code>{{round_title}}</code>.</p>
+          <h2>Messages and notifications</h2>
+          <p class="muted">You can use placeholders such as <code>{{tournament_title}}</code>, <code>{{players_vs}}</code>, <code>{{station_label}}</code> (setup and area), <code>{{setup_label}}</code>, <code>{{play_area_name}}</code>, <code>{{timeout_minutes}}</code>, <code>{{winner_name}}</code>, <code>{{match_label}}</code>, <code>{{score_text}}</code> and <code>{{round_title}}</code>.</p>
           <form id="messages-form" class="grid">
-            <div class="message-tools"><label class="field"><span>Canal</span><select id="message-channel"><option value="telegram">Telegram</option><option value="whatsapp">WhatsApp</option><option value="web">Pantalla</option></select></label><div class="message-example"><span>Ejemplo con datos ficticios</span><p id="message-example-text"></p></div></div>
+            <div class="message-tools"><label class="field"><span>Channel</span><select id="message-channel"><option value="telegram">Telegram</option><option value="whatsapp">WhatsApp</option><option value="web">Display</option></select></label><div class="message-example"><span>Example with fictional data</span><p id="message-example-text"></p></div></div>
             <div class="theme-vars text-vars">
               ${MESSAGE_FIELDS.map(([key, label]) => `
                 <div class="color-field" data-message-channel="${key.startsWith("telegram") ? "telegram" : key.startsWith("whatsapp") ? "whatsapp" : "web"}">
@@ -549,8 +549,8 @@
                   <textarea name="msg_${escapeHtml(key)}">${escapeHtml(state.messageTemplates?.[key] || "")}</textarea>
                 </div>`).join("")}
             </div>
-            <div class="save-bar"><span data-form-status>Sin cambios pendientes</span>
-              <button class="btn" type="submit">Guardar mensajes</button>
+            <div class="save-bar"><span data-form-status>No pending changes</span>
+              <button class="btn" type="submit">Save messages</button>
             </div>
           </form>
         </div>
@@ -592,8 +592,8 @@
     });
     const channel = document.getElementById("message-channel");
     const example = document.getElementById("message-example-text");
-    const sample = { tournament_title: "Community Weekly", players_vs: "Alex vs. Cris", station_label: "Setup 3 · Escenario", setup_label: "Setup 3", play_area_name: "Escenario", timeout_minutes: "5", winner_name: "Alex", match_label: "Winners Semi-Final · A7", score_text: "2–1", round_title: "Winners Semi-Final", game_title: "Super Smash Bros. Ultimate", loser_name: "Cris", player_name: "Alex", match_name: "A7" };
-    const showExample = textarea => { example.textContent = (textarea?.value || "Escribe una plantilla para ver el ejemplo.").replace(/\{\{\s*(\w+)\s*\}\}/g, (match, key) => sample[key] ?? match); };
+    const sample = { tournament_title: "Community Weekly", players_vs: "Alex vs. Cris", station_label: "Setup 3 · Stage", setup_label: "Setup 3", play_area_name: "Stage", timeout_minutes: "5", winner_name: "Alex", match_label: "Winners Semi-Final · A7", score_text: "2–1", round_title: "Winners Semi-Final", game_title: "Super Smash Bros. Ultimate", loser_name: "Cris", player_name: "Alex", match_name: "A7" };
+    const showExample = textarea => { example.textContent = (textarea?.value || "Enter a template to see an example.").replace(/\{\{\s*(\w+)\s*\}\}/g, (match, key) => sample[key] ?? match); };
     const changeChannel = () => {
       document.querySelectorAll("[data-message-channel]").forEach(field => { field.hidden = field.dataset.messageChannel !== channel.value; });
       showExample(document.querySelector(`[data-message-channel="${channel.value}"] textarea`));
@@ -604,7 +604,7 @@
       input.addEventListener("input", () => showExample(input));
     });
     document.getElementById("logout-btn").addEventListener("click", () => {
-      if (dirtyForms.size && !confirm("Hay cambios sin guardar. ¿Salir del administrador?")) return;
+      if (dirtyForms.size && !confirm("There are unsaved changes. Leave administration?")) return;
       void fetch(`${config.backendUrl}/api/management-auth/logout`, {method:"POST",headers:{Authorization:"Bearer "+token,"Content-Type":"application/json"},body:"{}"}).catch(()=>{});
       drafts.clear(); dirtyForms.clear(); state = null;
       loadVersion++;
@@ -627,7 +627,7 @@
             password: form.get("password")
           })
         });
-        flash("Credenciales actualizadas. Vuelve a iniciar sesion.", "success");
+        flash("Credentials updated. Sign in again.", "success");
         drafts.clear(); dirtyForms.clear(); state = null;
         loadVersion++;
         setToken(null);
@@ -642,7 +642,7 @@
       const body = new FormData(event.currentTarget);
       try {
         await api("/sounds/upload", { method: "POST", body });
-        flash("Sonido subido", "success");
+        flash("Sound uploaded", "success");
         await loadState();
       } catch (error) {
         flash(error.message, "error");
@@ -654,7 +654,7 @@
       const body = new FormData(event.currentTarget);
       try {
         await api("/images/upload", { method: "POST", body });
-        flash("Asset subido", "success");
+        flash("Asset uploaded", "success");
         await loadState();
       } catch (error) {
         flash(error.message, "error");
@@ -666,7 +666,7 @@
       const body = new FormData(event.currentTarget);
       try {
         await api("/sponsors/upload", { method: "POST", body });
-        flash("Sponsor subido", "success");
+        flash("Sponsor uploaded", "success");
         await loadState();
       } catch (error) {
         flash(error.message, "error");
@@ -681,7 +681,7 @@
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ soundId: event.target.value || null })
           });
-          flash("Sonido seleccionado", "success");
+          flash("Selected sound", "success");
           await loadState();
         } catch (error) {
           flash(error.message, "error");
@@ -698,7 +698,7 @@
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ active: event.target.checked })
           });
-          flash("Estado del sponsor actualizado", "success");
+          flash("Sponsor status updated", "success");
           await loadState();
         } catch (error) {
           flash(error.message, "error");
@@ -709,10 +709,10 @@
     document.querySelectorAll("[data-sponsor-delete]").forEach((button) => {
       button.addEventListener("click", async () => {
         const sponsorId = button.getAttribute("data-sponsor-delete");
-        if (!confirm("¿Eliminar este patrocinador y su imagen?")) return;
+        if (!confirm("Delete this sponsor and its image?")) return;
         try {
           await api(`/sponsors/${sponsorId}/delete`, { method: "POST" });
-          flash("Sponsor eliminado", "success");
+          flash("Sponsor deleted", "success");
           await loadState();
         } catch (error) {
           flash(error.message, "error");
@@ -733,7 +733,7 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload)
         });
-        flash("Mensajes guardados", "success");
+        flash("Messages saved", "success");
         await loadState();
       } catch (error) {
         flash(error.message, "error");
@@ -749,7 +749,7 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload)
         });
-        flash("Ajustes guardados. Las pantallas los recibirán en unos segundos.", "success");
+        flash("Settings saved. Displays will receive them in a few seconds.", "success");
         await loadState();
       } catch (error) {
         flash(error.message, "error");
@@ -765,7 +765,7 @@
 
     document.getElementById("new-theme-btn").addEventListener("click", () => {
       captureDrafts();
-      if (dirtyForms.has("theme-form:new") && !confirm("¿Descartar el tema nuevo sin guardar?")) return;
+      if (dirtyForms.has("theme-form:new") && !confirm("Discard the unsaved new theme?")) return;
       drafts.delete("theme-form:new"); dirtyForms.delete("theme-form:new");
       const fresh = createEmptyTheme();
       state = {
@@ -777,11 +777,11 @@
     });
 
     document.getElementById("duplicate-theme-btn").addEventListener("click", () => {
-      if (dirtyForms.has("theme-form:new") && !confirm("¿Descartar el tema nuevo sin guardar?")) return;
+      if (dirtyForms.has("theme-form:new") && !confirm("Discard the unsaved new theme?")) return;
       const source = readThemeForm(document.getElementById("theme-form"));
       captureDrafts();
       drafts.delete("theme-form:new"); dirtyForms.delete("theme-form:new");
-      const copy = { ...source, id: "", key: `${source.key}-copia`, name: `${source.name} · copia` };
+      const copy = { ...source, id: "", key: `${source.key}-copy`, name: `${source.name} · copy` };
       state.themes = [copy, ...state.themes.filter(theme => theme.id)];
       selectedThemeId = "";
       renderApp();
@@ -793,11 +793,11 @@
       deleteThemeBtn.addEventListener("click", async () => {
         const theme = selectedTheme();
         if (!theme?.id || theme.id === "theme_base") return;
-        if (!confirm(`¿Eliminar el tema «${theme.name}»?`)) return;
+        if (!confirm(`Delete theme «${theme.name}»?`)) return;
         try {
           await api(`/themes/${theme.id}/delete`, { method: "POST" });
           drafts.delete(`theme-form:${theme.id}`); dirtyForms.delete(`theme-form:${theme.id}`);
-          flash("Tema eliminado", "success");
+          flash("Theme deleted", "success");
           await loadState();
         } catch (error) {
           flash(error.message, "error");
@@ -822,7 +822,7 @@
           body: JSON.stringify({ ...payload, id: payload.id || undefined })
         });
         if (!dirtyForms.has(formKey)) selectedThemeId = saved.id;
-        flash("Tema guardado", "success");
+        flash("Theme saved", "success");
         await loadState();
       } catch (error) {
         flash(error.message, "error");
@@ -861,9 +861,9 @@
         setToken(null);
         renderLogin(error.message);
       } else if (state) {
-        flash("No se pudo actualizar. Se conserva la sesión y los datos mostrados.", "error");
+        flash("Could not refresh. Your session and displayed data are preserved.", "error");
       } else {
-        app.innerHTML = '<div class="notice error">No se pudo conectar. Tu sesión se conserva.</div><button class="btn" id="retry-load" type="button">Reintentar</button>';
+        app.innerHTML = '<div class="notice error">Could not connect. Your session is preserved.</div><button class="btn" id="retry-load" type="button">Retry</button>';
         document.getElementById("retry-load").addEventListener("click", loadState);
       }
     }

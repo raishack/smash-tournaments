@@ -36,7 +36,7 @@ test('background import cannot replace started or closed local tournaments witho
   for(const status of ['IN_PROGRESS','COMPLETED','CANCELLED']) {
     const f=await started();f.repo.tournament.status=status;
     const before=structuredClone(f.repo.matches);
-    await assert.rejects(f.service.startBackgroundImport('t',importInput),/iniciad|cerrado|active local/i);
+    await assert.rejects(f.service.startBackgroundImport('t',importInput),/started|closed|active local/i);
     assert.equal(f.launches(),0);assert.equal(f.repo.tournament.settings.importJob,undefined);assert.deepEqual(f.repo.matches,before);
   }
 });
@@ -45,7 +45,7 @@ test('import worker rechecks local lifecycle before calling start.gg',async()=>{
   for(const status of ['IN_PROGRESS','COMPLETED','CANCELLED']) {
     const f=await started();f.repo.tournament.status=status;let fetched=false;
     f.service.loadStableStartggSnapshot=async()=>{fetched=true;throw Error('Unexpected external fetch');};
-    await assert.rejects(f.service.importFromStartgg('t',importInput),/iniciad|cerrado|active local/i);
+    await assert.rejects(f.service.importFromStartgg('t',importInput),/started|closed|active local/i);
     assert.equal(fetched,false);
   }
 });
@@ -62,7 +62,7 @@ test('snapshot commit rechecks local state after the external fetch',async()=>{
   f.service.loadStableStartggSnapshot=async()=>{entered();return new Promise(resolve=>{release=resolve;});};
   const pending=f.service.importFromStartgg('t',importInput);await fetching;
   await f.service.startTournament('t');const before=structuredClone(f.repo.matches);release(snapshot);
-  await assert.rejects(pending,/iniciad|cerrado|active local/i);
+  await assert.rejects(pending,/started|closed|active local/i);
   assert.equal(f.repo.tournament.status,'IN_PROGRESS');assert.deepEqual(f.repo.matches,before);
 });
 
@@ -87,11 +87,11 @@ test('cancel call cannot reopen played or resolved matches and preserves downstr
   for(const status of ['PENDING','PLAYING','COMPLETED','WALKOVER','CANCELLED']) {
     const f=await started();f.match.status=status;f.match.winnerParticipantId=f.match.participants[0].participantId;
     const before=structuredClone(f.repo.matches);
-    await assert.rejects(f.service.cancelMatchCall('t',f.match.id),/llamada|estado|called/i);
+    await assert.rejects(f.service.cancelMatchCall('t',f.match.id),/call|state|called/i);
     assert.deepEqual(f.repo.matches,before);
   }
   const f=await started();f.match.status='CALLED';f.match.call={startedAt:new Date().toISOString()};
-  await assert.rejects(f.service.cancelMatchCall('t',f.match.id),/llamada|estado|called/i);
+  await assert.rejects(f.service.cancelMatchCall('t',f.match.id),/call|state|called/i);
 });
 
 test('start cannot restart a playing or closed match from an outdated client',async()=>{

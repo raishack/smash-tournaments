@@ -93,7 +93,7 @@ export const createStartggImportSchema = importStartggEventSchema.extend({
     const url = new URL(value);
     return url.protocol === "https:" && /^(www\.)?(start|smash)\.gg$/.test(url.hostname)
       && url.pathname.includes("/event/");
-  }, "Introduce la URL de un evento de start.gg"),
+  }, "Enter a start.gg event URL"),
   setupCount: z.number().int().min(1).max(256).default(1),
   streamCount: z.number().int().min(0).max(2).default(0),
   callTimeoutMinutes: z.number().int().min(1).max(240).default(10),

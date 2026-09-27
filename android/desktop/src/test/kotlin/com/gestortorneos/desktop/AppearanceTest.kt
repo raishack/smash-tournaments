@@ -33,12 +33,12 @@ class AppearanceTest {
                         background = MaterialTheme.colorScheme.background
                         Column(Modifier.fillMaxSize().background(background).padding(padding).padding(24.dp),
                             verticalArrangement = Arrangement.spacedBy(20.dp)) {
-                            MainSectionHeading("Competición", "Opciones del torneo")
-                            Text("Nombre del torneo y participantes")
+                            MainSectionHeading("Competition", "Opciones del torneo")
+                            Text("Tournament name y participantes")
                             Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = .96f))) {
                                 Column(Modifier.padding(20.dp)) {
-                                    Text("Inscripciones y avisos")
-                                    MainSwitchRow("Mostrar en el display", "Visible en las pantallas del torneo", true) {}
+                                    Text("Registrations y avisos")
+                                    MainSwitchRow("Show on display", "Visible on tournament displays", true) {}
                                 }
                             }
                             MainTournamentKinds("TEAMS") {}
@@ -131,15 +131,15 @@ class AppearanceTest {
                 assertContrast(MainPalette.warning, MainPalette.warningContainer)
                 Surface(Modifier.fillMaxSize()) {
                     Column(Modifier.padding(32.dp), verticalArrangement = Arrangement.spacedBy(24.dp)) {
-                        Text("MAIN · Apariencia", style = MaterialTheme.typography.headlineMedium)
+                        Text("MAIN · Appearance", style = MaterialTheme.typography.headlineMedium)
                         AppearanceControls()
                         Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
                             Column(Modifier.width(420.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                                Text("En juego", style = MaterialTheme.typography.titleMedium)
+                                Text("Playing", style = MaterialTheme.typography.titleMedium)
                                 RelationalMatchNode(match, showOperationalState = true, onHeight = { height = it })
                             }
                             Column(Modifier.width(420.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                                Text("Resultado y descalificación", style = MaterialTheme.typography.titleMedium)
+                                Text("Result y descalificación", style = MaterialTheme.typography.titleMedium)
                                 RelationalMatchNode(match.copy(status = "WALKOVER", winnerParticipantId = "a", scores = listOf(1, 0)), showOperationalState = true)
                             }
                         }

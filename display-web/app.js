@@ -129,7 +129,7 @@
   }
 
   function normalizeStatus(status) {
-    return ({ PENDING: "Pendiente", CALLED: "Llamado", CHECKED_IN: "Preparados", PLAYING: "Jugando", UNDER_REVIEW: "En revisión", COMPLETED: "Finalizado", WALKOVER: "DQ", IN_PROGRESS: "En curso", DRAFT: "Borrador", REGISTRATION_OPEN: "Inscripción abierta", REGISTRATION_CLOSED: "Inscripción cerrada", CANCELLED: "Cancelado" })[status] || String(status || "").replaceAll("_", " ");
+    return ({ PENDING: "Pending", CALLED: "Called", CHECKED_IN: "Ready", PLAYING: "Playing", UNDER_REVIEW: "Under review", COMPLETED: "Finished", WALKOVER: "DQ", IN_PROGRESS: "In progress", DRAFT: "Draft", REGISTRATION_OPEN: "Registration open", REGISTRATION_CLOSED: "Registration closed", CANCELLED: "Cancelled" })[status] || String(status || "").replaceAll("_", " ");
   }
 
   function slugify(value) {
@@ -333,7 +333,7 @@
   function updateAudioControl() {
     if (!audioControlButton) return;
     if (!callAudioUrl) {
-      audioControlButton.textContent = "Sin sonido";
+      audioControlButton.textContent = "Muted";
       audioControlButton.disabled = true;
       audioControlButton.classList.add("is-disabled");
       audioControlButton.classList.remove("is-active", "is-muted");
@@ -343,19 +343,19 @@
     audioControlButton.disabled = false;
     audioControlButton.classList.remove("is-disabled");
     if (!audioUnlocked) {
-      audioControlButton.textContent = "Activar sonido";
+      audioControlButton.textContent = "Enable sound";
       audioControlButton.classList.remove("is-active", "is-muted");
       return;
     }
 
     if (audioMuted) {
-      audioControlButton.textContent = "Quitar mute";
+      audioControlButton.textContent = "Unmute";
       audioControlButton.classList.add("is-muted");
       audioControlButton.classList.remove("is-active");
       return;
     }
 
-    audioControlButton.textContent = "Mutear sonido";
+    audioControlButton.textContent = "Mute sound";
     audioControlButton.classList.add("is-active");
     audioControlButton.classList.remove("is-muted");
   }
@@ -430,7 +430,7 @@
 
   async function fetchState() {
     const allTournaments = await api("/api/tournaments");
-    if (!Array.isArray(allTournaments)) throw new Error("Lista de torneos no válida");
+    if (!Array.isArray(allTournaments)) throw new Error("Invalid tournament list");
     const visibleOnDisplay = tournament => tournament.status !== 'ARCHIVED' && tournament.settings?.displayEnabled !== false;
     const list = allTournaments.filter(visibleOnDisplay);
     const previous = new Map(currentState.tournaments.map(detail => [detail.tournament.id, detail]));
@@ -443,7 +443,7 @@
         const id = list[index].id;
         try {
           const detail = await api(`/api/tournaments/${encodeURIComponent(id)}`);
-          if (!detail?.tournament || !Array.isArray(detail.matches) || !Array.isArray(detail.participants)) throw new Error("Detalle de torneo no válido");
+          if (!detail?.tournament || !Array.isArray(detail.matches) || !Array.isArray(detail.participants)) throw new Error("Invalid tournament details");
           results[index] = detail;
         }
         catch (error) {
@@ -490,7 +490,7 @@
       if (callAudio) callAudio.volume = preferences().soundVolume / 100;
       if (callAudio) callAudio.volume = preferences().soundVolume / 100;
     } catch (error) {
-      console.warn("No se pudo cargar la config remota del display", error);
+      console.warn("Could not load remote display configuration", error);
     }
   }
 
@@ -502,7 +502,7 @@
     try {
       themeManifest = await fetchJson(config.themeManifestUrl, { cache: "no-cache" });
     } catch (error) {
-      console.warn("No se pudo cargar el manifest de temas", error);
+      console.warn("Could not load the theme manifest", error);
     }
   }
 
@@ -517,7 +517,7 @@
       loadedThemeFiles.set(file, theme);
       return theme;
     } catch (error) {
-      console.warn("No se pudo cargar el tema", file, error);
+      console.warn("Could not load the theme", file, error);
       return null;
     }
   }
@@ -636,7 +636,7 @@
     visible.forEach(match => {
       const ref = matchExternalRef(match);
       const key = imported ? `${ref.phaseId || ref.phaseName || "main"}:${ref.phaseGroupId || ref.phaseGroupName || "main"}` : match.bracketStage === "POOLS" ? "pools" : "main";
-      if (!scopes.has(key)) scopes.set(key, { key, label: [ref.phaseName, ref.phaseGroupName].filter(Boolean).join(" · ") || (key === "pools" ? "Pools" : "Bracket principal"), matches: [], order: Number(ref.phaseOrder) || 0 });
+      if (!scopes.has(key)) scopes.set(key, { key, label: [ref.phaseName, ref.phaseGroupName].filter(Boolean).join(" · ") || (key === "pools" ? "Pools" : "Main bracket"), matches: [], order: Number(ref.phaseOrder) || 0 });
       scopes.get(key).matches.push(match);
     });
     return [...scopes.values()].sort((a, b) => a.order - b.order || a.label.localeCompare(b.label, undefined, { numeric: true })).flatMap(scope => {
@@ -771,7 +771,7 @@
     return `
       <div class="modern-match-card ${mkartMatch ? "mkart" : ""}" data-round-index="${column.round}" data-match-index="${matchIndex}" data-match-id="${safeHtml(match.id)}" data-source-match-ids="${safeHtml(sourceMatchIds)}" data-bracket-stage="${safeHtml(match.bracketStage)}" data-connection-group="${safeHtml(connectionGroup)}">
         <div class="modern-match-head"><span>${safeHtml(matchDisplayLabel(match))}</span><span>${normalizeStatus(match.status)}</span></div>
-        <div class="modern-match-meta">${mkartMatch ? `Heat de ${(match.participants || []).length} - pasan ${match.advancersRequired}` : bestOfLabel(match)}</div>
+        <div class="modern-match-meta">${mkartMatch ? `Heat of ${(match.participants || []).length} - ${match.advancersRequired} advance` : bestOfLabel(match)}</div>
         ${entrants}
       </div>`;
   }
@@ -955,7 +955,7 @@
     const overview = preferences().bracketViewport === "overview";
     let scale = Math.max(overview ? 0.02 : 0.75, Math.min(1, widthScale, heightScale));
     const note = app.querySelector(".bracket-zoom-note");
-    if (note) note.textContent = overview && scale < 0.65 ? `Vista completa · ${Math.round(scale * 100)} % · Usa «Por ramas» para leer el detalle` : "";
+    if (note) note.textContent = overview && scale < 0.65 ? `Full overview · ${Math.round(scale * 100)} % · Use Connected branches for detail` : "";
     // The overview hint itself takes space; measure the remaining viewport again.
     scale = Math.max(overview ? 0.02 : 0.75, Math.min(1, widthScale, (viewport.clientHeight - 4) / contentHeight));
     scaleNode.style.width = `${contentWidth}px`;
@@ -1015,11 +1015,11 @@
     activeToast = toast;
     toast.className = "call-toast slide-in-right";
     const field = (key, fallback) => safeHtml(renderTemplate(templates[key] || fallback, values));
-    toast.innerHTML = `<div class="call-toast-eyebrow">${field("webCallEyebrow", "Llamada a jugar")}</div>
+    toast.innerHTML = `<div class="call-toast-eyebrow">${field("webCallEyebrow", "Match call")}</div>
       <div class="call-toast-title">${field("webCallTitle", "{{tournament_title}}")}</div>
       <div class="call-toast-body">${field("webCallBody", "{{players_vs}}")}</div>
-      <div class="call-toast-meta">${field("webCallMeta", "Estación {{station_label}} · {{timeout_minutes}} min")}</div>
-      <div class="call-toast-note">${field("webCallNote", "Presentaos dentro del tiempo asignado.")}</div>`;
+      <div class="call-toast-meta">${field("webCallMeta", "Station {{station_label}} · {{timeout_minutes}} min")}</div>
+      <div class="call-toast-note">${field("webCallNote", "Arrive within the allotted time.")}</div>`;
     playCallSound();
     document.body.appendChild(toast);
     toastTimer = window.setTimeout(() => { dismissCall(); showCallNotification(); }, (controls?.settings.callSeconds || 12) * 1000);
@@ -1067,7 +1067,7 @@
           return `
             <div class="match-card" data-match-id="${safeHtml(match.id)}">
               <div class="match-head"><span>${safeHtml(matchDisplayLabel(match))}</span><span>${normalizeStatus(match.status)}</span></div>
-              <div class="scene-meta">${mkartMatch ? `Heat de ${match.participants.length} - pasan ${match.advancersRequired}` : bestOfLabel(match)}</div>
+              <div class="scene-meta">${mkartMatch ? `Heat of ${match.participants.length} - ${match.advancersRequired} advance` : bestOfLabel(match)}</div>
               ${entrants}
             </div>`;
         }).join("");
@@ -1100,7 +1100,7 @@
               <div class="name">${safeHtml(detail.tournament.title)}</div>
               <div class="scene-meta">${safeHtml(detail.tournament.gameTitle)} - ${normalizeStatus(detail.tournament.status)}</div>
             </div>
-            <div class="scene-status">${detail.participants.length} participantes · ${new Set(sceneDef.matchIds).size} de ${totalMatches} matches</div>
+            <div class="scene-status">${detail.participants.length} participants · ${new Set(sceneDef.matchIds).size} of ${totalMatches} matches</div>
           </div>
           <div class="bracket-context">${sceneDef.sections.flatMap(section => section.clusters).map(cluster => `<div class="round-trail"><strong>${safeHtml(cluster.label)}</strong>${(cluster.allRoundTitles || cluster.columns.map(c => c.title)).map((title, i) => `<span class="${i >= (cluster.roundStart || 0) && i < (cluster.roundStart || 0) + cluster.columns.length ? "current" : ""}">${safeHtml(title)}</span>`).join("")}${cluster.branchCount > 1 ? `<b>Rama ${cluster.branchIndex + 1}/${cluster.branchCount}</b>` : ""}</div>`).join("")}<span class="bracket-zoom-note"></span></div>
           <div class="bracket-stage">
@@ -1130,7 +1130,7 @@
       const scoreText = isWalkover && loser ? "DQ" : String(participant.score ?? 0);
       return `
         <div class="player-card ${winner ? "winner" : loser ? "loser" : "neutral"}">
-          <div class="player-role">${winner ? "Ganador" : loser ? "Perdedor" : "Participante"}</div>
+          <div class="player-role">${winner ? "Winner" : loser ? "Loser" : "Participant"}</div>
           <div class="player-name-row">
             ${renderCharacterIcons(scene.tournament, match, participant.participantId, "player-character-icon")}
             <div class="player-name">${safeHtml(participant.displayName)}</div>
@@ -1142,8 +1142,8 @@
     return `
       <div class="result-card">
         <div class="result-stage">${safeHtml(matchRoundLabel(match))}</div>
-        <div class="result-match-name">${celebration ? "Torneo completado" : safeHtml(matchDisplayLabel(match))}</div>
-        ${celebration ? `<div class="champion-title">${safeHtml((match.participants || []).find((participant) => participant.participantId === winnerId)?.displayName || "Campeón")}</div><div class="champion-subtitle">Victoria final del torneo</div>` : ""}
+        <div class="result-match-name">${celebration ? "Tournament completed" : safeHtml(matchDisplayLabel(match))}</div>
+        ${celebration ? `<div class="champion-title">${safeHtml((match.participants || []).find((participant) => participant.participantId === winnerId)?.displayName || "Champion")}</div><div class="champion-subtitle">Tournament victory</div>` : ""}
         <div class="result-players">
           ${players[0] || ""}
           <div class="result-vs">VS</div>
@@ -1162,7 +1162,7 @@
         <div class="mkart-player-card ${advanced ? "advanced" : eliminated ? "eliminated" : ""}">
           <div class="mkart-player-header">
             <div class="player-name">${safeHtml(participant.displayName)}</div>
-            <div class="mkart-badge">${advanced ? "Pasa" : eliminated ? "Fuera" : "Pendiente"}</div>
+            <div class="mkart-badge">${advanced ? "Advances" : eliminated ? "Eliminated" : "Pending"}</div>
           </div>
           <div class="mkart-player-footer">
             <div class="player-score">${participant.score ?? 0}</div>
@@ -1173,8 +1173,8 @@
     return `
       <div class="result-card mkart-result-card">
         <div class="result-stage">${safeHtml(matchRoundLabel(match))}</div>
-        <div class="result-match-name">${celebration ? "Torneo completado" : safeHtml(matchDisplayLabel(match))}</div>
-        ${celebration ? `<div class="champion-title">${safeHtml((match.participants || []).find((participant) => advancers.has(participant.participantId))?.displayName || "Campeón")}</div><div class="champion-subtitle">Victoria final del torneo</div>` : `<div class="mkart-summary">Clasifican ${match.advancersRequired} jugador(es) de este grupo</div>`}
+        <div class="result-match-name">${celebration ? "Tournament completed" : safeHtml(matchDisplayLabel(match))}</div>
+        ${celebration ? `<div class="champion-title">${safeHtml((match.participants || []).find((participant) => advancers.has(participant.participantId))?.displayName || "Champion")}</div><div class="champion-subtitle">Tournament victory</div>` : `<div class="mkart-summary">${match.advancersRequired} player(s) qualify from this group</div>`}
         <div class="mkart-result-grid">${heatPlayers}</div>
       </div>`;
   }
@@ -1198,7 +1198,7 @@
           ${renderSponsorsBar()}
           <div class="scene-topbar">
             <div class="scene-title">
-              <div class="eyebrow">${celebration ? "Campeon del torneo" : mkartMatch ? "Resultado del heat" : "Resultado confirmado"}</div>
+              <div class="eyebrow">${celebration ? "Tournament champion" : mkartMatch ? "Heat result" : "Result confirmed"}</div>
               <div class="name">${safeHtml(scene.tournament.title)}</div>
               <div class="scene-meta">${safeHtml(scene.tournament.gameTitle)}</div>
             </div>
@@ -1231,14 +1231,14 @@
     detail.matches.filter(match => ["CALLED", "CHECKED_IN", "PLAYING", "RESULT_REPORTED", "UNDER_REVIEW"].includes(match.status)).forEach(match => {
       const raw = String(match.call?.stationLabel || "").trim();
       const number = raw.match(/^(?:setup\s*)?#?(\d+)$/i)?.[1];
-      const label = number ? String(Number(number)) : raw || "Sin estación";
+      const label = number ? String(Number(number)) : raw || "No station";
       let row = rows.find(row => row.label === label);
       if (!row) { row = { label, matches: [] }; rows.push(row); }
       row.matches.push(match);
     });
     for (const ladder of detail.ladder?.activeMatches || []) {
       if (!["READY_CHECK","PLAYING"].includes(ladder.status)) continue;
-      const label = ladder.stationLabel?.replace(/^setup\s*/i, "") || "Sin estación";
+      const label = ladder.stationLabel?.replace(/^setup\s*/i, "") || "No station";
       let row = rows.find(row => row.label === label);
       if (!row) { row = {label,matches:[]}; rows.push(row); }
       row.matches.push({...ladder,displayIdentifier:"Ladder",bracketStage:"LADDER",roundNumber:1,matchNumber:1,status:ladder.status === "READY_CHECK" ? "CALLED" : "PLAYING",call:{stationLabel:ladder.stationLabel,calledAt:ladder.status === "READY_CHECK" && ladder.readyDeadlineAt ? new Date(Date.parse(ladder.readyDeadlineAt)-(detail.ladder.session?.options?.settings?.readySeconds || 300)*1000).toISOString() : undefined}});
@@ -1272,16 +1272,16 @@
     if (generation !== renderGeneration) return;
     const tournament = entry.detail.tournament;
     renderScreen(`<div class="screen scene-setups"><div class="scene-shell">${renderSponsorsBar()}
-      <div class="scene-topbar"><div class="scene-title"><div class="eyebrow">Setups · ${safeHtml(tournament.settings?.playAreaName || "Zona de juego")}</div>
+      <div class="scene-topbar"><div class="scene-title"><div class="eyebrow">Setups · ${safeHtml(tournament.settings?.playAreaName || "Play area")}</div>
       <div class="name">${safeHtml(tournament.title)}</div><div class="scene-meta">${safeHtml(tournament.gameTitle)}</div></div></div>
-      <div class="setup-grid">${entry.rows.map(row => `<section class="setup-card ${row.matches.length ? "occupied" : "available"}"><h2>Estación ${safeHtml(row.label)}</h2>${row.matches.length ? row.matches.map(match => {
+      <div class="setup-grid">${entry.rows.map(row => `<section class="setup-card ${row.matches.length ? "occupied" : "available"}"><h2>Station ${safeHtml(row.label)}</h2>${row.matches.length ? row.matches.map(match => {
         const isPlaying = match.status === "PLAYING";
         const timeout = tournament.settings?.callTimeoutMinutes || 10;
         const elapsed = Math.max(0, Math.floor((Date.now() - Date.parse(match.call?.calledAt || "")) / 60000));
-        return `<div class="setup-match"><div class="setup-status">${isPlaying ? "Jugando" : match.status === "CALLED" ? "Llamados a jugar" : normalizeStatus(match.status)} · ${safeHtml(matchDisplayLabel(match))}</div>
+        return `<div class="setup-match"><div class="setup-status">${isPlaying ? "Playing" : match.status === "CALLED" ? "Called to play" : normalizeStatus(match.status)} · ${safeHtml(matchDisplayLabel(match))}</div>
           <div class="setup-players">${match.participants.map(p => safeHtml(p.displayName)).join("<span>vs</span>")}</div>
-          ${!isPlaying && Number.isFinite(elapsed) ? `<p>${Math.max(0, timeout - elapsed)} min de plazo</p>` : ""}</div>`;
-      }).join("") : '<div class="setup-status">Libre</div>'}</section>`).join("")}</div></div></div>`);
+          ${!isPlaying && Number.isFinite(elapsed) ? `<p>${Math.max(0, timeout - elapsed)} min remaining</p>` : ""}</div>`;
+      }).join("") : '<div class="setup-status">Available</div>'}</section>`).join("")}</div></div></div>`);
   }
 
   async function renderEntry(entry, force = false) {
@@ -1300,19 +1300,19 @@
       else if (entry.type === "fortnite") {
         await applyThemeForTournament(entry.detail.tournament,generation);
         if(generation!==renderGeneration)return;
-        renderScreen(`<div class="screen scene-fortnite"><div class="scene-shell">${renderSponsorsBar()}<div class="scene-topbar"><div class="scene-title"><div class="eyebrow">Fortnite · Grupos y clasificación</div><div class="name">${safeHtml(entry.detail.tournament.title)}</div><div class="scene-meta">${entry.detail.tournament.settings.fortniteLobbySize||20} puestos por grupo</div></div></div>${window.GTFortniteDisplay.render(entry.sceneDef)}</div></div>`);
+        renderScreen(`<div class="screen scene-fortnite"><div class="scene-shell">${renderSponsorsBar()}<div class="scene-topbar"><div class="scene-title"><div class="eyebrow">Fortnite · Groups and standings</div><div class="name">${safeHtml(entry.detail.tournament.title)}</div><div class="scene-meta">${entry.detail.tournament.settings.fortniteLobbySize||20} seats per group</div></div></div>${window.GTFortniteDisplay.render(entry.sceneDef)}</div></div>`);
       }
       else await renderResultScene(entry);
       if (sameScene && generation === renderGeneration) app.querySelector(".pulse-enter")?.classList.remove("pulse-enter");
-    } catch (error) { if (generation === renderGeneration) lastRenderedSignature = ""; console.warn("No se pudo actualizar la escena", error); }
+    } catch (error) { if (generation === renderGeneration) lastRenderedSignature = ""; console.warn("Could not update the scene", error); }
   }
 
   function updateConnectionBadge() {
     const count = failedTournamentIds.size;
     connectionBadge.hidden = refreshFailures === 0 && count === 0;
     if (connectionBadge.hidden) return;
-    const last = lastSuccessfulRefresh ? new Date(lastSuccessfulRefresh).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "pendiente";
-    connectionBadge.textContent = refreshFailures ? `Sin conexión · Última actualización: ${last}` : `${count} torneo(s) sin actualizar · Conservando los últimos datos`;
+    const last = lastSuccessfulRefresh ? new Date(lastSuccessfulRefresh).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "pending";
+    connectionBadge.textContent = refreshFailures ? `Offline · Last update: ${last}` : `${count} tournament(s) not refreshed · Keeping the latest data`;
   }
 
   async function refreshLoop() {
@@ -1333,7 +1333,7 @@
     } catch (error) {
       refreshFailures++;
       dismissCall();
-      console.warn("No se pudo actualizar el display", error);
+      console.warn("Could not update the display", error);
     } finally {
       refreshBusy = false;
       updateConnectionBadge();

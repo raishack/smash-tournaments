@@ -123,7 +123,7 @@ function buildSections(tournament: Tournament, matches: Match[]): BracketSection
   if (matches.length === 0) return [];
   const scopes = tournament.importSource?.provider === "START_GG"
     ? buildImportedScopes(matches)
-    : [{ key: "local", label: "Bracket principal", order: 0, matches }];
+    : [{ key: "local", label: "Main bracket", order: 0, matches }];
 
   const sections: BracketSection[] = [];
   scopes.forEach((scope) => {
@@ -134,7 +134,7 @@ function buildSections(tournament: Tournament, matches: Match[]): BracketSection
 
     if (pools.length > 0) {
       sections.push({
-        label: scope.label === "Bracket principal" ? "Pools" : scope.label,
+        label: scope.label === "Main bracket" ? "Pools" : scope.label,
         columns: buildColumnsForStageGroups([{ stage: "POOLS", matches: pools }]),
       });
     }
@@ -299,7 +299,7 @@ function renderMatchCard(match: Match, x: number, y: number, width: number, heig
   }).join("");
   const effectiveBestOf = match.reportedBestOf ?? match.bestOf;
   const meta = isMarioKart
-    ? `Heat de ${participants.length} · pasan ${match.advancersRequired}`
+    ? `Heat of ${participants.length} · ${match.advancersRequired} advance`
     : `Bo${effectiveBestOf}`;
 
   return `
@@ -332,7 +332,7 @@ function renderParticipantRow(
   const stroke = isWinner ? "#2d8b6d" : isLoser ? "#984557" : "#2b4058";
   const text = isWinner ? "#b7f7d6" : isLoser ? "#fecdd3" : "#f1f5f9";
   const score = match.status === "WALKOVER" && isLoser ? "DQ" : String(participant.score ?? 0);
-  const nameLines = wrapParticipantName(participant.displayName || "Pendiente");
+  const nameLines = wrapParticipantName(participant.displayName || "Pending");
   return `
     <g>
       <rect x="${x}" y="${y}" width="${width}" height="${height}" rx="12" fill="${fill}" stroke="${stroke}" stroke-width="1.2" />
@@ -347,8 +347,8 @@ function renderParticipantRow(
 function visibleParticipants(match: Match): MatchParticipant[] {
   if (match.participants.length > 0) return match.participants;
   return [
-    { id: `${match.id}-pending-1`, participantId: "", displayName: "Pendiente", slot: 1, score: 0 },
-    { id: `${match.id}-pending-2`, participantId: "", displayName: "Pendiente", slot: 2, score: 0 },
+    { id: `${match.id}-pending-1`, participantId: "", displayName: "Pending", slot: 1, score: 0 },
+    { id: `${match.id}-pending-2`, participantId: "", displayName: "Pending", slot: 2, score: 0 },
   ];
 }
 
@@ -359,7 +359,7 @@ function matchCardHeight(match: Match): number {
 }
 
 function participantRowHeight(participant: MatchParticipant): number {
-  return Math.max(PARTICIPANT_HEIGHT, 21 + wrapParticipantName(participant.displayName || "Pendiente").length * 23);
+  return Math.max(PARTICIPANT_HEIGHT, 21 + wrapParticipantName(participant.displayName || "Pending").length * 23);
 }
 
 function wrapParticipantName(name: string): string[] {
@@ -438,7 +438,7 @@ function isAutomaticAdvanceDisplayMatch(match: Match): boolean {
 function defaultSectionLabel(stage: Match["bracketStage"]): string {
   if (stage === "POOLS") return "Pools";
   if (stage === "LOSERS") return "Losers bracket";
-  if (stage === "FINALS") return "Bracket final";
+  if (stage === "FINALS") return "Final bracket";
   return "Winners bracket";
 }
 
@@ -460,11 +460,11 @@ function describeFormat(tournament: Tournament): string {
     return teamLabel ? `${teamLabel} · ${formatLabel}` : formatLabel;
   }
   if (tournament.settings.bracketMode === "MKART") {
-    return `${tournament.settings.format === "DOUBLE_ELIMINATION" ? "MKART doble" : "MKART simple"} · pasan ${tournament.settings.mkartAdvanceCount ?? 1}`;
+    return `${tournament.settings.format === "DOUBLE_ELIMINATION" ? "MKART double" : "MKART single"} · pasan ${tournament.settings.mkartAdvanceCount ?? 1}`;
   }
   return tournament.settings.format === "DOUBLE_ELIMINATION"
-    ? `Doble eliminacion · W Bo${tournament.settings.winnersBestOf ?? tournament.settings.bestOf} / L Bo${tournament.settings.losersBestOf ?? tournament.settings.bestOf}`
-    : `Eliminacion simple · Bo${tournament.settings.winnersBestOf ?? tournament.settings.bestOf}`;
+    ? `Double elimination · W Bo${tournament.settings.winnersBestOf ?? tournament.settings.bestOf} / L Bo${tournament.settings.losersBestOf ?? tournament.settings.bestOf}`
+    : `Single elimination · Bo${tournament.settings.winnersBestOf ?? tournament.settings.bestOf}`;
 }
 
 function emptyBracketSvg(tournament: Tournament): string {
@@ -482,8 +482,8 @@ function emptyBracketSvg(tournament: Tournament): string {
       <text x="62" y="99" font-family="${FONT_FAMILY}" font-size="14" fill="#9fb2ca">${escapeXml(shorten(tournament.gameTitle, 90))}</text>
       <rect x="38" y="142" width="884" height="164" rx="24" fill="#0f1c30" stroke="#263d59" stroke-width="1.5" />
       <circle cx="78" cy="194" r="8" fill="#38bdf8" />
-      <text x="102" y="202" font-family="${FONT_FAMILY}" font-size="22" font-weight="750" fill="#e8f2ff">El bracket aun no tiene enfrentamientos generados.</text>
-      <text x="102" y="239" font-family="${FONT_FAMILY}" font-size="15" fill="#8fa5be">La vista moderna aparecera cuando existan matches.</text>
+      <text x="102" y="202" font-family="${FONT_FAMILY}" font-size="22" font-weight="750" fill="#e8f2ff">The bracket has no generated matches yet.</text>
+      <text x="102" y="239" font-family="${FONT_FAMILY}" font-size="15" fill="#8fa5be">The modern view will appear when matches exist.</text>
     </svg>
   `.trim();
 }

@@ -69,8 +69,8 @@ if(!process.argv.includes('--worker')){
     const mailer=new SmtpRegistrationMailer(env);
     assert.equal(mailer.configured,true);
     const link='https://your-domain.example/register/?tournamentId=test#token=SIMULATED_TOKEN';
-    await mailer.send('player@example.test','Torneo de prueba: inscripción áéñ',link);
-    await mailer.send('player@example.test','Torneo de prueba',link,'Se ha actualizado tu equipo.');
+    await mailer.send('player@example.test','Tournament de prueba: inscripción áéñ',link);
+    await mailer.send('player@example.test','Tournament de prueba',link,'Se ha actualizado tu equipo.');
     await assert.rejects(mailer.send('rejected@example.test','Test',link),e=>e.code==='EENVELOPE');
     const badAuth=new SmtpRegistrationMailer({...env,REGISTRATION_SMTP_PASSWORD:'wrong-test-password'});
     await assert.rejects(badAuth.send('player@example.test','Test',link),e=>e.code==='EAUTH');
@@ -84,9 +84,9 @@ if(!process.argv.includes('--worker')){
     const confirmation=decodeBody(messages[0]),notice=decodeBody(messages[1]);
     assert.match(messages[0],/From: Tournament Platform Test <sender@example\.test>/);
     assert.match(messages[0],/To: player@example\.test/);
-    assert(confirmation.includes('Confirmar inscripción'));
+    assert(confirmation.includes('Confirm registration'));
     assert(confirmation.includes('24 horas'));
-    assert(confirmation.includes('Torneo de prueba: inscripción áéñ'));
+    assert(confirmation.includes('Tournament de prueba: inscripción áéñ'));
     assert(confirmation.includes(link));
     assert(notice.includes('Se ha actualizado tu equipo.'));
     assert(notice.includes(link));

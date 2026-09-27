@@ -78,7 +78,7 @@ try {
   assert.equal(await page.locator('.scene-title .name b').count(), 0);
   await page.locator('.display-connection').waitFor({ state: 'visible' });
   offline = true;
-  await page.waitForFunction(() => document.querySelector('.display-connection').textContent.includes('Sin conexión'));
+  await page.waitForFunction(() => document.querySelector('.display-connection').textContent.includes('Offline'));
   assert(await page.locator('.modern-match-card').count());
   offline = false; failExtra = false;
   await page.locator('.display-connection').waitFor({ state: 'hidden' });
@@ -94,7 +94,7 @@ try {
   await page.locator('.call-toast').waitFor({ state: 'detached' });
   await page.locator('[data-field="view"]').selectOption('setups');
   await page.locator('.setup-card.occupied').first().waitFor();
-  assert.match(await page.locator('.setup-card.occupied').first().textContent(), /Jugando/);
+  assert.match(await page.locator('.setup-card.occupied').first().textContent(), /Playing/);
   await page.screenshot({ path: path.join(output, 'display-setups.png') });
   await page.reload();
   await page.locator('.setup-card.occupied').first().waitFor();

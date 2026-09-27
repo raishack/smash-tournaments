@@ -41,7 +41,7 @@ test('cancelled tournaments cannot be started again without an explicit reset',a
 });
 test('individual tournament capacity cannot be lowered below confirmed entrants',async()=>{
   const f=localFixture();
-  await assert.rejects(f.service.updateTournament('t',{...f.repo.tournament,maxParticipants:4}),/aforo/i);
+  await assert.rejects(f.service.updateTournament('t',{...f.repo.tournament,maxParticipants:4}),/capacity/i);
   assert.equal(f.repo.tournament.maxParticipants,16);
 });
 test('starting locks structural options even before the first game; setups remain editable',async()=>{
@@ -103,7 +103,7 @@ test('an omitted seed preserves it, explicit clear removes it and invalidates th
 test('pending import cannot be reset, started, seeded or manually edited',async()=>{
   const f=localFixture();await f.service.generateBracket('t');f.repo.tournament.settings.importJob={state:'RUNNING'};
   for(const call of [()=>f.service.generateBracket('t'),()=>f.service.resetTournament('t'),()=>f.service.startTournament('t'),()=>f.service.addParticipant('t',{displayName:'New'}),()=>f.service.updateParticipant('t','p1',{displayName:'New'}),()=>f.service.deleteParticipant('t','p1')]) {
-    await assert.rejects(call(),/importaci[oó]n/i);
+    await assert.rejects(call(),/import/i);
   }
 });
 

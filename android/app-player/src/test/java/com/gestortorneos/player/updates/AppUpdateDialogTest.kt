@@ -29,16 +29,16 @@ class AppUpdateDialogTest {
                 AppUpdateDialog(null, "0.1.9", "0.1.10", null, List(12) { "Cambio número $it en la aplicación" }, true,
                     state, false, "Android pedirá confirmar la instalación.",
                     onDownload = { retried = true }, onInstall = { installed = true },
-                    onCancel = { cancelled = true; state = UpdateDownloadState(error = "Sin conexión") }, onDismiss = { fail("Required update dismissed") })
+                    onCancel = { cancelled = true; state = UpdateDownloadState(error = "Offline") }, onDismiss = { fail("Required update dismissed") })
             }
         }
-        compose.onNodeWithText("Más tarde").assertDoesNotExist()
-        compose.onNodeWithText("Descargar actualización").assertIsNotEnabled()
-        compose.onNodeWithText("Cancelar descarga").assertIsDisplayed().performClick()
-        compose.onNodeWithText("Reintentar descarga").assertIsDisplayed().performClick()
+        compose.onNodeWithText("Later").assertDoesNotExist()
+        compose.onNodeWithText("Download update").assertIsNotEnabled()
+        compose.onNodeWithText("Cancel download").assertIsDisplayed().performClick()
+        compose.onNodeWithText("Retry download").assertIsDisplayed().performClick()
         assertTrue(cancelled); assertTrue(retried)
         compose.runOnIdle { state = UpdateDownloadState(file = File("verified.apk")) }
-        compose.onNodeWithText("Instalar actualización").assertIsDisplayed().performClick()
+        compose.onNodeWithText("Install update").assertIsDisplayed().performClick()
         assertTrue(installed)
     }
 }

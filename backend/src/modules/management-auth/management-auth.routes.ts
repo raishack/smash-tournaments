@@ -11,7 +11,7 @@ export const authRoute = (handler: RequestHandler): RequestHandler => (req, res,
 export function requireManagement(store: ManagementAuthStore): RequestHandler {
   return authRoute(async (req, res, next) => {
     const user = await store.userFor(managementToken(req));
-    if (!user) { res.status(401).json({ message: 'Inicia sesión con tu cuenta de gestión' }); return; }
+    if (!user) { res.status(401).json({ message: 'Sign in with your management account' }); return; }
     res.locals.managementUser = user; next();
   });
 }
@@ -26,7 +26,7 @@ export function createManagementAuthRouter(store: ManagementAuthStore) {
     if (attempt.count >= 15 || attempts.size >= 10000) { res.setHeader('Retry-After', '900'); throw new AuthError('Demasiados intentos. Espera unos minutos', 429); }
     attempt.count++; attempts.set(key, attempt);
     const data = loginSchema.safeParse(req.body);
-    if (!data.success) throw new AuthError('Usuario o contraseña no válidos');
+    if (!data.success) throw new AuthError('Invalid username or password');
     const session = await store.login(data.data.username, data.data.password);
     attempts.delete(key); res.json(session);
   }));
@@ -35,21 +35,21 @@ export function createManagementAuthRouter(store: ManagementAuthStore) {
   router.post('/logout', authRoute(async (req, res) => { await store.logout(managementToken(req)); res.json({ ok: true }); }));
   router.post('/password', authRoute(async (req, res) => {
     const data = z.object({ currentPassword: z.string().max(256), password: z.string().min(10).max(256) }).strict().safeParse(req.body);
-    if (!data.success) throw new AuthError('La nueva contraseña debe tener entre 10 y 256 caracteres');
+    if (!data.success) throw new AuthError('The new password must contain 10 to 256 characters');
     await store.changePassword(res.locals.managementUser.id, data.data.currentPassword, data.data.password); res.json({ ok: true });
   }));
   router.use('/users', (_req, res, next) => {
-    if (res.locals.managementUser.role !== 'SUPER_ADMIN') { res.status(403).json({ message: 'Solo el superadministrador puede gestionar usuarios' }); return; } next();
+    if (res.locals.managementUser.role !== 'SUPER_ADMIN') { res.status(403).json({ message: 'Only the superadmin can manage users' }); return; } next();
   });
   router.get('/users', authRoute(async (_req, res) => { res.json(await store.listUsers()); }));
   router.post('/users', authRoute(async (req, res) => {
-    const data = loginSchema.safeParse(req.body); if (!data.success) throw new AuthError('Datos de usuario no válidos');
+    const data = loginSchema.safeParse(req.body); if (!data.success) throw new AuthError('Invalid user data');
     res.status(201).json(await store.createUser(data.data.username, data.data.password));
   }));
   router.delete('/users/:id', authRoute(async (req, res) => { await store.deleteUser(String(req.params.id), res.locals.managementUser.id); res.json({ ok: true }); }));
   router.post('/users/:id/password', authRoute(async (req, res) => {
     const data = z.object({ password: z.string().min(10).max(256) }).strict().safeParse(req.body);
-    if (!data.success) throw new AuthError('Contraseña no válida'); await store.resetPassword(String(req.params.id), data.data.password); res.json({ ok: true });
+    if (!data.success) throw new AuthError('Invalid password'); await store.resetPassword(String(req.params.id), data.data.password); res.json({ ok: true });
   }));
   return router;
 }

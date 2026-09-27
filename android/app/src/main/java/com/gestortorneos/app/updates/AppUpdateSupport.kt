@@ -37,13 +37,13 @@ internal fun AndroidAppUpdateDto.downloadPackage() = UpdatePackage(apkUrl, sha25
 internal fun validateAndroidUpdate(archive: PackageInfo, installed: PackageInfo, expectedVersion: Int) {
     require(archive.packageName == installed.packageName &&
         PackageInfoCompat.getLongVersionCode(archive) == expectedVersion.toLong() &&
-        expectedVersion > PackageInfoCompat.getLongVersionCode(installed)) { "El APK no corresponde a esta aplicación o versión." }
+        expectedVersion > PackageInfoCompat.getLongVersionCode(installed)) { "The APK does not match this app or version." }
     val installedSigners = if (Build.VERSION.SDK_INT >= 28) installed.signingInfo?.apkContentsSigners else installed.signatures
     val archiveSigners = if (Build.VERSION.SDK_INT >= 28) archive.signingInfo?.let {
         if (it.hasMultipleSigners()) it.apkContentsSigners else it.signingCertificateHistory
     } else archive.signatures
     require(!installedSigners.isNullOrEmpty() && !archiveSigners.isNullOrEmpty() && installedSigners.all { it in archiveSigners }) {
-        "La firma del APK no coincide con la aplicación instalada."
+        "The APK signature does not match the installed app."
     }
 }
 
@@ -68,14 +68,14 @@ class AndroidUpdateViewModel(application: Application) : AndroidViewModel(applic
             try {
                 val remote = try { NetworkModule.appUpdateApi.getAndroidAppUpdate(app.packageName) }
                     catch (error: HttpException) { if (error.code() == 404) null else throw error }
-                require(remote == null || remote.applicationId == app.packageName) { "La actualización no corresponde a Smash Tournaments." }
+                require(remote == null || remote.applicationId == app.packageName) { "The update is not for Smash Tournaments." }
                 val next = remote?.takeIf { it.versionCode > BuildConfig.VERSION_CODE }
                 if (next?.versionCode != update?.versionCode || next?.sha256 != update?.sha256) transfer.reset()
                 update = next
                 visible = next != null
-                message = if (next == null) "Tienes la última versión (${BuildConfig.VERSION_NAME})." else "Nueva versión: ${next.versionName}."
+                message = if (next == null) "You have the latest version (${BuildConfig.VERSION_NAME})." else "New version: ${next.versionName}."
             } catch (error: CancellationException) { throw error }
-            catch (_: Exception) { message = "No se pudo comprobar la actualización. Revisa la conexión y vuelve a intentarlo." }
+            catch (_: Exception) { message = "Could not check the update. Check your connection and try again." }
             finally { checking = false }
         }
     }
@@ -90,19 +90,19 @@ class AndroidUpdateViewModel(application: Application) : AndroidViewModel(applic
         installing = true
         viewModelScope.launch {
             try {
-                kotlin.check(downloader.verify(file, target.downloadPackage())) { "El archivo ya no es válido. Vuelve a descargarlo." }
+                kotlin.check(downloader.verify(file, target.downloadPackage())) { "The file is no longer valid. Download it again." }
                 withContext(Dispatchers.IO) {
                     @Suppress("DEPRECATION")
                     val flags = if (Build.VERSION.SDK_INT >= 28) PackageManager.GET_SIGNING_CERTIFICATES else PackageManager.GET_SIGNATURES
                     @Suppress("DEPRECATION")
-                    val archive = app.packageManager.getPackageArchiveInfo(file.path, flags) ?: error("No se pudo leer el APK.")
+                    val archive = app.packageManager.getPackageArchiveInfo(file.path, flags) ?: error("Could not read the APK.")
                     @Suppress("DEPRECATION")
                     val installed = app.packageManager.getPackageInfo(app.packageName, flags)
                     validateAndroidUpdate(archive, installed, target.versionCode)
                 }
                 context.startActivity(androidInstallIntent(context, file))
             } catch (error: CancellationException) { throw error }
-            catch (error: Exception) { installError = error.message ?: "No se pudo abrir el instalador."; transfer.reset() }
+            catch (error: Exception) { installError = error.message ?: "Could not open the installer."; transfer.reset() }
             finally { installing = false }
         }
     }
@@ -115,7 +115,7 @@ internal fun androidInstallIntent(context: Context, file: File): Intent {
 
 internal fun androidInstallIntent(uri: Uri): Intent = Intent(Intent.ACTION_VIEW).apply {
         setDataAndType(uri, "application/vnd.android.package-archive")
-        clipData = ClipData.newRawUri("Actualización Smash Tournaments", uri)
+        clipData = ClipData.newRawUri("Smash Tournaments update", uri)
         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
 }
 
@@ -125,7 +125,7 @@ fun AndroidAppUpdateGate(model: AndroidUpdateViewModel = viewModel()) {
     val state by model.transfer.state.collectAsState()
     val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         if (context.packageManager.canRequestPackageInstalls()) model.install(context)
-        else model.installError = "Para instalar la actualización, permite que Smash Tournaments instale aplicaciones en Ajustes. El archivo sigue descargado."
+        else model.installError = "To install the update, allow Smash Tournaments to install apps in Settings. The file remains downloaded."
     }
     LaunchedEffect(model) { model.check() }
     val target = model.update
@@ -135,19 +135,19 @@ fun AndroidAppUpdateGate(model: AndroidUpdateViewModel = viewModel()) {
             notes = target.notes, changelog = target.changelog.orEmpty(),
             required = target.required || (target.minSupportedVersionCode?.let { BuildConfig.VERSION_CODE < it } == true),
             state = state, installing = model.installing,
-            installHint = "La descarga se guarda en la app. Android te pedirá confirmar la instalación y, la primera vez, permitir que Smash Tournaments instale aplicaciones.",
+            installHint = "The download is saved in the app. Android will ask you to confirm installation and, the first time, allow Smash Tournaments to install apps.",
             onDownload = { model.transfer.download(target.downloadPackage()) },
             onInstall = {
                 if (context.packageManager.canRequestPackageInstalls()) model.install(context)
                 else try { permissionLauncher.launch(Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:${context.packageName}"))) }
-                catch (_: Exception) { model.installError = "Abre Ajustes > Aplicaciones > Smash Tournaments y permite instalar aplicaciones desconocidas." }
+                catch (_: Exception) { model.installError = "Open Settings > Apps > Smash Tournaments and allow installation of unknown apps." }
             },
             onCancel = model.transfer::cancel, onDismiss = model::dismiss,
         )
     }
     model.installError?.let { error ->
-        AlertDialog(onDismissRequest = { model.installError = null }, title = { Text("No se pudo instalar") },
-            text = { Text(error) }, confirmButton = { TextButton(onClick = { model.installError = null }) { Text("Cerrar") } })
+        AlertDialog(onDismissRequest = { model.installError = null }, title = { Text("Could not install") },
+            text = { Text(error) }, confirmButton = { TextButton(onClick = { model.installError = null }) { Text("Close") } })
     }
 }
 
@@ -155,13 +155,13 @@ fun AndroidAppUpdateGate(model: AndroidUpdateViewModel = viewModel()) {
 fun AndroidUpdateSettings(model: AndroidUpdateViewModel = viewModel()) {
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("Actualizaciones", style = MaterialTheme.typography.titleMedium)
-            Text("Versión instalada: ${BuildConfig.VERSION_NAME}")
+            Text("Updates", style = MaterialTheme.typography.titleMedium)
+            Text("Installed version: ${BuildConfig.VERSION_NAME}")
             model.message?.let { Text(it) }
             OutlinedButton(onClick = { model.check(true) }, enabled = !model.checking) {
-                Text(if (model.checking) "Comprobando…" else "Buscar actualizaciones")
+                Text(if (model.checking) "Checking…" else "Check for updates")
             }
-            if (model.update != null) Button(onClick = model::show) { Text("Ver actualización") }
+            if (model.update != null) Button(onClick = model::show) { Text("View update") }
         }
     }
 }

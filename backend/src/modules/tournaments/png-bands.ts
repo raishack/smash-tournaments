@@ -56,7 +56,7 @@ export async function renderPngInBands(
     write(data: Buffer, _encoding, callback) {
       bytes += data.length + 12;
       if (bytes > maxBytes) {
-        callback(new Error("El PNG completo supera el límite de 49 MB para los avisos."));
+        callback(new Error("The full PNG exceeds the 49 MB notification limit."));
         return;
       }
       chunks.push(pngChunk("IDAT", data));

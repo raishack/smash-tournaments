@@ -10,11 +10,11 @@ export const ladderSettingsSchema = z.object({
   setupNumbers: z.array(z.number().int().min(1).max(256)).max(256).transform(values => [...new Set(values)].sort((a,b) => a-b)),
   opensAt: z.string().datetime().optional(),
   closesAt: z.string().datetime().optional(),
-}).refine(s => !s.opensAt || !s.closesAt || Date.parse(s.closesAt) > Date.parse(s.opensAt), "El cierre debe ser posterior a la apertura");
+}).refine(s => !s.opensAt || !s.closesAt || Date.parse(s.closesAt) > Date.parse(s.opensAt), "Closing time must be after opening time");
 
 export const ladderControlSchema = z.object({
   action: z.enum(["PAUSE", "RESUME", "CLOSE", "SETTINGS", "ADD_PLAYER", "REMOVE_PLAYER", "CANCEL_MATCH", "RESOLVE_RESULT", "REOPEN_MATCH"]),
-  actor: z.string().trim().min(1).max(100).default("organización"),
+  actor: z.string().trim().min(1).max(100).default("staff"),
   participantId: z.string().min(1).max(200).optional(),
   matchId: z.string().min(1).max(200).optional(),
   expectedRevision: z.string().min(1).max(100).optional(),

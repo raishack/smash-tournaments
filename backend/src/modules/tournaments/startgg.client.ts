@@ -404,7 +404,7 @@ export class StartggClient {
     options: { includeGameDetails?: boolean; onProgress?: ImportProgressListener } = {},
   ): Promise<StartggImportedBracket> {
     return this.importProgress.run({ notify: options.onProgress }, async () => {
-    await this.emitProgress({ stage: "EVENT", message: "Cargando información del torneo" });
+    await this.emitProgress({ stage: "EVENT", message: "Loading tournament information" });
     this.ensureConfigured();
     const eventSlug = parseStartggEventSlug(eventUrl);
     const basics = await this.fetchEventBasics(eventSlug);
@@ -438,7 +438,7 @@ export class StartggClient {
       matches: StartggMirroredMatch[];
     }> = [];
     for (const source of sources) {
-      await this.emitProgress({ stage: "PARTICIPANTS", message: `Descargando participantes · ${source.phaseName}` });
+      await this.emitProgress({ stage: "PARTICIPANTS", message: `Downloading participants · ${source.phaseName}` });
       const seedRows = source.phaseGroupId
         ? await this.fetchPhaseGroupSeeds(source.phaseGroupId)
         : await this.fetchPhaseSeeds(source.phaseId);
@@ -662,7 +662,7 @@ export class StartggClient {
         games { orderNum winnerId selections { entrant { id } character { id } } }
       }
     }`, { setId }, "OperationSetState");
-    if (!response.set) throw new Error("No se pudo comprobar el estado del set en start.gg");
+    if (!response.set) throw new Error("Could not check set status on start.gg");
     return {
       state: response.set.state,
       winnerEntrantId: response.set.slots.find(slot => slot.standing?.placement === 1)?.entrant?.id?.toString(),
@@ -877,7 +877,7 @@ export class StartggClient {
 
     const firstNodes = firstPage.phase?.seeds?.nodes ?? [];
     const totalPages = Number(firstPage.phase?.seeds?.pageInfo?.totalPages ?? 1);
-    await this.emitProgress({ stage: "PARTICIPANTS", message: "Descargando participantes · páginas", completed: 1, total: totalPages });
+    await this.emitProgress({ stage: "PARTICIPANTS", message: "Downloading participants · pages", completed: 1, total: totalPages });
     const remainingNodes: typeof firstNodes = [];
     for (let page = 2; page <= totalPages; page += 1) {
       const response = await this.graphql<StartggPhaseSeedsResponse>(
@@ -908,7 +908,7 @@ export class StartggClient {
         "PhaseSeeds",
       );
       remainingNodes.push(...(response.phase?.seeds?.nodes ?? []));
-      await this.emitProgress({ stage: "PARTICIPANTS", message: "Descargando participantes · páginas", completed: page, total: totalPages });
+      await this.emitProgress({ stage: "PARTICIPANTS", message: "Downloading participants · pages", completed: page, total: totalPages });
     }
 
     return this.mapSeedRows([...firstNodes, ...remainingNodes]);
@@ -948,7 +948,7 @@ export class StartggClient {
 
     const firstNodes = firstPage.phaseGroup?.seeds?.nodes ?? [];
     const totalPages = Number(firstPage.phaseGroup?.seeds?.pageInfo?.totalPages ?? 1);
-    await this.emitProgress({ stage: "PARTICIPANTS", message: "Descargando participantes · páginas", completed: 1, total: totalPages });
+    await this.emitProgress({ stage: "PARTICIPANTS", message: "Downloading participants · pages", completed: 1, total: totalPages });
     const remainingNodes: typeof firstNodes = [];
     for (let page = 2; page <= totalPages; page += 1) {
       const response = await this.graphql<StartggPhaseGroupSeedsResponse>(
@@ -979,7 +979,7 @@ export class StartggClient {
         "PhaseGroupSeeds",
       );
       remainingNodes.push(...(response.phaseGroup?.seeds?.nodes ?? []));
-      await this.emitProgress({ stage: "PARTICIPANTS", message: "Descargando participantes · páginas", completed: page, total: totalPages });
+      await this.emitProgress({ stage: "PARTICIPANTS", message: "Downloading participants · pages", completed: page, total: totalPages });
     }
 
     return this.mapSeedRows([...firstNodes, ...remainingNodes]);
@@ -1074,7 +1074,7 @@ export class StartggClient {
 
     const firstNodes = firstPage.phase?.sets?.nodes ?? [];
     const totalPages = Number(firstPage.phase?.sets?.pageInfo?.totalPages ?? 1);
-    await this.emitProgress({ stage: "MATCHES", message: "Cargando matches · páginas", completed: 1, total: totalPages });
+    await this.emitProgress({ stage: "MATCHES", message: "Loading matches · pages", completed: 1, total: totalPages });
     const remainingNodes: typeof firstNodes = [];
     for (let page = 2; page <= totalPages; page += 1) {
       const response = await this.graphql<StartggPhaseSetsResponse>(
@@ -1120,7 +1120,7 @@ export class StartggClient {
         "PhaseSets",
       );
       remainingNodes.push(...(response.phase?.sets?.nodes ?? []));
-      await this.emitProgress({ stage: "MATCHES", message: "Cargando matches · páginas", completed: page, total: totalPages });
+      await this.emitProgress({ stage: "MATCHES", message: "Loading matches · pages", completed: page, total: totalPages });
     }
     return [...firstNodes, ...remainingNodes];
   }
@@ -1174,7 +1174,7 @@ export class StartggClient {
 
     const firstNodes = firstPage.phaseGroup?.sets?.nodes ?? [];
     const totalPages = Number(firstPage.phaseGroup?.sets?.pageInfo?.totalPages ?? 1);
-    await this.emitProgress({ stage: "MATCHES", message: "Cargando matches · páginas", completed: 1, total: totalPages });
+    await this.emitProgress({ stage: "MATCHES", message: "Loading matches · pages", completed: 1, total: totalPages });
     const remainingNodes: typeof firstNodes = [];
     for (let page = 2; page <= totalPages; page += 1) {
       const response = await this.graphql<StartggPhaseGroupSetsResponse>(
@@ -1220,7 +1220,7 @@ export class StartggClient {
         "PhaseGroupSets",
       );
       remainingNodes.push(...(response.phaseGroup?.sets?.nodes ?? []));
-      await this.emitProgress({ stage: "MATCHES", message: "Cargando matches · páginas", completed: page, total: totalPages });
+      await this.emitProgress({ stage: "MATCHES", message: "Loading matches · pages", completed: page, total: totalPages });
     }
     return [...firstNodes, ...remainingNodes];
   }
@@ -1315,7 +1315,7 @@ export class StartggClient {
     const setGamesById = new Map<string, NonNullable<StartggSetNode["games"]>>();
     for (let index = 0; index < candidates.length; index += StartggClient.SET_GAMES_BATCH_SIZE) {
       const batch = candidates.slice(index, index + StartggClient.SET_GAMES_BATCH_SIZE);
-      await this.emitProgress({ stage: "DETAILS", message: "Cargando detalles de partidas · sets", completed: index, total: candidates.length });
+      await this.emitProgress({ stage: "DETAILS", message: "Loading match details · sets", completed: index, total: candidates.length });
       const details = await this.fetchSetGamesBatch(batch.map((set) => String(set.id)));
       for (const detail of details) {
         setGamesById.set(String(detail.id), detail.games ?? []);
@@ -1509,7 +1509,7 @@ export class StartggClient {
       while (slots.length < 2) {
         slots.push({
           slot: slots.length + 1,
-          displayName: "Clasificado pendiente",
+          displayName: "Qualifier pending",
           score: 0,
         });
       }
@@ -1669,23 +1669,23 @@ export class StartggClient {
     const prereqType = slot.prereqType?.trim().toLowerCase();
     const prereqId = slot.prereqId?.trim();
     if (prereqType === "seed") {
-      return "Clasificado por seeding";
+      return "Qualified by seeding";
     }
     if (prereqType && prereqType !== "set") {
-      return "Clasificado pendiente";
+      return "Qualifier pending";
     }
     if (!prereqId) {
-      return fallbackSlot === 1 ? "Clasificado pendiente" : "Clasificado pendiente";
+      return fallbackSlot === 1 ? "Qualifier pending" : "Qualifier pending";
     }
 
     const source = setDisplayRefs.get(prereqId);
     if (!source) {
-      return "Clasificado pendiente";
+      return "Qualifier pending";
     }
 
     if (this.isRoundRobinPhaseType(phaseType)) {
       const prereqPlacement = Number(slot.prereqPlacement ?? 0);
-      return prereqPlacement > 0 ? `Clasificado ${prereqPlacement}` : "Clasificado pendiente";
+      return prereqPlacement > 0 ? `Qualified ${prereqPlacement}` : "Qualifier pending";
     }
 
     const stagePrefix = source.bracketStage === "LOSERS"
@@ -1698,15 +1698,15 @@ export class StartggClient {
     const sourceLabel = `${stagePrefix}${source.roundNumber}M${source.matchNumber}`;
     const prereqPlacement = Number(slot.prereqPlacement ?? 0);
     if (prereqPlacement === 1) {
-      return `Ganador ${sourceLabel}`;
+      return `Winner ${sourceLabel}`;
     }
     if (prereqPlacement === 2) {
-      return `Perdedor ${sourceLabel}`;
+      return `Loser ${sourceLabel}`;
     }
     if (prereqPlacement > 0) {
-      return `Clasificado ${prereqPlacement} ${sourceLabel}`;
+      return `Qualified ${prereqPlacement} ${sourceLabel}`;
     }
-    return "Clasificado pendiente";
+    return "Qualifier pending";
   }
 
   private normalizePendingSlotDisplayNames(matches: StartggMirroredMatch[]): StartggMirroredMatch[] {
@@ -1734,34 +1734,34 @@ export class StartggClient {
         if (prereqType === "seed") {
           return {
             ...slot,
-            displayName: "Clasificado por seeding",
+            displayName: "Qualified by seeding",
           };
         }
         if (prereqType && prereqType !== "set") {
           return {
             ...slot,
-            displayName: "Clasificado pendiente",
+            displayName: "Qualifier pending",
           };
         }
         const prereqId = slot.prereqId?.trim();
         if (!prereqId) {
           return {
             ...slot,
-            displayName: "Clasificado pendiente",
+            displayName: "Qualifier pending",
           };
         }
         const source = globalSetDisplayRefs.get(prereqId);
         if (!source) {
           return {
             ...slot,
-            displayName: "Clasificado pendiente",
+            displayName: "Qualifier pending",
           };
         }
         if (this.isRoundRobinPhaseType(match.phaseType)) {
           const prereqPlacement = Number(slot.prereqPlacement ?? 0);
           return {
             ...slot,
-            displayName: prereqPlacement > 0 ? `Clasificado ${prereqPlacement}` : "Clasificado pendiente",
+            displayName: prereqPlacement > 0 ? `Qualified ${prereqPlacement}` : "Qualifier pending",
           };
         }
         const stagePrefix = source.bracketStage === "LOSERS"
@@ -1776,24 +1776,24 @@ export class StartggClient {
         if (prereqPlacement === 1) {
           return {
             ...slot,
-            displayName: `Ganador ${sourceLabel}`,
+            displayName: `Winner ${sourceLabel}`,
           };
         }
         if (prereqPlacement === 2) {
           return {
             ...slot,
-            displayName: `Perdedor ${sourceLabel}`,
+            displayName: `Loser ${sourceLabel}`,
           };
         }
         if (prereqPlacement > 0) {
           return {
             ...slot,
-            displayName: `Clasificado ${prereqPlacement} ${sourceLabel}`,
+            displayName: `Qualified ${prereqPlacement} ${sourceLabel}`,
           };
         }
         return {
           ...slot,
-          displayName: "Clasificado pendiente",
+          displayName: "Qualifier pending",
         };
       }),
     }));
@@ -1841,7 +1841,7 @@ export class StartggClient {
           return {
             kind: "entrant" as const,
             entrantId: String(slot.entrant.id),
-            displayName: this.toEntrantDisplayName(slot.entrant) || "Clasificado pendiente",
+            displayName: this.toEntrantDisplayName(slot.entrant) || "Qualifier pending",
           };
         }
         const slotPrereqType = slot.prereqType?.trim().toLowerCase();
@@ -1922,12 +1922,12 @@ export class StartggClient {
             prereqId: simplified.prereqId,
             prereqPlacement: undefined,
             prereqType: "seed",
-            displayName: "Clasificado por seeding",
+            displayName: "Qualified by seeding",
           };
         }
         return {
           ...slot,
-          displayName: "Clasificado pendiente",
+          displayName: "Qualifier pending",
         };
       })),
     })));
@@ -2017,7 +2017,7 @@ export class StartggClient {
         const headerDelay = Number.isFinite(seconds) ? seconds * 1000 : Date.parse(retryAfter ?? "") - Date.now();
         const backoff = Math.min(60000, (rateLimited ? 10000 : 2000) * 2 ** attempt);
         const delay = Number.isFinite(headerDelay) ? Math.max(backoff, headerDelay) : backoff;
-        await this.emitProgress({ stage: "WAITING", message: "Esperando el límite de start.gg; la importación continuará automáticamente" });
+        await this.emitProgress({ stage: "WAITING", message: "Waiting for the start.gg rate limit; the import will resume automatically" });
         // All queries share the cooldown so concurrent imports cannot bypass it.
         this.requestsBlockedUntil = Math.max(this.requestsBlockedUntil, Date.now() + delay);
         if (attempt + 1 >= StartggClient.READ_ATTEMPTS) throw error;
@@ -2088,7 +2088,7 @@ export class StartggClient {
       for (;;) {
         const waitMs = Math.max(this.lastRequestAt + StartggClient.REQUEST_SPACING_MS, this.requestsBlockedUntil) - Date.now();
         if (waitMs <= 0) break;
-        if (this.requestsBlockedUntil > Date.now() && this.importProgress.getStore()?.notify) await this.emitProgress({ stage: "WAITING", message: "Esperando el límite de start.gg; la importación continuará automáticamente" });
+        if (this.requestsBlockedUntil > Date.now() && this.importProgress.getStore()?.notify) await this.emitProgress({ stage: "WAITING", message: "Waiting for the start.gg rate limit; the import will resume automatically" });
         await new Promise((resolve) => setTimeout(resolve, waitMs));
       }
       const previousProgress = this.importProgress.getStore()?.last;
@@ -2137,7 +2137,7 @@ export class StartggClient {
               ? isPoolPhase
                 ? phase.bracketType === "ROUND_ROBIN"
                   ? `Pool ${group.displayIdentifier.trim()}`
-                  : `Grupo ${group.displayIdentifier.trim()}`
+                  : `Group ${group.displayIdentifier.trim()}`
                 : undefined
               : undefined,
             seedCount: groupSeedCount,

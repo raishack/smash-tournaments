@@ -30,9 +30,9 @@ test('archive preserves a completed Fortnite tournament, hides it by default and
 test('only completed tournaments can be archived and pending imports cannot be frozen',async t=>{
  const f=await completed(t),original=await f.repo.getTournament(f.id);
  for(const status of ['DRAFT','READY','IN_PROGRESS','CANCELLED']){
-  await f.repo.saveTournament({...original,status});await assert.rejects(f.archive(),/completados/);assert.equal((await f.repo.getTournament(f.id)).status,status);
+  await f.repo.saveTournament({...original,status});await assert.rejects(f.archive(),/completed/);assert.equal((await f.repo.getTournament(f.id)).status,status);
  }
- await f.repo.saveTournament({...original,settings:{...original.settings,importJob:{state:'RUNNING'}}});await assert.rejects(f.archive(),/importaci[oó]n/i);
+ await f.repo.saveTournament({...original,settings:{...original.settings,importJob:{state:'RUNNING'}}});await assert.rejects(f.archive(),/import/i);
 });
 
 test('all management mutations reject archived tournaments, including old Top8 sessions and Fortnite reopen',async t=>{
@@ -48,7 +48,7 @@ test('all management mutations reject archived tournaments, including old Top8 s
   ()=>registration.updateOptions(f.id,{registrationEnabled:true}),()=>registration.recover(f.id,'test@example.test','127.0.0.1'),
   ()=>f.action({action:'REOPEN',revision:state.revision,reason:'Old panel'})
  ];
- for(const call of calls)await assert.rejects(call(),/archivad/i);
+ for(const call of calls)await assert.rejects(call(),/archived/i);
  assert.deepEqual(await f.repo.getTournament(f.id),original);assert.deepEqual(await f.repo.getFortniteState(f.id),state);assert.deepEqual(await f.repo.listParticipants(f.id),players);
  assert.equal(await f.repo.getTopProject(f.id),null);assert.equal((await registration.publicInfo(f.id)).open,false);
 });
@@ -67,7 +67,7 @@ test('archiving waits for running jobs and current failed results but not obsole
  await f.repo.replaceMatches(f.id,[{id:'match',tournamentId:f.id,status:'COMPLETED',bracketStage:'FINALS',roundNumber:1,matchNumber:1,bestOf:3,advancersRequired:1,participants:[],externalRef:{provider:'START_GG',setId:'1',localSyncVersion:2},createdAt:now,updatedAt:now}]);
  for(const state of ['PENDING','RUNNING','FAILED']){
   await f.repo.saveSyncJob({id:'job',tournamentId:f.id,matchId:'match',version:2,action:'set-completion',attempts:1,state,updatedAt:now});
-  await assert.rejects(f.archive(),/envíos/);
+  await assert.rejects(f.archive(),/submissions/);
  }
  await f.repo.saveSyncJob({id:'job',tournamentId:f.id,matchId:'match',version:1,action:'set-completion',attempts:1,state:'FAILED',updatedAt:now});await f.archive();
 });
@@ -89,7 +89,7 @@ test('archive HTTP endpoints require management and public lists omit the archiv
  assert.equal((await fetch(base+'/'+f.id+'/archive',{method:'POST',headers:{'Content-Type':'application/json'},body:'{"archived":true}'})).status,403);
  assert.equal((await fetch(base+'/'+f.id+'/archive',{method:'POST',headers,body:'{"archived":true}'})).status,200);
  const rejected=await fetch(base+'/'+f.id+'/setups',{method:'POST',headers,body:'{"setupCount":5,"streamCount":0}'});
- assert.equal(rejected.status,409);assert.match((await rejected.json()).message,/archivad/i);
+ assert.equal(rejected.status,409);assert.match((await rejected.json()).message,/archived/i);
  assert.deepEqual(await(await fetch(base)).json(),[]);assert.equal((await fetch(base+'?includeArchived=true')).status,403);
  assert.equal((await(await fetch(base+'?includeArchived=true',{headers})).json())[0].status,'ARCHIVED');
  assert.equal((await fetch(base+'/'+f.id+'/archive',{method:'POST',headers,body:'{"archived":false}'})).status,200);
@@ -122,7 +122,7 @@ test('a completed local bracket remains readable but stale results and idempoten
  assert.equal((await f.repo.getTournament(id)).status,'COMPLETED');
  const matches=await f.repo.listMatches(id);await f.tournaments.setArchived(id,true);
  assert.deepEqual((await f.tournaments.getTournamentOverview(id)).matches.map(m=>m.id),matches.map(m=>m.id));
- await assert.rejects(operationRequest.run({id:last.operationId},()=>f.tournaments.reportResult(id,last.matchId,last.input)),/archivad/i);
- for(const call of [()=>f.tournaments.resetMatch(id,last.matchId),()=>f.tournaments.callMatch(id,last.matchId,{calledByUserId:'test'}),()=>f.tournaments.startMatch(id,last.matchId)])await assert.rejects(call(),/archivad/i);
+ await assert.rejects(operationRequest.run({id:last.operationId},()=>f.tournaments.reportResult(id,last.matchId,last.input)),/archived/i);
+ for(const call of [()=>f.tournaments.resetMatch(id,last.matchId),()=>f.tournaments.callMatch(id,last.matchId,{calledByUserId:'test'}),()=>f.tournaments.startMatch(id,last.matchId)])await assert.rejects(call(),/archived/i);
  assert.deepEqual(await f.repo.listMatches(id),matches);
 });

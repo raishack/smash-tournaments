@@ -787,7 +787,7 @@ export class PlayerService {
   }
 
   private buildPlayerRoundLabel(match: Match): string {
-    const baseLabel = match.displayLabel ?? `${match.externalRef?.identifier ?? `M${match.matchNumber}`} · ${match.externalRef?.fullRoundText ?? match.roundLabel ?? `Ronda ${match.roundNumber}`}`;
+    const baseLabel = match.displayLabel ?? `${match.externalRef?.identifier ?? `M${match.matchNumber}`} · ${match.externalRef?.fullRoundText ?? match.roundLabel ?? `Round ${match.roundNumber}`}`;
     const poolLabel = match.externalRef?.phaseGroupName?.trim()
       || match.externalRef?.phaseName?.trim();
     return poolLabel ? `${poolLabel} · ${baseLabel}` : baseLabel;

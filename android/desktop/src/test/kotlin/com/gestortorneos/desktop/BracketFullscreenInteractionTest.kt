@@ -58,7 +58,7 @@ class BracketFullscreenInteractionTest {
             fun settle() { repeat(6) { scene.render().close() } }
             fun click(text: String) {
                 val position = when (text) {
-                    "Pantalla completa" -> Offset(1300f, 24f)
+                    "Fullscreen" -> Offset(1360f, 24f)
                     "Álex" -> Offset(160f, 358f)
                     else -> Offset(1260f, 36f)
                 }
@@ -72,7 +72,7 @@ class BracketFullscreenInteractionTest {
             }
             settle()
             capture("desktop-normal")
-            click("Pantalla completa")
+            click("Fullscreen")
             capture("desktop-fullscreen")
             val owner = fullscreen.owner
             assertNotNull(owner)
@@ -89,7 +89,7 @@ class BracketFullscreenInteractionTest {
                 assertSame(owner, fullscreen.owner)
                 assertEquals(WindowPlacement.Fullscreen, window.placement)
             }
-            click("Salir de pantalla completa (Esc)")
+            click("Exit fullscreen (Esc)")
             assertNull(fullscreen.owner)
             assertEquals(placement, window.placement)
         } finally { scene.close() }

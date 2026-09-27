@@ -7,7 +7,7 @@ export function createTeamsRouter(service: TeamsService) {
   router.get('/', (req: import('express').Request,res,next) => { service.overview(String(req.params.tournamentId)).then(data=>res.json(data)).catch(next); });
   router.post('/', (req: import('express').Request,res,next) => {
     const input = teamActionSchema.safeParse(req.body);
-    if (!input.success) { res.status(400).json({message:'Datos de plantilla no válidos'}); return; }
+    if (!input.success) { res.status(400).json({message:'Invalid roster data'}); return; }
     service.action(String(req.params.tournamentId),input.data).then(data=>res.json(data)).catch(next);
   });
   router.use((error: unknown,_req: import('express').Request,res: import('express').Response,next: import('express').NextFunction) => {

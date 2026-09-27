@@ -97,7 +97,7 @@ test('pause allows queuing; resume pairs; close rejects joins and lets active se
  await f.restart().tick();assert.equal((await view(f)).activeMatches.length,0);
  await f.service.control('t1',{action:'RESUME',actor:'test'});const m=(await view(f)).activeMatches[0];await play(f,m);
  await f.service.finalizeLadder('t1','test');assert.equal((await view(f)).activeMatches[0].status,'PLAYING');
- await assert.rejects(f.service.joinQueue('t1',f.participants[2]),/cerradas/);
+ await assert.rejects(f.service.joinQueue('t1',f.participants[2]),/closed/);
  await f.service.reportDetailedResult('t1',m.id,games,{bestOfOverride:3,reporterParticipantId:'p1'});
  const v=await view(f);assert.equal(v.session.status,'COMPLETED');assert.equal(v.standings[0].participantId,'p1');
 });
@@ -105,8 +105,8 @@ test('opponent confirmation, stale revision rejection, dispute and audited corre
  const f=await fixture(t);await f.service.control('t1',{action:'SETTINGS',actor:'test',settings:{...defaultLadderSettings,requireConfirmation:true,mode:'COMPETITIVE',minimumSets:1}});
  const m=await pair(f);await play(f,m);await f.service.reportDetailedResult('t1',m.id,games,{bestOfOverride:3,reporterParticipantId:'p1'});
  let v=await view(f);let pending=v.activeMatches[0];assert.equal(v.standings.length,0);assert.equal(pending.status,'AWAITING_CONFIRMATION');
- await assert.rejects(f.service.reviewResult('t1',m.id,'p1',{action:'CONFIRM',expectedRevision:pending.details.revision}),/rival/);
- await assert.rejects(f.service.reviewResult('t1',m.id,'p2',{action:'CONFIRM',expectedRevision:'old'}),/ha cambiado/);
+ await assert.rejects(f.service.reviewResult('t1',m.id,'p1',{action:'CONFIRM',expectedRevision:pending.details.revision}),/opponent/);
+ await assert.rejects(f.service.reviewResult('t1',m.id,'p2',{action:'CONFIRM',expectedRevision:'old'}),/has changed/);
  await f.service.reviewResult('t1',m.id,'p2',{action:'DISPUTE',expectedRevision:pending.details.revision,reason:'Marcador incorrecto'});
  pending=(await view(f)).activeMatches[0];assert.equal(pending.status,'DISPUTED');
  await f.service.control('t1',{action:'RESOLVE_RESULT',actor:'admin',matchId:m.id,expectedRevision:pending.details.revision,reason:'Verificado con ambos',winnerParticipantId:'p2',scores:[{participantId:'p1',score:1},{participantId:'p2',score:2}]});
@@ -140,7 +140,7 @@ test('organizer removal blocks rejoining, preserves opponent priority and can be
  const f=await fixture(t);const m=await pair(f);
  await f.service.control('t1',{action:'REMOVE_PLAYER',actor:'test',participantId:'p1'});
  let v=await view(f);assert.equal(v.queue[0].participantId,'p2');assert.equal(v.queue[0].queuedAt,m.details.queueEnteredAt.p2);
- await assert.rejects(f.service.joinQueue('t1',f.participants[0]),/retirado/);
+ await assert.rejects(f.service.joinQueue('t1',f.participants[0]),/removed|withdrawn/);
  await f.service.control('t1',{action:'ADD_PLAYER',actor:'test',participantId:'p1'});v=await view(f);assert.equal(v.activeMatches.length,1);
  assert.ok(v.activity.some(e=>e.action==='REMOVE_PLAYER'&&e.after.participantId==='p1'));
 });
@@ -149,7 +149,7 @@ test('setups occupied by other bracket players also suspend ladder; stale organi
  await f.bracket.callMatch('t1','m2',{calledByUserId:'test',stationLabel:'Setup 3'});
  assert.equal((await view(f)).activeMatches[0].status,'SUSPENDED');
  const original=(await view(f)).session.options.revision;await f.service.control('t1',{action:'PAUSE',actor:'test',expectedRevision:original});
- await assert.rejects(f.service.control('t1',{action:'RESUME',actor:'test',expectedRevision:original}),/ha cambiado/);
+ await assert.rejects(f.service.control('t1',{action:'RESUME',actor:'test',expectedRevision:original}),/has changed/);
 });
 
 test('management controls require a validated user session and reject legacy admin keys',async t=>{
@@ -173,14 +173,14 @@ test('removing a tournament entrant releases the ladder and preserves the other 
 test('cancelling the tournament cancels open ladder sets and prevents starting a new ladder',async t=>{
  const f=await fixture(t);await pair(f);const tournament=await f.repo.getTournament('t1');await f.repo.saveTournament({...tournament,status:'CANCELLED'});
  await f.restart().tick();const v=await view(f);assert.equal(v.session.status,'COMPLETED');assert.equal(v.activeMatches.length,0);assert.equal(v.queue.length,0);
- await assert.rejects(f.service.startLadder('t1','admin'),/cancelado/);
+ await assert.rejects(f.service.startLadder('t1','admin'),/cancelled/);
 });
 
 test('reopening a ladder result requires fresh ready confirmation from both players',async t=>{
  const f=await fixture(t),m=await pair(f);await play(f,m);
  await f.service.reportDetailedResult('t1',m.id,games,{bestOfOverride:3,reporterParticipantId:'p1'});
  const completed=(await view(f)).completedMatches.find(row=>row.id===m.id);
- await f.service.control('t1',{action:'REOPEN_MATCH',actor:'admin',matchId:m.id,expectedRevision:completed.details.revision,reason:'Corregir el set'});
+ await f.service.control('t1',{action:'REOPEN_MATCH',actor:'admin',matchId:m.id,expectedRevision:completed.details.revision,reason:'Correct el set'});
  let reopened=(await view(f)).activeMatches.find(row=>row.id===m.id);
  assert.equal(reopened.status,'READY_CHECK');assert.equal(reopened.participantOneReadyAt,undefined);assert.equal(reopened.participantTwoReadyAt,undefined);assert.equal(reopened.startedAt,undefined);
  await f.service.readyUp('t1',m.id,'p1');reopened=(await view(f)).activeMatches.find(row=>row.id===m.id);
@@ -209,7 +209,7 @@ test('archive waits for ladder closure, preserves standings and rejects stale pl
  for(const call of [()=>f.service.startLadder('t1','test'),()=>f.service.joinQueue('t1',f.participants[0]),
   ()=>f.service.control('t1',{action:'REOPEN_MATCH',actor:'test',matchId:m.id,reason:'Stale panel'}),
   ()=>f.service.readyUp('t1',m.id,'p1'),()=>f.service.reportDetailedResult('t1',m.id,games,{reporterParticipantId:'p1'})]){
-   await assert.rejects(call(),/archivad/i);
+   await assert.rejects(call(),/archived/i);
  }
  await f.restart().tick();assert.deepEqual((await view(f)).standings,original.standings);
  await f.bracket.setArchived('t1',false);await f.service.startLadder('t1','test');assert.equal((await view(f)).session.status,'ACTIVE');

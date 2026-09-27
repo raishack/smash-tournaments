@@ -20,18 +20,18 @@ fun Top8EditorButton(tournamentId: String) {
     var error by remember(tournamentId) { mutableStateOf<String?>(null) }
     Card(Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            MainStatusBadge("Torneo finalizado", "COMPLETED")
-            Text("Comparte los resultados", style = MaterialTheme.typography.titleLarge)
+            MainStatusBadge("Tournament finished", "COMPLETED")
+            Text("Share results", style = MaterialTheme.typography.titleLarge)
             Button(enabled = !busy, onClick = {
                 busy = true; error = null
                 scope.launch {
                     try { uri.openUri(repository.createTop8Session(tournamentId)) }
                     catch (e: CancellationException) { throw e }
-                    catch (e: Exception) { error = e.message ?: "No se pudo abrir el editor" }
+                    catch (e: Exception) { error = e.message ?: "Could not open the editor" }
                     finally { busy = false }
                 }
-            }) { MainBusyLabel(if (busy) "Preparando imagen…" else "Imagen Top 8 · crear / editar", busy) }
-            Text("Resultados precargados. Edita jugadores, personajes y diseño, guarda el proyecto y descarga una imagen PNG en 4K u 8K.", style = MaterialTheme.typography.bodySmall)
+            }) { MainBusyLabel(if (busy) "Preparing image…" else "Top 8 image · create / edit", busy) }
+            Text("Results prefilled. Edit players, characters and design, save the project and download a 4K or 8K PNG.", style = MaterialTheme.typography.bodySmall)
             error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
         }
     }

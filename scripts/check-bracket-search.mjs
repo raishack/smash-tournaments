@@ -8,7 +8,7 @@ const browser=await chromium.launch({executablePath:process.env.CHROME_PATH,head
 const ios=['ios-manage-main/GestorTorneosMainIOS','ios-manage/GestorTorneosSmashIOS','ios-manage/TournamentManagerIOS'].find(p=>fs.existsSync(p));
 const esc=s=>s.replaceAll('&','&amp;').replaceAll('"','&quot;').replaceAll('<','&lt;');
 function cluster(id,title){return `<div class="bracket-cluster"><div class="cluster-title">${title}</div><div class="bracket-scroll"><div class="bracket-scale-wrap"><div class="bracket-canvas" data-section-id="${id}" data-round-count="3"><svg class="connector-layer"></svg>${[0,1,2].map(r=>`<div class="round-column" data-round-index="${r}"><div class="round-title">${title} ${r+1}</div>${Array.from({length:8>>r},(_,i)=>{
-const name=i===0&&r===2?'Equipo Álex <script>':'Jugador '+i;
+const name=i===0&&r===2?'Equipo Álex <script>':'Player '+i;
 return `<article class="match-card" data-match-id="${id}-${r}-${i}" data-match-index="${i}" data-round-index="${r}" data-connection-group="${id}" data-search-names="${esc(name)}"><div class="match-header"><span>${id}-${r}-${i}</span></div><div class="entrant-row"><div class="entrant-main"><div class="entrant-name">${esc(name)}</div></div><div class="entrant-score">0</div></div></article>`;
 }).join('')}</div>`).join('')}</div></div></div></div>`;}
 const content=['pools','final'].map(phase=>`<section id="${phase}" class="bracket-section"><h2 class="section-title">${phase}</h2>${cluster(phase+'-winners','Winners')}${cluster(phase+'-losers','Losers')}</section>`).join('');
@@ -25,10 +25,10 @@ try {for(const [platform,file,key]of [['android','android/shared-bracket/src/mai
   await page.setContent(html);await page.locator('.bracket-search input').fill('  equipo alex ');
   await page.waitForFunction(()=>document.querySelector('.search-current')?.dataset.matchId==='pools-winners-2-0');
   assert.equal(await page.locator('.search-hit').count(),4);
-  await page.getByRole('button',{name:'Siguiente',exact:true}).click();
+  await page.getByRole('button',{name:'Next',exact:true}).click();
   await page.waitForFunction(()=>document.querySelector('.search-current')?.dataset.matchId==='pools-losers-2-0');
   await page.waitForFunction(()=>document.querySelector('#pools .unified-viewport').scrollTop>0);
-  await page.getByRole('button',{name:'Siguiente',exact:true}).click();
+  await page.getByRole('button',{name:'Next',exact:true}).click();
   assert.equal(await page.locator('.bracket-section.active').getAttribute('id'),'final');
   await page.locator('.bracket-search input').press('Shift+Enter');
   assert.equal(await page.locator('.bracket-section.active').getAttribute('id'),'pools');
@@ -47,8 +47,8 @@ try {for(const [platform,file,key]of [['android','android/shared-bracket/src/mai
   assert.equal(await page.locator('.search-hit').count(),4);
   await page.screenshot({path:path.join(output,`${platform}-${theme}.png`)});
   await page.locator('.bracket-search input').fill('missing');
-  assert.match(await page.locator('.bracket-search output').textContent(),/Sin coincidencias/);
-  await page.getByRole('button',{name:'Siguiente',exact:true}).isDisabled().then(assert.ok);
+  assert.match(await page.locator('.bracket-search output').textContent(),/No matches found/);
+  await page.getByRole('button',{name:'Next',exact:true}).isDisabled().then(assert.ok);
   await page.locator('.bracket-search input').fill('<script>');assert.equal(await page.locator('.search-hit').count(),4);
   await page.locator('.bracket-search input').press('Escape');assert.equal(await page.locator('.search-hit').count(),0);
   assert.deepEqual(errors,[]);await page.close();console.log(`PASS ${platform} ${theme}: accents, teams, phases, losers, next/previous, restore, resize, empty and literal HTML search`);

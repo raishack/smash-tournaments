@@ -46,7 +46,7 @@ struct KeychainManagementSessionStorage: ManagementSessionStorage {
 
 enum ManagementSessionStorageError: Error, LocalizedError {
     case unavailable
-    var errorDescription: String? { "No se pudo guardar la sesión de forma segura. Desbloquea el dispositivo y vuelve a intentarlo." }
+    var errorDescription: String? { "Could not save the session securely. Unlock your device and try again." }
 }
 
 @MainActor
@@ -120,7 +120,7 @@ enum ManagementAPIError: Error, LocalizedError {
     var errorDescription: String? {
         switch self {
         case .invalidResponse:
-            return "Respuesta invalida del backend."
+            return "Invalid backend response."
         case let .http(code, message):
             return message.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "HTTP \(code)" : message
         }
@@ -174,7 +174,7 @@ final class ManagementOperationNetwork {
     }
     func diagnostics() -> String {
         lock.lock(); defer { lock.unlock() }
-        return "Cliente: iOS \(version)\nÚltimos errores del cliente:\n" + failures.joined(separator: "\n")
+        return "Client: iOS \(version)\nRecent client errors:\n" + failures.joined(separator: "\n")
     }
 }
 
@@ -252,7 +252,7 @@ final class ManagementAPIClient {
         }
         guard (200...299).contains(http.statusCode) else {
             let message = (try? decoder.decode(ManagementErrorResponse.self, from: data))?.message
-            operations.failure("\(method) match=\(matchId ?? "-") HTTP \(http.statusCode): \(message ?? "Error de servidor")")
+            operations.failure("\(method) match=\(matchId ?? "-") HTTP \(http.statusCode): \(message ?? "Server error")")
             throw ManagementAPIError.http(http.statusCode, message ?? String(data: data, encoding: .utf8) ?? "")
         }
         if T.self == EmptyResponse.self, data.isEmpty {
@@ -519,10 +519,10 @@ final class TournamentManagementRepository {
 @MainActor
 final class TournamentManagerViewModel: ObservableObject {
     enum Tab: String, CaseIterable {
-        case dashboard = "Inicio"
-        case tournaments = "Torneos"
-        case operations = "Operativa"
-        case settings = "Ajustes"
+        case dashboard = "Home"
+        case tournaments = "Tournaments"
+        case operations = "Match operations"
+        case settings = "Settings"
     }
 
     @Published var currentTab: Tab = .dashboard
@@ -638,10 +638,10 @@ final class TournamentManagerViewModel: ObservableObject {
 
     func saveNotificationSettings() async {
         guard !adminDeleteKey.isEmpty else {
-            error = "Necesitas la clave de admin para guardar los ajustes de notificaciones."
+            error = "You need admin access to save notification settings."
             return
         }
-        await mutate("Ajustes de notificaciones guardados") {
+        await mutate("Notification settings saved") {
             self.notificationSettings = try await self.repository.updateNotificationSettings(
                 adminKey: self.adminDeleteKey,
                 telegramEnabled: self.notificationSettings.telegramEnabled,
@@ -658,7 +658,7 @@ final class TournamentManagerViewModel: ObservableObject {
     }
 
     func createTournament(input: CreateTournamentInput) async {
-        await mutate("Torneo creado") {
+        await mutate("Tournament created") {
             let created = try await self.repository.createTournament(input: input)
             self.tournaments.insert(created, at: 0)
             try await self.refreshTournament(created.id)
@@ -666,7 +666,7 @@ final class TournamentManagerViewModel: ObservableObject {
     }
 
     func createStartggTournament(eventURL: String, callTimeoutMinutes: Int, setupCount: Int, streamCount: Int, playerMatchReportingEnabled: Bool) async {
-        await mutate("Importacion iniciada") {
+        await mutate("Import started") {
             let detail = try await self.repository.createStartggTournament(
                 eventURL: eventURL,
                 callTimeoutMinutes: callTimeoutMinutes,
@@ -679,7 +679,7 @@ final class TournamentManagerViewModel: ObservableObject {
     }
 
     func updateTournament(_ tournament: TournamentListItem, settings: TournamentSettings) async {
-        await mutate("Torneo actualizado") {
+        await mutate("Tournament updated") {
             _ = try await self.repository.updateTournament(tournamentId: tournament.id, tournament: tournament, settings: settings)
             try await self.refreshTournament(tournament.id)
             await self.reloadTournaments()
@@ -689,10 +689,10 @@ final class TournamentManagerViewModel: ObservableObject {
     func deleteSelectedTournament() async {
         guard let tournamentId = selectedTournamentDetail?.tournament.id else { return }
         guard !adminDeleteKey.isEmpty else {
-            error = "Inicia sesión para borrar torneos."
+            error = "Sign in to delete tournaments."
             return
         }
-        await mutate("Torneo eliminado") {
+        await mutate("Tournament deleted") {
             try await self.repository.validateAdminDeleteKey(self.adminDeleteKey)
             try await self.repository.deleteTournament(tournamentId: tournamentId, adminKey: self.adminDeleteKey)
             self.selectedTournamentDetail = nil
@@ -702,7 +702,7 @@ final class TournamentManagerViewModel: ObservableObject {
 
     func addParticipant(displayName: String, seed: Int?) async {
         guard let tournamentId = selectedTournamentDetail?.tournament.id else { return }
-        await mutate("Participante añadido") {
+        await mutate("Participant added") {
             _ = try await self.repository.addParticipant(tournamentId: tournamentId, displayName: displayName, seed: seed)
             try await self.refreshTournament(tournamentId)
             await self.reloadTournaments()
@@ -711,7 +711,7 @@ final class TournamentManagerViewModel: ObservableObject {
 
     func updateParticipant(_ participant: TournamentParticipant, displayName: String, seed: Int?, checkedIn: Bool?, status: String?) async {
         guard let tournamentId = selectedTournamentDetail?.tournament.id else { return }
-        await mutate("Participante actualizado") {
+        await mutate("Participant updated") {
             _ = try await self.repository.updateParticipant(
                 tournamentId: tournamentId,
                 participantId: participant.id,
@@ -726,7 +726,7 @@ final class TournamentManagerViewModel: ObservableObject {
 
     func deleteParticipant(_ participant: TournamentParticipant) async {
         guard let tournamentId = selectedTournamentDetail?.tournament.id else { return }
-        await mutate("Participante eliminado") {
+        await mutate("Participant deleted") {
             try await self.repository.deleteParticipant(tournamentId: tournamentId, participantId: participant.id)
             try await self.refreshTournament(tournamentId)
         }
@@ -734,7 +734,7 @@ final class TournamentManagerViewModel: ObservableObject {
 
     func generateBracket() async {
         guard let tournamentId = selectedTournamentDetail?.tournament.id else { return }
-        await mutate("Bracket generada") {
+        await mutate("Bracket generated") {
             _ = try await self.repository.generateBracket(tournamentId: tournamentId)
             try await self.refreshTournament(tournamentId)
             await self.reloadTournaments()
@@ -743,7 +743,7 @@ final class TournamentManagerViewModel: ObservableObject {
 
     func resetAndGenerateBracket() async {
         guard let tournamentId = selectedTournamentDetail?.tournament.id else { return }
-        await mutate("Bracket regenerada") {
+        await mutate("Bracket regenerated") {
             _ = try await self.repository.resetTournament(tournamentId: tournamentId)
             _ = try await self.repository.generateBracket(tournamentId: tournamentId)
             try await self.refreshTournament(tournamentId)
@@ -753,7 +753,7 @@ final class TournamentManagerViewModel: ObservableObject {
 
     func startTournament() async {
         guard let tournamentId = selectedTournamentDetail?.tournament.id else { return }
-        await mutate("Torneo iniciado") {
+        await mutate("Tournament started") {
             _ = try await self.repository.startTournament(tournamentId: tournamentId)
             try await self.refreshTournament(tournamentId)
             await self.reloadTournaments()
@@ -762,7 +762,7 @@ final class TournamentManagerViewModel: ObservableObject {
 
     func resetTournament() async {
         guard let tournamentId = selectedTournamentDetail?.tournament.id else { return }
-        await mutate("Torneo reseteado") {
+        await mutate("Tournament reset") {
             _ = try await self.repository.resetTournament(tournamentId: tournamentId)
             try await self.refreshTournament(tournamentId)
             await self.reloadTournaments()
@@ -771,7 +771,7 @@ final class TournamentManagerViewModel: ObservableObject {
 
     func setArchived(_ archived: Bool) async {
         guard let tournamentId = selectedTournamentDetail?.tournament.id else { return }
-        await mutate(archived ? "Torneo archivado" : "Torneo desarchivado") {
+        await mutate(archived ? "Tournament archived" : "Tournament unarchived") {
             _ = try await self.repository.setArchived(tournamentId: tournamentId, archived: archived)
             try await self.refreshTournament(tournamentId)
             await self.reloadTournaments()
@@ -782,11 +782,11 @@ final class TournamentManagerViewModel: ObservableObject {
         guard let detail = selectedTournamentDetail else { return }
         guard let eventURL = detail.tournament.importEventUrl,
               !eventURL.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            error = "Este torneo no tiene una URL valida de start.gg para reimportar."
+            error = "This tournament has no valid start.gg URL to reimport."
             return
         }
 
-        await mutate("Importacion iniciada") {
+        await mutate("Import started") {
             _ = try await self.repository.importStartggEvent(
                 tournamentId: detail.tournament.id,
                 eventURL: eventURL,
@@ -800,7 +800,7 @@ final class TournamentManagerViewModel: ObservableObject {
 
     func startLadder() async {
         guard BackendConfig.supportsLadder, let tournamentId = selectedTournamentDetail?.tournament.id else { return }
-        await mutate("Ladder iniciada") {
+        await mutate("Ladder started") {
             _ = try await self.repository.startLadder(tournamentId: tournamentId)
             try await self.refreshTournament(tournamentId)
         }
@@ -808,7 +808,7 @@ final class TournamentManagerViewModel: ObservableObject {
 
     func finalizeLadder() async {
         guard BackendConfig.supportsLadder, let tournamentId = selectedTournamentDetail?.tournament.id else { return }
-        await mutate("Inscripciones de ladder cerradas") {
+        await mutate("Ladder registration closed") {
             _ = try await self.repository.finalizeLadder(tournamentId: tournamentId)
             try await self.refreshTournament(tournamentId)
         }
@@ -862,7 +862,7 @@ final class TournamentManagerViewModel: ObservableObject {
 
     func updateSetups(_ count: Int, streamCount: Int) async {
         guard let tournamentId = selectedTournamentDetail?.tournament.id else { return }
-        await mutate("Setups guardados") {
+        await mutate("Setups saved") {
             _ = try await self.repository.updateSetups(tournamentId: tournamentId, count: count, streamCount: streamCount)
             try await self.refreshTournament(tournamentId)
         }
@@ -870,7 +870,7 @@ final class TournamentManagerViewModel: ObservableObject {
 
     func updatePublicOptions(_ options: [String: Bool]) async {
         guard let tournamentId = selectedTournamentDetail?.tournament.id else { return }
-        await mutate("Opciones públicas guardadas") {
+        await mutate("Public options saved") {
             _ = try await self.repository.updatePublicOptions(tournamentId: tournamentId, adminKey: self.adminDeleteKey, options: options)
             try await self.refreshTournament(tournamentId)
         }

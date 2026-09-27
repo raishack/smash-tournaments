@@ -61,10 +61,10 @@ val LightColors = MainLightColors
 val DarkColors = MainDarkColors
 
 enum class DesktopSection(val label: String) {
-    Home("Inicio"),
-    Tournaments("Torneos"),
-    Operations("Operativa"),
-    Profile("Perfil")
+    Home("Home"),
+    Tournaments("Tournaments"),
+    Operations("Match operations"),
+    Profile("Profile")
 }
 
 @Composable
@@ -122,12 +122,12 @@ fun DesktopApp(onExitForUpdate: () -> Unit = {}) {
         updateInstalling = true
         scope.launch {
             try {
-                check(updateDownloader.verify(file, update.downloadPackage())) { "El archivo ya no es válido. Vuelve a descargarlo." }
+                check(updateDownloader.verify(file, update.downloadPackage())) { "The file is no longer valid. Download it again." }
                 launchWindowsInstaller(file)
                 onExitForUpdate()
             } catch (error: kotlinx.coroutines.CancellationException) { throw error }
             catch (error: Exception) {
-                updateErrorMessage = error.message ?: "No se pudo abrir el instalador."
+                updateErrorMessage = error.message ?: "Could not open the installer."
                 updateTransfer.reset()
             } finally { updateInstalling = false }
         }
@@ -152,18 +152,18 @@ fun DesktopApp(onExitForUpdate: () -> Unit = {}) {
                 if (update == null) {
                     dismissedOptionalUpdate = false
                     if (showStatusMessage) {
-                        updateStatusMessage = "No hay actualizaciones disponibles. Version actual ${DesktopConfig.desktopVersion}."
+                        updateStatusMessage = "No updates available. Current version ${DesktopConfig.desktopVersion}."
                     }
                 } else if (showStatusMessage) {
-                    updateStatusMessage = "Nueva version detectada: ${update.targetVersion}."
+                    updateStatusMessage = "New version found: ${update.targetVersion}."
                 }
             }
             .onFailure { error ->
                 if (showFailureMessage) {
-                    updateErrorMessage = error.message ?: "No se pudo comprobar si hay actualizaciones."
+                    updateErrorMessage = error.message ?: "Could not check for updates."
                 }
                 if (showStatusMessage) {
-                    updateStatusMessage = "No se pudo comprobar si hay actualizaciones."
+                    updateStatusMessage = "Could not check for updates."
                 }
             }
         updateCheckInProgress = false
@@ -198,7 +198,7 @@ fun DesktopApp(onExitForUpdate: () -> Unit = {}) {
                     selectedTournamentId = selectTournamentId ?: loaded.firstOrNull()?.id
                 }
                 .onFailure { error ->
-                    snackbarHostState.showSnackbar("No se pudieron cargar los torneos: ${error.message}")
+                    snackbarHostState.showSnackbar("Could not load tournaments: ${error.message}")
                 }
             listLoading = false
         }
@@ -219,7 +219,7 @@ fun DesktopApp(onExitForUpdate: () -> Unit = {}) {
                     if (tournamentId == selectedTournamentId && revision == detailRevision && pendingMutations == 0) selectedTournament = it
                 }
                 .onFailure { error ->
-                    snackbarHostState.showSnackbar("No se pudo cargar el torneo: ${error.message}")
+                    snackbarHostState.showSnackbar("Could not load the tournament: ${error.message}")
                 }
             if (tournamentId == selectedTournamentId) detailLoading = false
         }
@@ -241,7 +241,7 @@ fun DesktopApp(onExitForUpdate: () -> Unit = {}) {
                     message?.let { text -> snackbarHostState.showSnackbar(text) }
                 }
                 .onFailure { error ->
-                    val message = error.message ?: "Operacion no completada"
+                    val message = error.message ?: "Operation not completed"
                     onComplete(message)
                     snackbarHostState.showSnackbar(message)
                 }
@@ -292,7 +292,7 @@ fun DesktopApp(onExitForUpdate: () -> Unit = {}) {
                 title = update.title, currentVersion = update.currentVersion, targetVersion = update.targetVersion,
                 notes = update.notes, changelog = update.changelog, required = update.required,
                 state = downloadState, installing = updateInstalling,
-                installHint = "La descarga se guarda en la app. Al pulsar Instalar, Smash Tournaments se cerrará para que Windows pueda actualizarla. Confirma el asistente y vuelve a abrir Smash Tournaments al terminar.",
+                installHint = "The download is saved in the app. Selecting Install closes Smash Tournaments so Windows can update it. Confirm the installer and reopen Smash Tournaments when it finishes.",
                 onDownload = { updateTransfer.download(update.downloadPackage()) },
                 onInstall = { installDesktopUpdate(update) },
                 onCancel = updateTransfer::cancel, onDismiss = { dismissedOptionalUpdate = true },
@@ -302,11 +302,11 @@ fun DesktopApp(onExitForUpdate: () -> Unit = {}) {
         if (updateErrorMessage != null) {
             AlertDialog(
                 onDismissRequest = { updateErrorMessage = null },
-                title = { Text("No se pudo actualizar") },
+                title = { Text("Could not update") },
                 text = { Text(updateErrorMessage!!) },
                 confirmButton = {
                     TextButton(onClick = { updateErrorMessage = null }) {
-                        Text("Cerrar")
+                        Text("Close")
                     }
                 }
             )
@@ -365,7 +365,7 @@ fun DesktopApp(onExitForUpdate: () -> Unit = {}) {
                         },
                         onUpdateNotificationSettings = { telegramEnabled, whatsappEnabled ->
                             if (adminSessionKey.isBlank()) {
-                                adminNotificationSettingsError = "La sesion admin no esta disponible."
+                                adminNotificationSettingsError = "The admin session is unavailable."
                             } else {
                                 adminNotificationSettingsLoading = true
                                 adminNotificationSettingsError = null
@@ -380,7 +380,7 @@ fun DesktopApp(onExitForUpdate: () -> Unit = {}) {
                                         adminNotificationSettings = settings
                                         adminNotificationSettingsError = null
                                     }.onFailure { error ->
-                                        adminNotificationSettingsError = error.message ?: "No se pudieron guardar las notificaciones."
+                                        adminNotificationSettingsError = error.message ?: "Could not save notifications."
                                     }
                                     adminNotificationSettingsLoading = false
                                 }
@@ -404,20 +404,20 @@ fun DesktopApp(onExitForUpdate: () -> Unit = {}) {
                             if (alreadyStarted && !tournament.isStartggMirrored) {
                                 showGenerateBracketResetDialog = true
                             } else {
-                                mutateTournament("Bracket generada") { repository.generateBracket(tournamentId) }
+                                mutateTournament("Bracket generated") { repository.generateBracket(tournamentId) }
                             }
                         },
                         onStartTournament = {
                             val tournamentId = selectedTournamentId ?: return@TournamentPane
-                            mutateTournament("Torneo iniciado") { repository.startTournament(tournamentId) }
+                            mutateTournament("Tournament started") { repository.startTournament(tournamentId) }
                         },
                         onResetTournament = {
                             val tournamentId = selectedTournamentId ?: return@TournamentPane
-                            mutateTournament("Torneo reseteado") { repository.resetTournament(tournamentId) }
+                            mutateTournament("Tournament reset") { repository.resetTournament(tournamentId) }
                         },
                         onArchiveTournament = { archived ->
                             val tournamentId = selectedTournamentId ?: return@TournamentPane
-                            mutateTournament(if (archived) "Torneo archivado" else "Torneo desarchivado") { repository.setArchived(tournamentId, archived) }
+                            mutateTournament(if (archived) "Tournament archived" else "Tournament unarchived") { repository.setArchived(tournamentId, archived) }
                         },
                         onDeleteTournament = {
                             val tournamentId = selectedTournamentId ?: return@TournamentPane
@@ -427,23 +427,23 @@ fun DesktopApp(onExitForUpdate: () -> Unit = {}) {
                                         selectedTournament = null
                                         selectedTournamentId = null
                                         refreshList()
-                                        snackbarHostState.showSnackbar("Torneo eliminado")
+                                        snackbarHostState.showSnackbar("Tournament deleted")
                                     }
-                                    .onFailure { error -> snackbarHostState.showSnackbar(error.message ?: "No se pudo eliminar") }
+                                    .onFailure { error -> snackbarHostState.showSnackbar(error.message ?: "Could not delete") }
                             }
                         },
                         onSaveSetups = { count, streamCount ->
                             val tournamentId = selectedTournamentId ?: return@TournamentPane
-                            mutateTournament("Setups guardados") { repository.updateSetups(tournamentId, count, streamCount) }
+                            mutateTournament("Setups saved") { repository.updateSetups(tournamentId, count, streamCount) }
                         },
                         adminKey = adminSessionKey,
                         onPublicOptions = { options ->
                             val tournamentId = selectedTournamentId ?: return@TournamentPane
-                            mutateTournament("Opciones públicas guardadas") { repository.updatePublicOptions(tournamentId, adminSessionKey, options) }
+                            mutateTournament("Public options saved") { repository.updatePublicOptions(tournamentId, adminSessionKey, options) }
                         },
                         onSaveSettings = { input ->
                             val tournamentId = selectedTournamentId ?: return@TournamentPane
-                            mutateTournament("Ajustes guardados") { repository.updateTournament(tournamentId, input) }
+                            mutateTournament("Settings saved") { repository.updateTournament(tournamentId, input) }
                         },
                         onAddParticipant = { displayName ->
                             val tournamentId = selectedTournamentId ?: return@TournamentPane
@@ -451,7 +451,7 @@ fun DesktopApp(onExitForUpdate: () -> Unit = {}) {
                         },
                         onImportStartgg = { eventUrl ->
                             val tournamentId = selectedTournamentId ?: return@TournamentPane
-                            mutateTournament("Participantes importados desde start.gg") {
+                            mutateTournament("Participants imported from start.gg") {
                                 repository.importStartggEvent(
                                     tournamentId = tournamentId,
                                     eventUrl = eventUrl,
@@ -464,7 +464,7 @@ fun DesktopApp(onExitForUpdate: () -> Unit = {}) {
                             scope.launch {
                                 runCatching { repository.previewStartggImport(eventUrl) }
                                     .onSuccess(onSuccess)
-                                    .onFailure { error -> onError(error.message ?: "No se pudo leer el event de start.gg") }
+                                    .onFailure { error -> onError(error.message ?: "Could not read the start.gg event") }
                             }
                         },
                         onUpdateParticipant = { participantId, displayName, seed ->
@@ -477,11 +477,11 @@ fun DesktopApp(onExitForUpdate: () -> Unit = {}) {
                         },
                         onStartLadder = {
                             val tournamentId = selectedTournamentId ?: return@TournamentPane
-                            mutateTournament("Ladder activada") { repository.startLadder(tournamentId) }
+                            mutateTournament("Ladder enabled") { repository.startLadder(tournamentId) }
                         },
                         onFinalizeLadder = {
                             val tournamentId = selectedTournamentId ?: return@TournamentPane
-                            mutateTournament("Ladder finalizada") { repository.finalizeLadder(tournamentId) }
+                            mutateTournament("Ladder finished") { repository.finalizeLadder(tournamentId) }
                         },
                         onCallMatch = { matchId, station ->
                             val tournamentId = selectedTournamentId ?: return@TournamentPane
@@ -510,7 +510,7 @@ fun DesktopApp(onExitForUpdate: () -> Unit = {}) {
                         onReportDetailedResult = { matchId, bestOfOverride, games, onComplete ->
                             val tournamentId = selectedTournamentId
                             if (tournamentId == null) {
-                                onComplete("Selecciona un torneo para continuar.")
+                                onComplete("Select a tournament to continue.")
                                 return@TournamentPane
                             }
                             var saved = false
@@ -556,7 +556,7 @@ fun DesktopApp(onExitForUpdate: () -> Unit = {}) {
                                 currentSection = DesktopSection.Tournaments
                                 refreshList(created.id)
                             }
-                            .onFailure { error -> snackbarHostState.showSnackbar(error.message ?: "No se pudo crear el torneo") }
+                            .onFailure { error -> snackbarHostState.showSnackbar(error.message ?: "Could not create the tournament") }
                     }
                 }
             )
@@ -569,7 +569,7 @@ fun DesktopApp(onExitForUpdate: () -> Unit = {}) {
                     scope.launch {
                         runCatching { repository.previewStartggImport(eventUrl) }
                             .onSuccess(onSuccess)
-                            .onFailure { error -> onError(error.message ?: "No se pudo leer el event de start.gg") }
+                            .onFailure { error -> onError(error.message ?: "Could not read the start.gg event") }
                     }
                 },
                 onCreate = { eventUrl, callTimeout, setupCount, streamCount ->
@@ -580,7 +580,7 @@ fun DesktopApp(onExitForUpdate: () -> Unit = {}) {
                                 currentSection = DesktopSection.Tournaments
                                 refreshList(created.id)
                             }
-                            .onFailure { error -> snackbarHostState.showSnackbar(error.message ?: "No se pudo crear el torneo start.gg") }
+                            .onFailure { error -> snackbarHostState.showSnackbar(error.message ?: "Could not create the start.gg tournament") }
                     }
                 }
             )
@@ -588,14 +588,14 @@ fun DesktopApp(onExitForUpdate: () -> Unit = {}) {
 
         if (showGenerateBracketResetDialog) {
             ConfirmActionDialog(
-                title = "Regenerar bracket",
-                message = "Si procedes se reiniciara el torneo y se volvera a generar la bracket. Esta accion borra el progreso actual.",
-                confirmLabel = "Confirmar",
+                title = "Regenerate bracket",
+                message = "Continuing resets the tournament and regenerates the bracket. This deletes current progress.",
+                confirmLabel = "Confirm",
                 onDismiss = { showGenerateBracketResetDialog = false },
                 onConfirm = {
                     showGenerateBracketResetDialog = false
                     val tournamentId = selectedTournamentId ?: return@ConfirmActionDialog
-                    mutateTournament("Bracket regenerada") { repository.resetAndGenerateBracket(tournamentId) }
+                    mutateTournament("Bracket regenerated") { repository.resetAndGenerateBracket(tournamentId) }
                 }
             )
         }
@@ -620,12 +620,12 @@ private fun TournamentSidebar(
     var showArchived by remember { mutableStateOf(false) }
     Column(modifier = Modifier.fillMaxHeight().width(sidebarWidth).padding(18.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
         Text("Smash Tournaments", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-        Text("Centro de torneos y operativa rapida desde Windows.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text("Tournament hub and quick match operations on Windows.", color = MaterialTheme.colorScheme.onSurfaceVariant)
         FlowRow(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Button(onClick = onCreateTournament) { Text("Nuevo torneo") }
-            OutlinedButton(onClick = onCreateStartggTournament) { Text("Importar de start.gg") }
-            OutlinedButton(onClick = onRefresh) { Text("Refrescar") }
-            OutlinedButton(onClick = onToggleTheme) { Text(if (darkMode) "Claro" else "Oscuro") }
+            Button(onClick = onCreateTournament) { Text("New tournament") }
+            OutlinedButton(onClick = onCreateStartggTournament) { Text("Import from start.gg") }
+            OutlinedButton(onClick = onRefresh) { Text("Refresh") }
+            OutlinedButton(onClick = onToggleTheme) { Text(if (darkMode) "Light" else "Dark") }
         }
         Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface), modifier = Modifier.fillMaxSize(), shape = RoundedCornerShape(20.dp)) {
             if (loading) {
@@ -634,11 +634,11 @@ private fun TournamentSidebar(
                 LazyColumn(modifier = Modifier.fillMaxSize().padding(12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     item {
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            FilterChip(selected = !showArchived, onClick = { showArchived = false }, label = { Text("Actuales") })
-                            FilterChip(selected = showArchived, onClick = { showArchived = true }, label = { Text("Archivados") })
+                            FilterChip(selected = !showArchived, onClick = { showArchived = false }, label = { Text("Current") })
+                            FilterChip(selected = showArchived, onClick = { showArchived = true }, label = { Text("Archived") })
                         }
                     }
-                    if (tournaments.none { (it.status == "ARCHIVED") == showArchived }) item { Text("No hay torneos en esta lista.") }
+                    if (tournaments.none { (it.status == "ARCHIVED") == showArchived }) item { Text("No tournaments in this list.") }
                     items(tournaments.filter { (it.status == "ARCHIVED") == showArchived }) { tournament ->
                         val selected = tournament.id == selectedTournamentId
                         Card(
@@ -651,7 +651,7 @@ private fun TournamentSidebar(
                             Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                                 Text(tournament.title, fontWeight = FontWeight.Bold)
                                 Text("${tournament.game} · ${tournament.format}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                Text("Inscritos ${tournament.registeredParticipants}/${tournament.maxParticipants}", style = MaterialTheme.typography.bodySmall)
+                                Text("Registered ${tournament.registeredParticipants}/${tournament.maxParticipants}", style = MaterialTheme.typography.bodySmall)
                                 MainStatusBadge(mainStatusLabel(tournament.status), tournament.status)
                             }
                         }
@@ -757,7 +757,7 @@ private fun TournamentPane(
                     onOpenUpdate = onOpenUpdate
                 )
                 loading && tournament == null -> CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-                tournament == null -> Text("Selecciona un torneo para continuar.", modifier = Modifier.align(Alignment.Center), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                tournament == null -> Text("Select a tournament to continue.", modifier = Modifier.align(Alignment.Center), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 tournament.status == "ARCHIVED" -> ArchivedTournamentSection(tournament, loading, { onArchiveTournament(false) })
                 currentSection == DesktopSection.Tournaments -> TournamentManagementSection(
                     onOpenOperations = { onSectionSelected(DesktopSection.Operations) },

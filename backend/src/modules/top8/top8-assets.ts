@@ -20,7 +20,7 @@ export class Top8Assets {
   constructor(private catalogue: string, readonly cacheDir: string, private request: typeof fetch = fetch, private maxCacheBytes = 2 * 1024 ** 3) {
     this.manifest = fs.readFile(path.join(catalogue, 'images.json'), 'utf8').then(text => {
       const data = JSON.parse(text) as Manifest;
-      if (!/^[a-f0-9]{40}$/.test(data.revision)) throw Error('Catálogo de imágenes no válido');
+      if (!/^[a-f0-9]{40}$/.test(data.revision)) throw Error('Invalid image catalog');
       return data;
     });
     // A missing catalogue must not produce an unhandled rejection at startup.
@@ -34,13 +34,13 @@ export class Top8Assets {
   }
   async file(hash: string, size: Size): Promise<string> {
     const asset = await this.lookup(hash);
-    if (!asset || !validSize(size)) throw Error('Imagen no disponible en la biblioteca');
+    if (!asset || !validSize(size)) throw Error('Image unavailable in the library');
     const extension = size === 'full' ? path.extname(asset.path).toLowerCase() : '.webp';
     const filename = path.join(this.cacheDir, `${hash}-${size}${extension}`);
     try { const stat = await fs.stat(filename); if (stat.isFile() && stat.size > 0) { void fs.utimes(filename, new Date(), new Date()).catch(() => {}); return filename; } } catch { /* Cache miss. */ }
     const key = `${hash}-${size}`;
     if (this.pending.has(key)) return this.pending.get(key)!;
-    if (this.pending.size >= 128) throw Error('Biblioteca ocupada; vuelve a intentarlo');
+    if (this.pending.size >= 128) throw Error('Library busy; try again');
     const work = (async () => {
       await fs.mkdir(this.cacheDir, { recursive: true });
       if (size !== 'full') {
@@ -53,16 +53,16 @@ export class Top8Assets {
       return this.slot(async () => {
         const url = `https://raw.githubusercontent.com/joaorb64/StreamHelperAssets/${asset.revision}/${asset.path.split('/').map(encodeURIComponent).join('/')}`;
         const response = await this.request(url, { redirect: 'error', signal: AbortSignal.timeout(45000) });
-        if (!response.ok || !response.body || Number(response.headers.get('content-length') || 0) > limit) { await response.body?.cancel(); throw Error('No se pudo descargar el original de la biblioteca'); }
+        if (!response.ok || !response.body || Number(response.headers.get('content-length') || 0) > limit) { await response.body?.cancel(); throw Error('Could not download the original library image'); }
         const reader = response.body.getReader(), chunks: Uint8Array[] = []; let bytes = 0;
-        try { while (true) { const part = await reader.read(); if (part.done) break; bytes += part.value.length; if (bytes > limit) throw Error('Imagen demasiado grande'); chunks.push(part.value); } }
+        try { while (true) { const part = await reader.read(); if (part.done) break; bytes += part.value.length; if (bytes > limit) throw Error('Image too large'); chunks.push(part.value); } }
         catch (error) { await reader.cancel().catch(() => {}); throw error; }
         finally { reader.releaseLock(); }
         const buffer = Buffer.concat(chunks);
         const actual = createHash('sha1').update(`blob ${buffer.length}\0`).update(buffer).digest('hex');
-        if (actual !== hash) throw Error('El original no coincide con el catálogo');
+        if (actual !== hash) throw Error('The original does not match the catalog');
         const metadata = await sharp(buffer, { limitInputPixels: 64000000 }).metadata();
-        if (!['png', 'jpeg', 'webp'].includes(metadata.format || '') || (metadata.pages || 1) > 1) throw Error('Formato de imagen no compatible');
+        if (!['png', 'jpeg', 'webp'].includes(metadata.format || '') || (metadata.pages || 1) > 1) throw Error('Unsupported image format');
         await this.atomic(filename, buffer);
         return filename;
       });
@@ -107,7 +107,7 @@ export function createTop8AssetRouter(store: Top8Assets) {
       res.sendFile(filename, error => { if (error && !res.headersSent) res.status(503).end(); });
     } catch {
       res.setHeader('Cache-Control', 'no-store'); res.setHeader('Retry-After', '5');
-      res.status(503).json({ message: 'No se pudo cargar esta imagen. Reintenta o utiliza una imagen propia.' });
+      res.status(503).json({ message: 'Could not load this image. Retry or use your own image.' });
     }
   });
   return router;

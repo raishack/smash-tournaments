@@ -23,7 +23,7 @@ export class TournamentOperationRunner {
       if (request.id) {
         const previous = await this.repository.getOperation(tournamentId, request.id);
         if (previous) {
-          if (previous.fingerprint !== key) throw new OperationConflict("Esta operación ya se usó con otros datos. Recarga el torneo.");
+          if (previous.fingerprint !== key) throw new OperationConflict("This operation was already used with different data. Reload the tournament.");
           return previous.result as T;
         }
       }
@@ -31,7 +31,7 @@ export class TournamentOperationRunner {
       const expectedRevision = (input.input as { expectedRevision?: string } | undefined)?.expectedRevision ?? request.expectedRevision;
       const beforeMatch = matchId ? (await this.repository.listMatches(tournamentId)).find(m => m.id === matchId) : undefined;
       if (matchId && expectedRevision && (!beforeMatch || matchRevision(beforeMatch) !== expectedRevision)) {
-        throw new OperationConflict("Este match cambió desde otro dispositivo. Recarga y revisa el resultado antes de volver a guardar.");
+        throw new OperationConflict("This match changed on another device. Reload and review the result before saving again.");
       }
       const before = matchId ? matchAuditState(beforeMatch) : await this.summary(tournamentId, action);
       let result = await block();

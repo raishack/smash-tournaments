@@ -1,6 +1,6 @@
 # Example screens
 
-These PNGs show the real web interfaces running locally with synthetic tournament data. Names, scores, registration capacity and dates are examples. They are not screenshots of a live event. The current interfaces are primarily in Spanish.
+These PNGs show the real web interfaces running locally with synthetic tournament data. Names, scores, registration capacity and dates are examples. They are not screenshots of a live event. The screenshots show the English interfaces.
 
 ## Tournament display
 

@@ -79,17 +79,17 @@ export class TournamentsService {
       const tournament = await this.repository.getTournament(tournamentId);
       if (!tournament) throw new Error('Tournament not found');
       if (archived && tournament.status === 'ARCHIVED') return tournament;
-      if (!archived && tournament.status !== 'ARCHIVED') throw new Error('Este torneo no está archivado');
+      if (!archived && tournament.status !== 'ARCHIVED') throw new Error('This tournament is not archived');
       if (archived) {
-        if (tournament.status !== 'COMPLETED') throw new Error('Solo se pueden archivar torneos completados');
+        if (tournament.status !== 'COMPLETED') throw new Error('Only completed tournaments can be archived');
         this.ensureImportFinished(tournament);
-        if (this.activeManualStartggImports.has(tournamentId)) throw new Error('Espera a que termine la importación');
+        if (this.activeManualStartggImports.has(tournamentId)) throw new Error('Wait for the import to finish');
         const matches = await this.repository.listMatches(tournamentId);
         if ((await this.repository.listSyncJobs(tournamentId)).some(j => ['PENDING','RUNNING'].includes(j.state)
           || (j.state === 'FAILED' && matches.some(m => m.id === j.matchId && (m.externalRef?.localSyncVersion ?? 0) === j.version)))) {
-          throw new Error('Resuelve los envíos pendientes o fallidos a start.gg antes de archivar');
+          throw new Error('Resolve pending or failed start.gg submissions before archiving');
         }
-        if (await this.repository.hasActiveLadder(tournamentId)) throw new Error('Finaliza la ladder antes de archivar el torneo');
+        if (await this.repository.hasActiveLadder(tournamentId)) throw new Error('Finish the ladder before archiving the tournament');
       }
       const updated: Tournament = { ...tournament, status: archived ? 'ARCHIVED' : 'COMPLETED',
         settings: { ...tournament.settings, displayEnabled: false, registrationEnabled: false }, updatedAt: new Date().toISOString() };
@@ -124,7 +124,7 @@ export class TournamentsService {
     if (!tournament) {
       throw new Error("Tournament not found");
     }
-    if (tournament.settings.importJob?.state === "RUNNING") throw new Error("Espera a que termine la importacion");
+    if (tournament.settings.importJob?.state === "RUNNING") throw new Error("Wait for the import to finish");
     assertTournamentWritable(tournament);
 
     await this.repository.replaceMatches(tournamentId, []);
@@ -196,11 +196,11 @@ export class TournamentsService {
     if (!this.isMirroredStartggMatch(tournament, match)) return undefined;
     const version = match.externalRef?.localSyncVersion ?? 0;
     const job = jobs.filter(j => j.matchId === match.id && j.version === version).sort((a,b) => b.updatedAt.localeCompare(a.updatedAt))[0];
-    if (!tournament.importSource?.syncResults) return { state: "LOCAL", message: "Guardado en la app · sincronización desactivada" };
-    if (job?.state === "FAILED") return { state: "FAILED", message: "No se pudo sincronizar con start.gg", error: job.error, updatedAt: job.updatedAt, canRetry: true };
-    if (job && (job.state === "PENDING" || job.state === "RUNNING")) return { state: "PENDING", message: "Guardado en la app · pendiente de start.gg", updatedAt: job.updatedAt };
-    if (version > (match.externalRef?.syncedSyncVersion ?? 0)) return { state: "LOCAL", message: "Guardado en la app" };
-    return { state: "SYNCED", message: "Confirmado en start.gg", updatedAt: match.externalRef?.resultSyncedAt ?? job?.updatedAt };
+    if (!tournament.importSource?.syncResults) return { state: "LOCAL", message: "Saved in the app · synchronization disabled" };
+    if (job?.state === "FAILED") return { state: "FAILED", message: "Could not synchronize with start.gg", error: job.error, updatedAt: job.updatedAt, canRetry: true };
+    if (job && (job.state === "PENDING" || job.state === "RUNNING")) return { state: "PENDING", message: "Saved in the app · awaiting start.gg", updatedAt: job.updatedAt };
+    if (version > (match.externalRef?.syncedSyncVersion ?? 0)) return { state: "LOCAL", message: "Saved in the app" };
+    return { state: "SYNCED", message: "Confirmed on start.gg", updatedAt: match.externalRef?.resultSyncedAt ?? job?.updatedAt };
   }
 
   async getActivity(tournamentId: string) {
@@ -210,16 +210,16 @@ export class TournamentsService {
     const jobs = await this.repository.listSyncJobs(tournamentId);
     const labels = new Map(withBracketLabels(await this.repository.listMatches(tournamentId), tournament.settings.format).map(m => [m.id, m.displayLabel]));
     const entries = events.map(event => ({
-      id: event.id, createdAt: event.createdAt, matchId: event.matchId, matchLabel: event.matchId ? labels.get(event.matchId) ?? "Match eliminado" : undefined, summary: actionLabels[event.action] ?? event.action,
+      id: event.id, createdAt: event.createdAt, matchId: event.matchId, matchLabel: event.matchId ? labels.get(event.matchId) ?? "Match deleted" : undefined, summary: actionLabels[event.action] ?? event.action,
       detail: [event.platform ? `${event.platform} ${event.appVersion ?? ""}`.trim() : "backend",
-        event.before !== undefined ? `Antes: ${describeAuditState(event.before)}` : "",
-        event.after !== undefined ? `Después: ${describeAuditState(event.after)}` : "",
+        event.before !== undefined ? `Before: ${describeAuditState(event.before)}` : "",
+        event.after !== undefined ? `After: ${describeAuditState(event.after)}` : "",
         event.error ? `Error: ${safeDiagnostic(event.error)}` : ""].filter(Boolean).join("\n"),
     }));
-    const diagnosticText = ["Diagnóstico del torneo", `Fecha: ${new Date().toISOString()}`, `Torneo: ${tournament.id}`,
-      `Estado: ${tournament.status}`, `Importación: ${safeDiagnostic(stableJson(tournament.settings.importJob ?? {}))}`,
+    const diagnosticText = ["Tournament diagnostics", `Date: ${new Date().toISOString()}`, `Tournament: ${tournament.id}`,
+      `Status: ${tournament.status}`, `Import: ${safeDiagnostic(stableJson(tournament.settings.importJob ?? {}))}`,
       ...jobs.filter(j => j.state !== "SYNCED" && j.state !== "SUPERSEDED").map(j => `Sync ${j.matchId}: ${j.state}; intentos ${j.attempts}; ${safeDiagnostic(j.error)}`),
-      "Historial (últimas 200 operaciones):", ...entries.map(e => `${e.createdAt} ${e.matchId ?? ""} ${e.summary}\n${e.detail}`),
+      "History (last 200 operations):", ...entries.map(e => `${e.createdAt} ${e.matchId ?? ""} ${e.summary}\n${e.detail}`),
     ].join("\n");
     return { entries, diagnosticText };
   }
@@ -280,8 +280,8 @@ export class TournamentsService {
 
   async createStartggImport(input: ImportStartggEventInput & { setupCount: number; streamCount?: number; callTimeoutMinutes: number; playerMatchReportingEnabled: boolean }) {
     const tournament = await this.createTournament({
-      ownerId: "local-organizer", title: "Importando torneo de start.gg", gameTitle: "start.gg",
-      description: "Importacion de start.gg", platform: "start.gg", startsAt: new Date().toISOString(),
+      ownerId: "local-organizer", title: "Importing start.gg tournament", gameTitle: "start.gg",
+      description: "start.gg import", platform: "start.gg", startsAt: new Date().toISOString(),
       maxParticipants: 2, isPublic: true,
       settings: { format: "SINGLE_ELIMINATION", bestOf: 3, hasThirdPlaceMatch: false,
         checkInRequired: false, allowRematchReview: true, seedingMethod: "MANUAL",
@@ -390,7 +390,7 @@ export class TournamentsService {
     if (this.repository.listSyncJobs) {
       const unfinished = (await this.repository.listSyncJobs(tournamentId)).some(job =>
         ["PENDING", "RUNNING", "FAILED"].includes(job.state) && matches.some(m => m.id === job.matchId && (m.externalRef?.localSyncVersion ?? 0) === job.version));
-      if (unfinished) throw new Error("Hay envíos a start.gg pendientes o con error. Resuélvelos antes de reimportar para conservar los resultados locales.");
+      if (unfinished) throw new Error("Some start.gg submissions are pending or failed. Resolve them before reimporting to preserve local results.");
     }
     const snapshot = await this.loadStableStartggSnapshot(tournament, input.eventUrl, matches, {
       includeGameDetails: true,
@@ -408,7 +408,7 @@ export class TournamentsService {
       });
       throw new Error("Unable to load a stable start.gg snapshot right now. Please try again in a few seconds.");
     }
-    await this.persistImportProgress(tournamentId, { stage: "SAVING", message: "Guardando el torneo", completed: snapshot.matches.length, total: snapshot.matches.length });
+    await this.persistImportProgress(tournamentId, { stage: "SAVING", message: "Saving tournament", completed: snapshot.matches.length, total: snapshot.matches.length });
     const result = await this.applyStartggSnapshot(tournament, snapshot, {
       syncResults: input.syncResults,
       preserveTournamentTitle: input.preserveTournamentTitle,
@@ -436,7 +436,7 @@ export class TournamentsService {
     if (!tournament) {
       throw new Error("Tournament not found");
     }
-    if (tournament.settings.importJob?.state === "RUNNING") throw new Error("Espera a que termine la importacion");
+    if (tournament.settings.importJob?.state === "RUNNING") throw new Error("Wait for the import to finish");
 
     if (tournament.importSource?.provider === "START_GG") {
       return this.updateMirroredStartggTournament(tournament, input);
@@ -467,14 +467,14 @@ export class TournamentsService {
       throw new Error("Tournament options cannot be edited after matches have started");
     }
     this.ensureSetupCountCanBeApplied(settings, matches);
-    if (settings.bracketMode !== tournament.settings.bracketMode && (settings.bracketMode === 'FORTNITE' || tournament.settings.bracketMode === 'FORTNITE') && (matches.length || await this.repository.getFortniteState(tournamentId))) throw new Error('Reinicia el torneo antes de cambiar su formato');
+    if (settings.bracketMode !== tournament.settings.bracketMode && (settings.bracketMode === 'FORTNITE' || tournament.settings.bracketMode === 'FORTNITE') && (matches.length || await this.repository.getFortniteState(tournamentId))) throw new Error('Reset the tournament before changing its format');
     if (tournament.settings.bracketMode === 'FORTNITE' && await this.repository.getFortniteState(tournamentId)) {
-      if (settings.fortniteLobbySize !== tournament.settings.fortniteLobbySize || settings.fortniteGamesPerRound !== tournament.settings.fortniteGamesPerRound || input.maxParticipants !== tournament.maxParticipants || settings.bracketMode !== 'FORTNITE') throw new Error('Los grupos ya están sorteados. Reinicia el torneo antes de cambiar puestos, partidas o aforo');
+      if (settings.fortniteLobbySize !== tournament.settings.fortniteLobbySize || settings.fortniteGamesPerRound !== tournament.settings.fortniteGamesPerRound || input.maxParticipants !== tournament.maxParticipants || settings.bracketMode !== 'FORTNITE') throw new Error('Groups have already been drawn. Reset the tournament before changing seats, games or capacity');
     }
     if ((settings.teamSize ?? 1) !== (tournament.settings.teamSize ?? 1) || (settings.reserveCount ?? 0) !== (tournament.settings.reserveCount ?? 0)) {
-      if (matches.length || (await this.repository.listParticipants(tournamentId)).length || (await this.repository.listTeamMembers(tournamentId)).length) throw new Error('No se puede cambiar el tamaño de plantilla cuando ya hay equipos o jugadores inscritos');
+      if (matches.length || (await this.repository.listParticipants(tournamentId)).length || (await this.repository.listTeamMembers(tournamentId)).length) throw new Error('Roster size cannot change once teams or players have registered');
     }
-    if ((await this.repository.listParticipants(tournamentId)).length > input.maxParticipants) throw new Error('El aforo no puede ser menor que el número de inscritos');
+    if ((await this.repository.listParticipants(tournamentId)).length > input.maxParticipants) throw new Error('Capacity cannot be lower than the number of registered entrants');
     const structuralChange = this.hasBracketStructureChange(tournament.settings, settings);
     const shouldRegenerateBracket = structuralChange
       || (input.maxParticipants > tournament.maxParticipants && matches.length > 0);
@@ -512,7 +512,7 @@ export class TournamentsService {
     return this.operations.execute(tournamentId, "updateSetups", { setupCount, streamCount }, async () => {
     const tournament = await this.repository.getTournament(tournamentId);
     if (!tournament) throw new Error("Tournament not found");
-    if (tournament.settings.importJob?.state === "RUNNING") throw new Error("Espera a que termine la importacion");
+    if (tournament.settings.importJob?.state === "RUNNING") throw new Error("Wait for the import to finish");
     const settings = this.normalizeSettings({ ...tournament.settings, setupCount, streamCount: streamCount ?? tournament.settings.streamCount ?? 0 });
     this.ensureSetupCountCanBeApplied(settings, await this.repository.listMatches(tournamentId));
     const updated = { ...tournament, settings, updatedAt: new Date().toISOString() };
@@ -529,7 +529,7 @@ export class TournamentsService {
       throw new Error("Tournament not found");
     }
     this.ensureManualParticipantEditingAllowed(tournament);
-    if (tournament.settings.bracketMode === 'FORTNITE' && await this.repository.getFortniteState(tournamentId)) throw new Error('Los grupos Fortnite ya están sorteados. Reinicia el torneo antes de cambiar inscritos');
+    if (tournament.settings.bracketMode === 'FORTNITE' && await this.repository.getFortniteState(tournamentId)) throw new Error('Fortnite groups have already been drawn. Reset the tournament before changing entrants');
 
     const matches = await this.repository.listMatches(tournamentId);
     this.ensureLocalDrawCanChange(tournament, matches);
@@ -538,8 +538,8 @@ export class TournamentsService {
       throw new Error("Tournament is full");
     }
     if ((tournament.settings.teamSize ?? 1) > 1) {
-      if ((await this.repository.listMatches(tournamentId)).length) throw new Error('Añade equipos antes de generar la bracket');
-      if (participants.some(p => nickKey(p.displayName) === nickKey(input.displayName))) throw new Error('Ya hay un equipo con ese nombre');
+      if ((await this.repository.listMatches(tournamentId)).length) throw new Error('Add teams before generating the bracket');
+      if (participants.some(p => nickKey(p.displayName) === nickKey(input.displayName))) throw new Error('A team with that name already exists');
     }
 
     const participant: TournamentParticipant = {
@@ -584,7 +584,7 @@ export class TournamentsService {
       throw new Error("Tournament not found");
     }
     this.ensureManualParticipantEditingAllowed(tournament);
-    if (tournament.settings.bracketMode === 'FORTNITE' && await this.repository.getFortniteState(tournamentId)) throw new Error('Los grupos Fortnite ya están sorteados. Reinicia el torneo antes de cambiar inscritos');
+    if (tournament.settings.bracketMode === 'FORTNITE' && await this.repository.getFortniteState(tournamentId)) throw new Error('Fortnite groups have already been drawn. Reset the tournament before changing entrants');
 
     const matches = await this.repository.listMatches(tournamentId);
     const participants = await this.repository.listParticipants(tournamentId);
@@ -593,7 +593,7 @@ export class TournamentsService {
       throw new Error("Participant not found");
     }
 
-    if ((tournament.settings.teamSize ?? 1) > 1 && participants.some(p => p.id !== participantId && nickKey(p.displayName) === nickKey(input.displayName))) throw new Error('Ya hay un equipo con ese nombre');
+    if ((tournament.settings.teamSize ?? 1) > 1 && participants.some(p => p.id !== participantId && nickKey(p.displayName) === nickKey(input.displayName))) throw new Error('A team with that name already exists');
 
     const nextSeed = input.clearSeed || input.seed === null ? undefined : input.seed ?? participant.seed;
     const seedChanged = nextSeed !== participant.seed;
@@ -634,7 +634,7 @@ export class TournamentsService {
       throw new Error("Tournament not found");
     }
     this.ensureManualParticipantEditingAllowed(tournament);
-    if (tournament.settings.bracketMode === 'FORTNITE' && await this.repository.getFortniteState(tournamentId)) throw new Error('Los grupos Fortnite ya están sorteados. Reinicia el torneo antes de cambiar inscritos');
+    if (tournament.settings.bracketMode === 'FORTNITE' && await this.repository.getFortniteState(tournamentId)) throw new Error('Fortnite groups have already been drawn. Reset the tournament before changing entrants');
 
     const participants = await this.repository.listParticipants(tournamentId);
     const participant = participants.find((item) => item.id === participantId);
@@ -697,7 +697,7 @@ export class TournamentsService {
       throw new Error("Tournament not found");
     }
     this.ensureImportFinished(tournament);
-    if (tournament.settings.bracketMode === 'FORTNITE') throw new Error('Inicia las partidas desde el panel Fortnite');
+    if (tournament.settings.bracketMode === 'FORTNITE') throw new Error('Start games in the Fortnite panel');
 
     const matches = await this.repository.listMatches(tournamentId);
     if (matches.length === 0) {
@@ -730,7 +730,7 @@ export class TournamentsService {
       throw new Error("Tournament not found");
     }
     this.ensureImportFinished(tournament);
-    if (tournament.settings.bracketMode === 'FORTNITE') throw new Error('Genera los grupos desde el panel Fortnite');
+    if (tournament.settings.bracketMode === 'FORTNITE') throw new Error('Generate groups in the Fortnite panel');
     if (tournament.importSource?.provider === "START_GG") {
       throw new Error("Mirrored start.gg tournaments already use the bracket imported from start.gg");
     }
@@ -739,14 +739,14 @@ export class TournamentsService {
     const participants = (await this.repository.listParticipants(tournamentId))
       .filter(participant => this.isLocalDrawParticipant(tournament, participant));
     if (participants.length < 2) {
-      throw new Error("Se necesitan al menos dos participantes activos con asistencia confirmada cuando se exige check-in");
+      throw new Error("At least two active participants with confirmed attendance are required when check-in is mandatory");
     }
     const settings = this.normalizeSettings({ ...tournament.settings, registrationEnabled: false });
     if ((settings.teamSize ?? 1) > 1) {
       const members = await this.repository.listTeamMembers(tournamentId);
       const incomplete = participants.filter(p => members.filter(m => m.teamId === p.id && m.role === 'PLAYER').length !== settings.teamSize
         || members.filter(m => m.teamId === p.id && m.role === 'RESERVE').length > (settings.reserveCount ?? 0));
-      if (incomplete.length) throw new Error('Completa las plantillas antes de generar la bracket: ' + incomplete.map(p => p.displayName).join(', '));
+      if (incomplete.length) throw new Error('Complete rosters before generating the bracket: ' + incomplete.map(p => p.displayName).join(', '));
     }
     const seededParticipants = tournament.importSource?.provider === "START_GG"
       ? this.seedParticipants(participants, "MANUAL")
@@ -786,7 +786,7 @@ export class TournamentsService {
       throw new Error("Match not found");
     }
     if (match.status !== "PENDING" && match.status !== "CALLED") {
-      throw new Error("Solo se puede llamar a un match pendiente o ya llamado. Recarga el torneo");
+      throw new Error("Only a pending or already called match can be called. Reload the tournament");
     }
     this.ensureMatchHasResolvedContenders(match);
     this.ensureMirroredStartggSetIsEditable(tournament, match);
@@ -832,7 +832,7 @@ export class TournamentsService {
       throw new Error("Match not found");
     }
     if (match.status !== "CALLED" || match.call?.startedAt) {
-      throw new Error("Solo se puede cancelar una llamada antes de iniciar el match. Recarga el torneo");
+      throw new Error("A call can only be cancelled before the match starts. Reload the tournament");
     }
 
     const updatedMatch: Match = {
@@ -865,7 +865,7 @@ export class TournamentsService {
       throw new Error("Match not found");
     }
     if (match.status !== "PENDING" && match.status !== "CALLED") {
-      throw new Error("Solo se puede iniciar un match pendiente o llamado. Recarga el torneo");
+      throw new Error("Only a pending or called match can start. Reload the tournament");
     }
     this.ensureMatchHasResolvedContenders(match);
 
@@ -1214,7 +1214,7 @@ export class TournamentsService {
 
     for (const [index, game] of input.games.entries()) {
       if ([...scoresByParticipantId.values()].some(score => score >= winsNeeded)) {
-        throw new Error("No se pueden anotar partidas después de la victoria que cierra el set");
+        throw new Error("Games cannot be reported after the win that finishes the set");
       }
       if (!participantsById.has(game.winnerParticipantId)) {
         throw new Error("The selected game winner does not belong to this match");
@@ -1554,7 +1554,7 @@ export class TournamentsService {
       ownerId: "user_admin",
       title: "Smash Tournaments Demo Cup",
       gameTitle: "EA Sports FC 26",
-      description: "Torneo demo para validar el flujo base de brackets y matches.",
+      description: "Demo tournament to validate the basic bracket and match workflow.",
       platform: "PlayStation 5",
       startsAt: new Date(Date.now() + 86400000).toISOString(),
       maxParticipants: 16,
@@ -2895,7 +2895,7 @@ export class TournamentsService {
           await this.refreshMirroredDownstreamProgressAfterGroupCompletion(tournament, match);
           return normalizedMatch;
         }
-        if (!wasPreviouslySynced) throw new Error("start.gg ya tiene otro resultado o sus partidas no coinciden. Revisa el set antes de sincronizar.");
+        if (!wasPreviouslySynced) throw new Error("start.gg already has a different result or mismatched games. Review the set before synchronizing.");
       }
       if (wasPreviouslySynced && remote.state === 3) {
         const resetSyncResult = await this.startggClient.resetSet(reportableSetId, true);
@@ -3596,7 +3596,7 @@ export class TournamentsService {
   private ensureLocalDrawCanChange(tournament: Tournament, matches: Match[]): void {
     if (["IN_PROGRESS", "COMPLETED", "CANCELLED"].includes(tournament.status)
       || matches.some(match => this.hasRealMatchActivity(match))) {
-      throw new Error("La bracket ya está iniciada o el torneo está cerrado. Reinicia el torneo antes de cambiar inscritos, seeds o regenerar los cruces");
+      throw new Error("The bracket has started or the tournament is closed. Reset the tournament before changing entrants or seeds, or regenerating matches");
     }
   }
 
@@ -4698,7 +4698,7 @@ export class TournamentsService {
   private placeholderDisplayName(matchId: string, matches: Match[], kind: "winner" | "loser" = "winner"): string {
     const match = matches.find((item) => item.id === matchId);
     if (!match) {
-      return kind === "winner" ? "Ganador pendiente" : "Perdedor pendiente";
+      return kind === "winner" ? "Winner pending" : "Loser pending";
     }
 
     const stagePrefix = match.bracketStage === "LOSERS"
@@ -4707,23 +4707,23 @@ export class TournamentsService {
         ? "F"
         : "W";
     return kind === "winner"
-      ? `Ganador ${stagePrefix}${match.roundNumber}M${match.matchNumber}`
-      : `Perdedor ${stagePrefix}${match.roundNumber}M${match.matchNumber}`;
+      ? `Winner ${stagePrefix}${match.roundNumber}M${match.matchNumber}`
+      : `Loser ${stagePrefix}${match.roundNumber}M${match.matchNumber}`;
   }
 
   private marioKartPlaceholderDisplayName(matchId: string, placement: number, matches: Match[]): string {
     const match = matches.find((item) => item.id === matchId);
     if (!match) {
-      return `Clasificado ${placement} pendiente`;
+      return `Qualified ${placement} pending`;
     }
 
-    return `Clasificado ${placement} ${match.bracketStage === "FINALS" ? "Final" : `R${match.roundNumber}M${match.matchNumber}`}`;
+    return `Qualified ${placement} ${match.bracketStage === "FINALS" ? "Final" : `R${match.roundNumber}M${match.matchNumber}`}`;
   }
 
   private marioKartDroppedPlaceholderDisplayName(matchId: string, placement: number, matches: Match[]): string {
     const match = matches.find((item) => item.id === matchId);
     if (!match) {
-      return `Repesca ${placement} pendiente`;
+      return `Repesca ${placement} pending`;
     }
 
     return `Repesca ${placement} ${match.bracketStage === "FINALS" ? "Final" : `R${match.roundNumber}M${match.matchNumber}`}`;
@@ -4784,14 +4784,14 @@ export class TournamentsService {
 
   private ensureImportFinished(tournament: Tournament): void {
     if (tournament.settings.importJob?.state === "RUNNING") {
-      throw new Error("Espera a que termine la importacion");
+      throw new Error("Wait for the import to finish");
     }
   }
 
   private ensureStartggImportAllowed(tournament: Tournament, matches: Match[]): void {
     assertTournamentWritable(tournament);
     if ((tournament.settings.teamSize ?? 1) > 1 || tournament.settings.bracketMode === 'FORTNITE') {
-      throw new Error('Crea otro torneo para importar start.gg; este torneo usa plantillas locales o grupos Fortnite');
+      throw new Error('Create another tournament to import start.gg; this tournament uses local rosters or Fortnite groups');
     }
     if (tournament.importSource?.provider !== "START_GG") this.ensureLocalDrawCanChange(tournament, matches);
   }
@@ -4997,7 +4997,7 @@ export class TournamentsService {
     const mkartLosersAdvanceCount = settings.mkartLosersAdvanceCount ?? mkartAdvanceCount;
     const setupCount = Math.max(1, Math.trunc(settings.setupCount ?? 1));
     const streamCount = settings.streamCount ?? 0;
-    if (!Number.isInteger(streamCount) || streamCount < 0 || streamCount > 2) throw new Error("El numero de streams debe ser 0, 1 o 2");
+    if (!Number.isInteger(streamCount) || streamCount < 0 || streamCount > 2) throw new Error("The stream count must be 0, 1 or 2");
     const playAreaName = settings.playAreaName?.trim() || undefined;
 
     return {
@@ -5106,7 +5106,7 @@ export class TournamentsService {
     const setupCount = this.normalizeSettings(settings).setupCount ?? 1;
     const activeStreamNumbers = matches.filter(match => this.isSetupOccupyingMatch(match))
       .map(match => Number(/^Stream (\d+)$/.exec(this.normalizeSetupLabel(match.call?.stationLabel) ?? "")?.[1] ?? 0));
-    if (activeStreamNumbers.some(n => n > (settings.streamCount ?? 0))) throw new Error("No se puede quitar un stream mientras esta en uso");
+    if (activeStreamNumbers.some(n => n > (settings.streamCount ?? 0))) throw new Error("A stream cannot be removed while in use");
     const highestActiveSetup = matches.reduce((highest, match) => {
       if (!this.isSetupOccupyingMatch(match)) {
         return highest;
@@ -5294,15 +5294,15 @@ export class TournamentsService {
   private validateReportedScores(match: Match, input: ReportResultInput): void {
     const ids = new Set(match.participants.map(participant => participant.participantId));
     if (ids.size !== 2 || match.participants.length !== 2 || !ids.has(input.winnerParticipantId)) {
-      throw new Error("Selecciona un ganador de este match de dos participantes");
+      throw new Error("Select a winner for this two-participant match");
     }
     if (input.scores.length !== ids.size || new Set(input.scores.map(score => score.participantId)).size !== ids.size
       || input.scores.some(score => !ids.has(score.participantId) || !Number.isInteger(score.score) || score.score < 0)) {
-      throw new Error("Indica un marcador entero y no negativo para cada participante, sin repetir jugadores");
+      throw new Error("Enter a non-negative whole-number score for each participant, without duplicate players");
     }
     const needed = Math.floor((match.reportedBestOf ?? match.bestOf) / 2) + 1;
     if (input.scores.some(score => score.participantId === input.winnerParticipantId ? score.score !== needed : score.score >= needed)) {
-      throw new Error("El ganador debe alcanzar las victorias necesarias y el rival debe quedar por debajo");
+      throw new Error("The winner must reach the required wins and the opponent must remain below that score");
     }
   }
 
@@ -5345,7 +5345,7 @@ export class TournamentsService {
       seen.add(selection.participantId);
       const names = selection.characterName.split("/").map((name) => name.trim());
       if (names.length !== teamSize || names.some((name) => !name)) {
-        throw new Error("Selecciona los " + teamSize + " personajes de cada equipo/jugador");
+        throw new Error("Select the " + teamSize + " characters for each team/player");
       }
       return names.map((name) => {
         const character = this.resolveSupportedCharacter(tournament, name);

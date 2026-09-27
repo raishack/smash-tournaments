@@ -17,21 +17,21 @@
   window.GTScreenControls = function (onChange, onNext) {
     const panel = document.createElement("details");
     panel.className = "screen-controls";
-    panel.innerHTML = `<summary title="Configurar pantalla" aria-label="Configurar pantalla">Configurar pantalla</summary><div class="screen-controls-body">
-      <label>Torneo<select data-field="tournamentId"><option value="">Todos los torneos</option></select></label>
-      <label>Vista<select data-field="view"><option value="rotation">Rotación completa</option><option value="bracket">Solo bracket</option><option value="setups">Solo setups</option><option value="ladder">Solo ladder</option></select></label>
-      <label>Fijar página<select data-field="sceneKey"><option value="">Todas las páginas</option></select></label>
-      <label>Winners y losers<select data-field="bracketLayout"><option value="separate">En escenas separadas</option><option value="combined">Juntos en una escena</option></select></label>
-      <label>Encuadre<select data-field="bracketViewport"><option value="focus">Por ramas conectadas</option><option value="overview">Bracket completa</option></select></label>
-      <label>Densidad<select data-field="bracketDensity"><option value="comfortable">Texto grande</option><option value="balanced">Equilibrada</option><option value="compact">Más matches</option></select></label>
-      <label>Tamaño de texto (%)<input data-field="textScale" type="number" min="80" max="150" step="5"></label>
+    panel.innerHTML = `<summary title="Display settings" aria-label="Display settings">Display settings</summary><div class="screen-controls-body">
+      <label>Tournament<select data-field="tournamentId"><option value="">All tournaments</option></select></label>
+      <label>View<select data-field="view"><option value="rotation">Full rotation</option><option value="bracket">Bracket only</option><option value="setups">Setups only</option><option value="ladder">Ladder only</option></select></label>
+      <label>Pin page<select data-field="sceneKey"><option value="">All pages</option></select></label>
+      <label>Winners and losers<select data-field="bracketLayout"><option value="separate">Separate scenes</option><option value="combined">Together in one scene</option></select></label>
+      <label>Framing<select data-field="bracketViewport"><option value="focus">Connected branches</option><option value="overview">Full bracket</option></select></label>
+      <label>Density<select data-field="bracketDensity"><option value="comfortable">Large text</option><option value="balanced">Balanced</option><option value="compact">More matches</option></select></label>
+      <label>Text size (%)<input data-field="textScale" type="number" min="80" max="150" step="5"></label>
       <label>Bracket / setups (segundos)<input data-field="bracketSeconds" type="number" min="5" max="120"></label>
-      <label>Resultados (segundos)<input data-field="resultSeconds" type="number" min="5" max="60"></label>
-      <label>Avisos (segundos)<input data-field="callSeconds" type="number" min="5" max="60"></label>
-      <label class="screen-pause"><input data-field="paused" type="checkbox">Pausar rotación (los datos siguen actualizándose)</label>
-      <div class="screen-control-actions"><button type="button" data-next>Siguiente</button><button type="button" data-fullscreen>Pantalla completa</button></div>
-      <button type="button" data-reset>Usar los ajustes del administrador</button>
-      <p class="screen-control-note">Los cambios de aquí afectan solo a esta pantalla.</p></div>`;
+      <label>Results (seconds)<input data-field="resultSeconds" type="number" min="5" max="60"></label>
+      <label>Notifications (seconds)<input data-field="callSeconds" type="number" min="5" max="60"></label>
+      <label class="screen-pause"><input data-field="paused" type="checkbox">Pause rotation (data continues updating)</label>
+      <div class="screen-control-actions"><button type="button" data-next>Next</button><button type="button" data-fullscreen>Fullscreen</button></div>
+      <button type="button" data-reset>Use administrator settings</button>
+      <p class="screen-control-note">Changes here affect only this display.</p></div>`;
     document.body.appendChild(panel);
     function fill() {
       panel.querySelectorAll("[data-field]").forEach(input => {
@@ -63,8 +63,8 @@
       try {
         if (document.fullscreenElement) await document.exitFullscreen();
         else if (document.documentElement.requestFullscreen) await document.documentElement.requestFullscreen();
-        else panel.querySelector(".screen-control-note").textContent = "Usa el modo de pantalla completa del navegador.";
-      } catch (_) { panel.querySelector(".screen-control-note").textContent = "Usa el modo de pantalla completa del navegador."; }
+        else panel.querySelector(".screen-control-note").textContent = "Use browser fullscreen mode.";
+      } catch (_) { panel.querySelector(".screen-control-note").textContent = "Use browser fullscreen mode."; }
     });
     let signature = "";
     fill();
@@ -77,10 +77,10 @@
       const next = JSON.stringify([tournaments.map(t => [t.id, t.title]), scenes.map(s => [s.key, s.label])]);
       if (next === signature) return;
       signature = next;
-      for (const [field, entries, empty] of [["tournamentId", tournaments.map(t => [t.id, t.title]), "Todos los torneos"], ["sceneKey", scenes.map(s => [s.key, s.label]), "Todas las páginas"]]) {
+      for (const [field, entries, empty] of [["tournamentId", tournaments.map(t => [t.id, t.title]), "All tournaments"], ["sceneKey", scenes.map(s => [s.key, s.label]), "All pages"]]) {
         const select = panel.querySelector(`[data-field="${field}"]`);
         select.replaceChildren(new Option(empty, ""), ...entries.map(([value, label]) => new Option(label, value)));
-        if (settings[field] && !entries.some(([value]) => value === settings[field])) select.appendChild(new Option("Selección no disponible", settings[field]));
+        if (settings[field] && !entries.some(([value]) => value === settings[field])) select.appendChild(new Option("Selection unavailable", settings[field]));
       }
       fill();
     } };

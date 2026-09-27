@@ -44,23 +44,23 @@ const ticket=async suffix=>{const {url}=await post('/api/tournaments/'+id+'/'+su
 try{
  const display=await pageFor();await display.goto(base);await display.locator('.scene-fortnite').waitFor();
  const editor=await pageFor();await editor.goto(await ticket('top8-session'));await editor.locator('#editor').waitFor();
- await editor.getByText('Guardar y recuperar',{exact:true}).click();await editor.locator('#cloud-save').click();await editor.waitForFunction(()=>document.getElementById('status').textContent.includes('Diseño guardado en el servidor'));
+ await editor.getByText('Save and restore',{exact:true}).click();await editor.locator('#cloud-save').click();await editor.waitForFunction(()=>document.getElementById('status').textContent.includes('Design saved on the server'));
  const project=await f.repo.getTopProject(id);
  const registrationPage=await pageFor();await registrationPage.goto(await ticket('registration-admin/session'));await registrationPage.locator('#panel').waitFor();
  let manager;
- if(manage){manager=await pageFor();await manager.addInitScript(()=>localStorage.setItem('gt_manage_admin_token','fixture-manager'));await manager.goto(base+'/manage/');await manager.getByRole('button',{name:'Archivar torneo',exact:true}).click();await manager.getByText('Archivado · solo lectura. Este torneo está fuera del display.',{exact:true}).waitFor();}
+ if(manage){manager=await pageFor();await manager.addInitScript(()=>localStorage.setItem('gt_manage_admin_token','fixture-manager'));await manager.goto(base+'/manage/');await manager.getByRole('button',{name:'Archive tournament',exact:true}).click();await manager.getByText('Archived · read-only. This tournament is hidden from the display.',{exact:true}).waitFor();}
  else await post('/api/tournaments/'+id+'/archive',{archived:true});
  await display.locator('.idle-screen').waitFor();assert.equal(await display.locator('.scene-fortnite').count(),0);
  await editor.locator('#title').fill('Este cambio debe rechazarse');await editor.locator('#cloud-save').click();await editor.waitForFunction(()=>document.getElementById('status').textContent.includes('archivado'));assert.deepEqual(await f.repo.getTopProject(id),project);
- await registrationPage.locator('#refresh').click();await registrationPage.getByText('Torneo archivado · solo lectura',{exact:true}).waitFor();for(const control of ['save','toggle','deadline','waitlist'])assert.equal(await registrationPage.locator('#'+control).isDisabled(),true);
+ await registrationPage.locator('#refresh').click();await registrationPage.getByText('Tournament archived · read-only',{exact:true}).waitFor();for(const control of ['save','toggle','deadline','waitlist'])assert.equal(await registrationPage.locator('#'+control).isDisabled(),true);
  const scores=await pageFor();await scores.goto(await ticket('fortnite/session'));await scores.locator('#panel').waitFor();assert.match(await scores.locator('#progress').innerText(),/archivado.*solo lectura/);assert.equal(await scores.locator('#reopen').isVisible(),false);assert.equal(await scores.locator('#confirm').isDisabled(),true);await scores.screenshot({path:path.join(output,'fortnite-readonly.png'),fullPage:true});
  if(manager){
-  await manager.getByRole('button',{name:'Volver a la lista',exact:true}).click();assert.equal(await manager.locator('[data-open-tournament]').count(),0);
-  await manager.getByRole('button',{name:'Archivados',exact:true}).click();assert.equal(await manager.locator('[data-open-tournament]').count(),1);await manager.screenshot({path:path.join(output,'archive-list-mobile.png'),fullPage:true});
+  await manager.getByRole('button',{name:'Back to list',exact:true}).click();assert.equal(await manager.locator('[data-open-tournament]').count(),0);
+  await manager.getByRole('button',{name:'Archived',exact:true}).click();assert.equal(await manager.locator('[data-open-tournament]').count(),1);await manager.screenshot({path:path.join(output,'archive-list-mobile.png'),fullPage:true});
   await manager.locator('[data-open-tournament]').click();assert.equal(await manager.locator('[data-display-toggle]').count(),0);assert.equal(await manager.locator('[data-ladder-action]').count(),0);
   assert.equal(await manager.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);await manager.screenshot({path:path.join(output,'archive-detail-mobile.png'),fullPage:true});
   await manager.setViewportSize({width:1440,height:1000});await manager.screenshot({path:path.join(output,'archive-detail-desktop.png'),fullPage:true});
-  await manager.getByRole('button',{name:'Desarchivar torneo',exact:true}).click();await manager.getByRole('button',{name:'Archivar torneo',exact:true}).waitFor();
+  await manager.getByRole('button',{name:'Unarchive tournament',exact:true}).click();await manager.getByRole('button',{name:'Archive tournament',exact:true}).waitFor();
   // A resumed imported set must use its reported Bo1 instead of the original Bo5.
   const resumed=await f.tournaments.getTournamentOverview(id);
   resumed.tournament={...resumed.tournament,status:'IN_PROGRESS',gameTitle:'Test game',importSource:{provider:'START_GG'},settings:{...resumed.tournament.settings,bracketMode:'STANDARD'}};

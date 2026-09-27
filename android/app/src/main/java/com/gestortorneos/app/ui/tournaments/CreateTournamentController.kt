@@ -32,7 +32,7 @@ class CreateTournamentController(
             }.onSuccess { tournament ->
                 state = CreateTournamentState(
                     isSaving = false,
-                    successMessage = "Torneo creado"
+                    successMessage = "Tournament created"
                 )
                 onCreated(tournament)
             }.onFailure {
@@ -67,13 +67,13 @@ class CreateTournamentController(
             }.onSuccess { tournament ->
                 state = CreateTournamentState(
                     isSaving = false,
-                    successMessage = "Torneo start.gg creado"
+                    successMessage = "start.gg tournament created"
                 )
                 onCreated(tournament)
             }.onFailure {
                 state = CreateTournamentState(
                     isSaving = false,
-                    errorMessage = "No se pudo crear el torneo start.gg."
+                    errorMessage = "Could not create the start.gg tournament."
                 )
             }
         }

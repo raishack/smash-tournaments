@@ -30,7 +30,7 @@ enum PlayerLocalNotifications {
                 candidates.append(
                     NotificationCandidate(
                         key: "match_called_\(match.id)",
-                        title: "Te toca jugar",
+                        title: "Your turn to play",
                         body: calledMatchBody(match: match, tournamentTitle: tournament.title)
                     )
                 )
@@ -40,7 +40,7 @@ enum PlayerLocalNotifications {
                 candidates.append(
                     NotificationCandidate(
                         key: "ladder_ready_\(readyCheck.id)",
-                        title: "Partida de ladder encontrada",
+                        title: "Ladder match found",
                         body: ladderReadyBody(match: readyCheck, tournamentTitle: tournament.title)
                     )
                 )
@@ -54,16 +54,16 @@ enum PlayerLocalNotifications {
         var parts: [String] = [
             tournamentTitle,
             match.roundLabel,
-            "\(match.myDisplayName) vs \(match.opponentDisplayName ?? "Rival")",
+            "\(match.myDisplayName) vs \(match.opponentDisplayName ?? "Opponent")",
         ]
         if let station = match.stationLabel, !station.isEmpty {
-            parts.append("Estación \(station)")
+            parts.append("Station \(station)")
         }
         return parts.joined(separator: " · ")
     }
 
     private static func ladderReadyBody(match: PlayerMatch, tournamentTitle: String) -> String {
-        "\(tournamentTitle) · \(match.myDisplayName) vs \(match.opponentDisplayName ?? "Rival")"
+        "\(tournamentTitle) · \(match.myDisplayName) vs \(match.opponentDisplayName ?? "Opponent")"
     }
 
     private static func scheduleNow(identifier: String, title: String, body: String) {

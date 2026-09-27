@@ -7,8 +7,8 @@ class TournamentArchiveStatusTest {
   for (state in listOf(null, "RUNNING", "FAILED", "COMPLETED")) assertEquals("ARCHIVED", tournamentClientStatus("ARCHIVED", state))
  }
  @Test fun currentTournamentsRetainTheirImportProgress() {
-  assertEquals("IMPORTANDO", tournamentClientStatus("DRAFT", "RUNNING"))
-  assertEquals("ERROR IMPORTACION", tournamentClientStatus("COMPLETED", "FAILED"))
+  assertEquals("IMPORTING", tournamentClientStatus("DRAFT", "RUNNING"))
+  assertEquals("IMPORT ERROR", tournamentClientStatus("COMPLETED", "FAILED"))
   assertEquals("IN PROGRESS", tournamentClientStatus("IN_PROGRESS", null))
  }
 }

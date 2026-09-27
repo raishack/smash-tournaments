@@ -35,10 +35,10 @@ fun ensureNotificationsChannel(context: Context) {
     val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
     val channel = NotificationChannel(
         MATCH_CALLS_CHANNEL_ID,
-        "Llamadas a jugar",
+        "Match calls",
         NotificationManager.IMPORTANCE_HIGH
     ).apply {
-        description = "Avisos cuando te llaman a jugar."
+        description = "Notifications when you are called to play."
         enableLights(true)
         enableVibration(true)
         vibrationPattern = longArrayOf(0, 300, 200, 300)
@@ -47,10 +47,10 @@ fun ensureNotificationsChannel(context: Context) {
     manager.createNotificationChannel(channel)
     val syncChannel = NotificationChannel(
         MATCH_SYNC_CHANNEL_ID,
-        "Sincronizacion de partidas",
+        "Match synchronization",
         NotificationManager.IMPORTANCE_LOW
     ).apply {
-        description = "Servicio en segundo plano para seguir tus partidas."
+        description = "Background service to follow your matches."
     }
     manager.createNotificationChannel(syncChannel)
 }
@@ -312,7 +312,7 @@ private fun buildLadderNotificationKey(
 
 private fun buildMatchCallText(roundLabel: String?, opponentDisplayName: String?, stationLabel: String?): String {
     return buildString {
-        append("Te toca jugar")
+        append("Your turn to play")
         if (!roundLabel.isNullOrBlank()) {
             append(" [")
             append(roundLabel)
@@ -323,7 +323,7 @@ private fun buildMatchCallText(roundLabel: String?, opponentDisplayName: String?
             append(opponentDisplayName)
         }
         if (!stationLabel.isNullOrBlank()) {
-            append(" en estacion ")
+            append(" at station ")
             append(stationLabel)
         }
     }
@@ -331,13 +331,13 @@ private fun buildMatchCallText(roundLabel: String?, opponentDisplayName: String?
 
 private fun buildLadderMatchText(opponentDisplayName: String?, readyDeadlineAt: String?): String {
     return buildString {
-        append("Has encontrado partida de ladder")
+        append("Ladder match found")
         if (!opponentDisplayName.isNullOrBlank()) {
             append(" contra ")
             append(opponentDisplayName)
         }
         if (!readyDeadlineAt.isNullOrBlank()) {
-            append(". Confirma que estas listo")
+            append(". Confirm you are ready")
         }
     }
 }
@@ -422,9 +422,9 @@ fun buildRealtimeSyncNotification(
 ): android.app.Notification {
     ensureNotificationsChannel(context)
     val text = when {
-        calledMatches > 0 -> "Tienes $calledMatches llamada(s) activa(s)."
-        activeMatches > 0 -> "Siguiendo $activeMatches set(s) en juego."
-        else -> "Esperando tu proxima llamada."
+        calledMatches > 0 -> "You have $calledMatches active call(s)."
+        activeMatches > 0 -> "Following $activeMatches active set(s)."
+        else -> "Waiting for your next match call."
     }
 
     val openAppIntent = Intent(context, MainActivity::class.java).apply {

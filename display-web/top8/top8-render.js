@@ -3,13 +3,13 @@ const imageCache = new Map();
 export const safeImage = value => typeof value === 'string' && (/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(value) || /^\/api\/top8\/assets\/[a-f0-9]{40}\/(full|preview|thumb)$/.test(value));
 async function image(url) {
   if (!url) return null;
-  if (!safeImage(url)) throw Error('Imagen no válida en el proyecto');
+  if (!safeImage(url)) throw Error('Invalid image in project');
   if (!imageCache.has(url)) {
     if(imageCache.size >= 12) imageCache.delete(imageCache.keys().next().value);
     const entry={pixels:0,promise:null};
     entry.promise=new Promise((resolve,reject)=>{
       const img=new Image();
-      const timer=setTimeout(()=>{img.src='';reject(Error('La imagen tarda demasiado. Reintenta o utiliza una imagen propia.'));},60000);
+      const timer=setTimeout(()=>{img.src='';reject(Error('The image is taking too long to load. Retry or use a custom image.'));},60000);
       img.onload=()=>{
         clearTimeout(timer);entry.pixels=img.width*img.height;
         // High-resolution originals are decoded one at a time; don't retain an entire 8K roster on a phone.
@@ -17,7 +17,7 @@ async function image(url) {
         for(const [key,item] of imageCache){if(pixels<=16000000)break;if(item.pixels){imageCache.delete(key);pixels-=item.pixels;}}
         resolve(img);
       };
-      img.onerror=()=>{clearTimeout(timer);reject(Error('No se pudo cargar una imagen. Pulsa Reintentar biblioteca e imágenes o utiliza una imagen propia.'));};img.src=url;
+      img.onerror=()=>{clearTimeout(timer);reject(Error('Could not load an image. Select Retry library and images, or use your own image.'));};img.src=url;
     }).catch(error=>{if(imageCache.get(url)===entry)imageCache.delete(url);throw error;});
     imageCache.set(url,entry);
   }
@@ -42,7 +42,7 @@ export async function render(canvas, design, game, scale=1, current=()=>true) {
   const assets = await Promise.all([image(design.background),image(design.logo)]);
   const logoW=design.logoSize??240,logoH=logoW*.62;
   canvas.width=width;canvas.height=height;
-  const ctx=canvas.getContext('2d');if(!ctx)throw Error('No se pudo preparar la imagen. Prueba una resolución menor.');
+  const ctx=canvas.getContext('2d');if(!ctx)throw Error('Could not prepare the image. Try a lower resolution.');
   ctx.scale(scale,scale);const [w,h]=size(design.ratio);const margin=64;const gap=24;const top=assets[1]?Math.max(215,logoH+84):215;const bottom=h-95;
   ctx.fillStyle=design.backgroundColor;ctx.fillRect(0,0,w,h);cover(ctx,assets[0],0,0,w,h);
   ctx.fillStyle=`rgba(0,0,0,${design.shade/100})`;ctx.fillRect(0,0,w,h);
@@ -73,7 +73,7 @@ export async function render(canvas, design, game, scale=1, current=()=>true) {
       for(let j=0;j<p.characters.length;j++){
         if(!current()){ctx.restore();return canvas;}
         const selected=selectionFor(design,game,p,j);
-        if(!selected){fill(ctx,'Sin ilustración',x+10+each*(j+.5),y+artH/2,each-12,{...font,size:20},design.textColor,'center');continue;}
+        if(!selected){fill(ctx,'No artwork',x+10+each*(j+.5),y+artH/2,each-12,{...font,size:20},design.textColor,'center');continue;}
         const img=await image(imageUrl(selected.image,scale<1?'preview':'full'));
         artwork(ctx,img,x+10+j*each,y+8,each,Math.max(1,artH-16),design.artFit||'contain',p.zoom,p.x,p.y);
       }

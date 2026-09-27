@@ -45,7 +45,7 @@ object DesktopClientConfig {
 
     private fun normalizeBaseUrl(value: String): String {
         val trimmed = value.trim()
-        require(trimmed.isNotBlank()) { "La URL del backend no puede estar vacia" }
+        require(trimmed.isNotBlank()) { "The backend URL cannot be empty" }
         val withScheme = if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
             trimmed
         } else {

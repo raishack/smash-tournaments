@@ -25,11 +25,11 @@ fun MatchSyncFeedback(tournamentId: String, matchId: String, status: MatchSyncSt
             sending = true
             scope.launch {
                 runCatching { DesktopTournamentRepository().retrySync(tournamentId, matchId) }
-                    .onSuccess { feedback = "Reintento solicitado" }
-                    .onFailure { feedback = it.message ?: "No se pudo solicitar el reintento" }
+                    .onSuccess { feedback = "Retry requested" }
+                    .onFailure { feedback = it.message ?: "Could not request a retry" }
                 sending = false
             }
-        }) { Text(if (sending) "Solicitando..." else "Reintentar sincronización") }
+        }) { Text(if (sending) "Solicitando..." else "Retry synchronization") }
     }
 }
 
@@ -41,27 +41,27 @@ fun TournamentActivityButton(tournamentId: String) {
     var error by remember { mutableStateOf<String?>(null) }
     var loading by remember { mutableStateOf(false) }
 
-    OutlinedButton(onClick = { open = true }) { Text("Historial y diagnóstico") }
+    OutlinedButton(onClick = { open = true }) { Text("History and diagnostics") }
     if (open) {
         LaunchedEffect(tournamentId, refresh) {
             loading = true
             error = null
             runCatching { DesktopTournamentRepository().getActivity(tournamentId) }
                 .onSuccess { activity = it }
-                .onFailure { error = it.message ?: "No se pudo cargar el historial" }
+                .onFailure { error = it.message ?: "Could not load history" }
             loading = false
         }
-        AlertDialog(onDismissRequest = { open = false }, title = { Text("Historial y diagnóstico") },
+        AlertDialog(onDismissRequest = { open = false }, title = { Text("History and diagnostics") },
             text = {
                 Column(Modifier.heightIn(max = 520.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     if (loading) LinearProgressIndicator(Modifier.fillMaxWidth())
                     error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
                     OutlinedButton(onClick = {
-                            val diagnostic = (activity?.diagnosticText ?: "Diagnóstico del torneo\nTorneo: $tournamentId\nServidor no disponible") + "\n" + OperationNetwork.diagnostics("Windows", DesktopConfig.desktopVersion)
+                            val diagnostic = (activity?.diagnosticText ?: "Tournament diagnostics\nTournament: $tournamentId\nServer unavailable") + "\n" + OperationNetwork.diagnostics("Windows", DesktopConfig.desktopVersion)
                             Toolkit.getDefaultToolkit().systemClipboard.setContents(StringSelection(diagnostic), null)
-                        }) { Text("Copiar diagnóstico") }
+                        }) { Text("Copy diagnostics") }
                     activity?.let { data ->
-                        if (data.entries.isEmpty()) Text("Todavía no hay operaciones registradas.")
+                        if (data.entries.isEmpty()) Text("No operations recorded yet.")
                         data.entries.forEach { entry ->
                             Text(entry.summary, style = MaterialTheme.typography.titleSmall)
                             Text(entry.createdAt + (entry.matchLabel?.let { " · $it" } ?: ""), style = MaterialTheme.typography.bodySmall)
@@ -71,7 +71,7 @@ fun TournamentActivityButton(tournamentId: String) {
                     }
                 }
             },
-            confirmButton = { TextButton(onClick = { refresh++ }, enabled = !loading) { Text("Actualizar") } },
-            dismissButton = { TextButton(onClick = { open = false }) { Text("Cerrar") } })
+            confirmButton = { TextButton(onClick = { refresh++ }, enabled = !loading) { Text("Refresh") } },
+            dismissButton = { TextButton(onClick = { open = false }) { Text("Close") } })
     }
 }

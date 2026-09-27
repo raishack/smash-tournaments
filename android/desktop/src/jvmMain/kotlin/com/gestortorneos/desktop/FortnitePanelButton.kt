@@ -20,11 +20,11 @@ fun FortnitePanelButton(tournamentId: String) {
             scope.launch {
                 try { uri.openUri(repository.createFortniteSession(tournamentId)) }
                 catch (e: CancellationException) { throw e }
-                catch (e: Exception) { error = e.message ?: "No se pudo abrir el editor" }
+                catch (e: Exception) { error = e.message ?: "Could not open the editor" }
                 finally { busy = false }
             }
-        }) { Text(if (busy) "Abriendo Fortnite…" else "Gestionar Fortnite: grupos y puntuaciones") }
-        Text("Abre el panel de grupos, puestos, actas y clasificación. Adaptado a móvil y PC.", style = MaterialTheme.typography.bodySmall)
+        }) { Text(if (busy) "Opening Fortnite…" else "Manage Fortnite: groups and scores") }
+        Text("Open groups, seats, score sheets and standings. Works on mobile and desktop.", style = MaterialTheme.typography.bodySmall)
         error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
     }
 }
@@ -32,9 +32,9 @@ fun FortnitePanelButton(tournamentId: String) {
 @Composable
 fun FortniteConfiguration(size: Int, games: Int, onChange: (Int, Int) -> Unit) {
     Column {
-        FortniteNumber("Participantes por grupo (+ VIP)", size, (5..100 step 5).toList()) { onChange(it, games) }
-        FortniteNumber("Partidas por ronda (puntos acumulados)", games, (1..20).toList()) { onChange(size, it) }
-        Text("Podio: 10 / 6 / 4 puntos · Kill: 1 · VIP: 5 extra. VIP externo adicional, sin ocupar plaza. Grupos equilibrados.", style = MaterialTheme.typography.bodySmall)
+        FortniteNumber("Participants per group (+ VIP)", size, (5..100 step 5).toList()) { onChange(it, games) }
+        FortniteNumber("Games per round (accumulated points)", games, (1..20).toList()) { onChange(size, it) }
+        Text("Podium: 10 / 6 / 4 points · Kill: 1 · VIP: 5 extra. External VIP does not occupy a participant seat. Balanced groups.", style = MaterialTheme.typography.bodySmall)
     }
 }
 @Composable

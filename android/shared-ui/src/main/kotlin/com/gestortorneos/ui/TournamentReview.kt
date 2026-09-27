@@ -30,25 +30,25 @@ fun TournamentReviewButton(tournamentId: String, load: suspend () -> TournamentR
     var loading by remember { mutableStateOf(false) }
     val currentLoad by rememberUpdatedState(load)
     OutlinedButton(onClick = { open = true }, modifier = Modifier.heightIn(min = 48.dp)) {
-        Text("Revisar preparación y cierre")
+        Text("Review preparation and completion")
     }
     if (open) {
         LaunchedEffect(tournamentId, refresh) {
             loading = true; error = null
             try { data = currentLoad() }
             catch (e: CancellationException) { throw e }
-            catch (_: Exception) { error = "No se pudo comprobar el torneo. Actualiza para reintentar; no se ha cambiado ningún dato." }
+            catch (_: Exception) { error = "Could not check the tournament. Refresh to retry; no data has changed." }
             finally { loading = false }
         }
-        AlertDialog(onDismissRequest = { open = false }, title = { Text(data?.title ?: "Revisión del torneo") },
+        AlertDialog(onDismissRequest = { open = false }, title = { Text(data?.title ?: "Tournament review") },
             text = {
                 Column(Modifier.fillMaxWidth().heightIn(max = 560.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     if (loading) LinearProgressIndicator(Modifier.fillMaxWidth())
                     error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
                     data?.let { review ->
-                        Text("Revisión orientativa. Los controles vuelven a validar los datos al guardar.", style = MaterialTheme.typography.bodySmall)
+                        Text("Advisory review. Actions validate the data again when saving.", style = MaterialTheme.typography.bodySmall)
                         review.items.forEach { item ->
-                            val label = when (item.level) { "OK" -> "✓ Correcto"; "BLOCKED" -> "! Pendiente"; "WARNING" -> "△ Revisar"; else -> "ⓘ Información" }
+                            val label = when (item.level) { "OK" -> "✓ Ready"; "BLOCKED" -> "! Pending"; "WARNING" -> "△ Review"; else -> "ⓘ Information" }
                             Text("$label · ${item.title}", style = MaterialTheme.typography.titleSmall,
                                 color = if (item.level == "BLOCKED") MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface)
                             Text(item.detail, style = MaterialTheme.typography.bodyMedium)
@@ -57,32 +57,32 @@ fun TournamentReviewButton(tournamentId: String, load: suspend () -> TournamentR
                                 else { open = false; onNavigate(item.target) }
                             }, modifier = Modifier.heightIn(min = 48.dp)) { Text(item.actionLabel) }
                             if (item.id == "attendance" && showAttendance) {
-                                Text("Cambiar la asistencia obligatoria puede invalidar un sorteo preparado. Después tendrás que generarlo de nuevo.", style = MaterialTheme.typography.bodySmall)
+                                Text("Changing mandatory attendance may invalidate a prepared draw. You will then need to generate it again.", style = MaterialTheme.typography.bodySmall)
                                 review.participants.forEach { participant ->
-                                    Text(participant.name + if (participant.checkedIn) " · ✓ Asistencia confirmada" else " · Sin confirmar")
+                                    Text(participant.name + if (participant.checkedIn) " · ✓ Attendance confirmed" else " · Unconfirmed")
                                     TextButton(enabled = review.editable && participant.status == "ACTIVE" && !loading && error == null, onClick = {
                                         loading = true
                                         scope.launch {
                                             try { onAttendance(participant, !participant.checkedIn); data = currentLoad() }
                                             catch (e: CancellationException) { throw e }
-                                            catch (_: Exception) { error = "No se pudo comprobar la asistencia. Actualiza antes de volver a intentarlo." }
+                                            catch (_: Exception) { error = "Could not check attendance. Refresh before trying again." }
                                             finally { loading = false }
                                         }
-                                    }) { Text(if (participant.checkedIn) "Quitar asistencia" else "Confirmar asistencia") }
+                                    }) { Text(if (participant.checkedIn) "Clear attendance" else "Confirm attendance") }
                                 }
                             }
                             HorizontalDivider()
                         }
                         if (review.standings.isNotEmpty()) {
-                            Text("Clasificación · Top 8", style = MaterialTheme.typography.titleMedium)
-                            review.standings.forEach { Text("${it.placement?.toString() ?: "Por revisar"} · ${it.name}") }
+                            Text("Standings · Top 8", style = MaterialTheme.typography.titleMedium)
+                            review.standings.forEach { Text("${it.placement?.toString() ?: "Needs review"} · ${it.name}") }
                         }
                         if (review.standingsNote.isNotBlank()) Text(review.standingsNote, style = MaterialTheme.typography.bodySmall)
-                        Text("Comprobado: ${review.checkedAt}", style = MaterialTheme.typography.bodySmall)
+                        Text("Checked: ${review.checkedAt}", style = MaterialTheme.typography.bodySmall)
                     }
                 }
             },
-            confirmButton = { TextButton(enabled = !loading, onClick = { refresh++ }) { Text("Actualizar") } },
-            dismissButton = { TextButton(onClick = { open = false }) { Text("Cerrar") } })
+            confirmButton = { TextButton(enabled = !loading, onClick = { refresh++ }) { Text("Refresh") } },
+            dismissButton = { TextButton(onClick = { open = false }) { Text("Close") } })
     }
 }

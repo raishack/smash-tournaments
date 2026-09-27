@@ -12,14 +12,14 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 class MainTournamentApiTest {
-    private val tournament = """{"id":"test","title":"Prueba local","gameTitle":"Fortnite","description":"Torneo de prueba",
+    private val tournament = """{"id":"test","title":"Prueba local","gameTitle":"Fortnite","description":"Tournament de prueba",
         "platform":"PC","status":"DRAFT","maxParticipants":100,"settings":{"format":"SINGLE_ELIMINATION",
         "bracketMode":"FORTNITE","fortniteLobbySize":100,"fortniteGamesPerRound":7,"teamSize":1,"reserveCount":0,
         "bestOf":3,"seedingMethod":"RANDOM","callTimeoutMinutes":10}}"""
 
     private fun input(mode: String, teamSize: Int) = CreateTournamentInput(
         title = "Prueba local", gameTitle = if (teamSize > 1) "Valorant" else "Fortnite",
-        description = "Torneo de prueba", platform = "PC", maxParticipants = 100,
+        description = "Tournament de prueba", platform = "PC", maxParticipants = 100,
         format = "SINGLE_ELIMINATION", bracketMode = mode, mkartAdvanceCount = 1, mkartLosersAdvanceCount = 1,
         bestOf = 3, winnersBestOf = 3, losersBestOf = 3, seedingMethod = "RANDOM", callTimeoutMinutes = 10,
         setupCount = 1, teamSize = teamSize, reserveCount = if (teamSize > 1) 2 else 0,
@@ -60,7 +60,7 @@ class MainTournamentApiTest {
             assertEquals(7, detail.fortniteGamesPerRound)
             server.enqueue(MockResponse().setBody(tournament))
             server.enqueue(MockResponse().setBody(overview))
-            repo.updateTournament("test", detail.copy(title = "Nombre actualizado"))
+            repo.updateTournament("test", detail.copy(title = "Name actualizado"))
             val saved = JsonParser.parseString(server.takeRequest().body.readUtf8()).asJsonObject.getAsJsonObject("settings")
             assertEquals(100, saved["fortniteLobbySize"].asInt)
             assertEquals(7, saved["fortniteGamesPerRound"].asInt)

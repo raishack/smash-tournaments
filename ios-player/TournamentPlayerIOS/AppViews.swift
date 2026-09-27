@@ -67,7 +67,7 @@ enum PlayerPalette {
 enum PlayerTextSize: String, CaseIterable, Identifiable {
     case normal, large, extraLarge
     var id: String { rawValue }
-    var title: String { switch self { case .normal: return "Normal"; case .large: return "Grande"; case .extraLarge: return "Muy grande" } }
+    var title: String { switch self { case .normal: return "Normal"; case .large: return "Large"; case .extraLarge: return "Extra large" } }
     var minimumSize: DynamicTypeSize { switch self { case .normal: return .xSmall; case .large: return .xLarge; case .extraLarge: return .xxxLarge } }
 }
 
@@ -133,7 +133,7 @@ final class StartggLoginSession: NSObject, ObservableObject, ASWebAuthentication
 
 private struct PlayerLoginPresentationError: LocalizedError {
     var errorDescription: String? {
-        "No se pudo abrir el login seguro de start.gg."
+        "Could not open secure start.gg sign-in."
     }
 }
 
@@ -144,11 +144,11 @@ struct ContentView: View {
     var body: some View {
         TabView(selection: $viewModel.currentSection) {
             DashboardView()
-                .tabItem { Label("Inicio", systemImage: "house.fill") }
+                .tabItem { Label("Home", systemImage: "house.fill") }
                 .tag(PlayerAppViewModel.Section.dashboard)
 
             TournamentsView()
-                .tabItem { Label("Torneos", systemImage: "list.bullet.rectangle") }
+                .tabItem { Label("Tournaments", systemImage: "list.bullet.rectangle") }
                 .tag(PlayerAppViewModel.Section.tournaments)
 
             BracketView()
@@ -156,7 +156,7 @@ struct ContentView: View {
                 .tag(PlayerAppViewModel.Section.bracket)
 
             ProfileView()
-                .tabItem { Label("Perfil", systemImage: "person.crop.circle") }
+                .tabItem { Label("Profile", systemImage: "person.crop.circle") }
                 .tag(PlayerAppViewModel.Section.profile)
         }
         .onChange(of: viewModel.loginURL) { _, newValue in
@@ -180,7 +180,7 @@ struct ContentView: View {
             get: { viewModel.error != nil },
             set: { if !$0 { viewModel.error = nil } }
         )) {
-            Button("Aceptar", role: .cancel) {}
+            Button("Accept", role: .cancel) {}
         } message: {
             Text(viewModel.error ?? "")
         }
@@ -218,7 +218,7 @@ private func playerMatchStageLabel(_ match: PlayerMatch) -> String? {
     case "FINALS":
         return "Bracket Finals"
     case "LADDER":
-        return "Ladder interna"
+        return "Internal ladder"
     default:
         return nil
     }
@@ -226,7 +226,7 @@ private func playerMatchStageLabel(_ match: PlayerMatch) -> String? {
 
 private func cleanedSessionTitleForDisplay(session: PlayerSession?, profile: PlayerProfile?) -> String {
     guard let session else {
-        return "Sin sesion"
+        return "No session"
     }
 
     func clean(_ value: String) -> String {
@@ -319,7 +319,7 @@ struct DashboardView: View {
 
     private var sessionTitle: String {
         guard let session = viewModel.session else {
-            return "Sin sesion"
+            return "No session"
         }
         let cleanedDisplayName = cleanedIdentityText(viewModel.profile?.displayName ?? session.displayName)
         let cleanedGamerTag = cleanedIdentityText(viewModel.profile?.gamerTag ?? session.gamerTag)
@@ -368,23 +368,23 @@ struct DashboardView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
                     if viewModel.session == nil {
-                        SectionCard(title: "Acceso de jugador") {
-                            Text("Necesitas una cuenta de start.gg para seguir tus sets importados y jugar ladder.")
-                            Text("Puedes iniciar sesion o crear tu cuenta de start.gg en una ventana segura dentro de la app.")
+                        SectionCard(title: "Player access") {
+                            Text("You need a start.gg account to follow imported sets and play ladder.")
+                            Text("You can sign in or create a start.gg account in a secure window within the app.")
                                 .font(.footnote)
                                 .foregroundStyle(.secondary)
-                            Button("Entrar con start.gg") {
+                            Button("Sign in with start.gg") {
                                 Task { await viewModel.beginStartggLogin() }
                             }
                             .playerPrimaryButton()
                         }
                     } else {
-                        SectionCard(title: "Sesion activa") {
+                        SectionCard(title: "Active session") {
                             Text(sessionTitle)
                         }
-                        SectionCard(title: "En juego o llamados") {
+                        SectionCard(title: "Playing or called") {
                             if activeMatches.isEmpty {
-                                Text("No tienes sets activos ahora mismo.")
+                                Text("You have no active sets right now.")
                             } else {
                                 ForEach(activeMatches) { entry in
                                     MatchSummaryView(match: entry.match)
@@ -393,7 +393,7 @@ struct DashboardView: View {
                                         if entry.match.canReviewLadderResult == true { PlayerLadderReviewButtons(tournament: entry.tournament, match: entry.match) }
                                         if entry.match.status == "PLAYING", entry.match.canPlayerReportMatch,
                                            entry.match.opponentParticipantId != nil {
-                                            Button("Anotación rápida") {
+                                            Button("Quick report") {
                                                 pendingQuickReportSelection = DashboardQuickReportSelection(
                                                     tournament: entry.tournament,
                                                     match: entry.match,
@@ -405,7 +405,7 @@ struct DashboardView: View {
                                             .playerPrimaryButton()
                                         }
                                     } else if entry.match.canPlayerReportMatch && entry.match.opponentParticipantId != nil {
-                                        Button("Anotación rápida") {
+                                        Button("Quick report") {
                                             pendingQuickReportSelection = DashboardQuickReportSelection(
                                                 tournament: entry.tournament,
                                                 match: entry.match,
@@ -419,9 +419,9 @@ struct DashboardView: View {
                                 }
                             }
                         }
-                        SectionCard(title: "Pendientes") {
+                        SectionCard(title: "Pending") {
                             if pendingMatches.isEmpty {
-                                Text("No hay sets pendientes con rival asignado.")
+                                Text("No pending sets have an assigned opponent.")
                             } else {
                                 ForEach(pendingMatches) { MatchSummaryView(match: $0) }
                             }
@@ -432,9 +432,9 @@ struct DashboardView: View {
             }
             .navigationTitle(BackendConfig.appTitle)
         }
-        .confirmationDialog("Modalidad del set", isPresented: $showQuickReportModeDialog, titleVisibility: .visible) {
+        .confirmationDialog("Set format", isPresented: $showQuickReportModeDialog, titleVisibility: .visible) {
             if let selection = pendingQuickReportSelection {
-                Button("Formato del torneo (Bo\(selection.match.effectiveBestOf))") {
+                Button("Tournament format (Bo\(selection.match.effectiveBestOf))") {
                     quickReportBestOfOverride = nil
                     quickReportSelection = selection
                     pendingQuickReportSelection = nil
@@ -455,11 +455,11 @@ struct DashboardView: View {
                     pendingQuickReportSelection = nil
                 }
             }
-            Button("Cancelar", role: .cancel) {
+            Button("Cancel", role: .cancel) {
                 pendingQuickReportSelection = nil
             }
         } message: {
-            Text("Indica si este set se jugo con el formato por defecto del torneo o con otra modalidad.")
+            Text("Select whether this set used the default tournament format or a different one.")
         }
         .sheet(item: $quickReportSelection) { selection in
             QuickReportView(match: selection.match, effectiveBestOf: quickReportBestOfOverride ?? selection.match.effectiveBestOf) { games in
@@ -488,9 +488,9 @@ struct TournamentsView: View {
                     TournamentDetailView(tournament: tournament)
                 }
             }
-            .navigationTitle("Torneos")
+            .navigationTitle("Tournaments")
             .toolbar {
-                Button("Recargar") {
+                Button("Reload") {
                     Task { await viewModel.reloadAll() }
                 }
             }
@@ -579,8 +579,8 @@ struct BracketView: View {
                     ScrollView {
                         VStack(alignment: .leading, spacing: 16) {
                             SectionCard(title: "Bracket") {
-                                Text("No hay brackets disponibles ahora mismo.")
-                                Text("Cuando tengas un torneo cargado en la gestion, aparecera aqui su bracket clasica y moderna.")
+                                Text("No brackets are currently available.")
+                                Text("Once you load a tournament in management, its classic and modern brackets will appear here.")
                                     .foregroundStyle(.secondary)
                             }
                         }
@@ -596,7 +596,7 @@ struct BracketView: View {
             }
             .navigationTitle("Bracket")
             .toolbar {
-                Button("Recargar") {
+                Button("Reload") {
                     Task { await viewModel.reloadAll() }
                 }
             }
@@ -626,7 +626,7 @@ private struct PlayerTournamentBracketView: View {
                         .foregroundStyle(.secondary)
                 }
 
-                SectionCard(title: "Vista de la bracket") {
+                SectionCard(title: "Bracket view") {
                     HStack(spacing: 12) {
                         ForEach(PlayerBracketRenderMode.allCases) { option in
                             Button(option == renderMode ? "[\(option.title)]" : option.title) {
@@ -634,12 +634,12 @@ private struct PlayerTournamentBracketView: View {
                             }
                             .buttonStyle(.bordered)
                             .tint(renderMode == option ? PlayerPalette.accent : PlayerPalette.secondaryText)
-                            .accessibilityValue(renderMode == option ? "Seleccionado" : "")
+                            .accessibilityValue(renderMode == option ? "Selected" : "")
                         }
                     }
                 }
 
-                SectionCard(title: "Bracket del torneo") {
+                SectionCard(title: "Tournament bracket") {
                     PlayerBracketPanel(
                         tournament: currentTournament,
                         matches: sortedBracketMatches,
@@ -660,7 +660,7 @@ private struct PlayerBracketPanel: View {
 
     var body: some View {
         if matches.isEmpty {
-            Text("La bracket todavia no esta disponible para este torneo.")
+            Text("The bracket is not available for this tournament yet.")
                 .foregroundStyle(.secondary)
         } else if renderMode == .modern {
             PlayerModernBracketPanel(
@@ -705,7 +705,7 @@ private struct PlayerModernBracketPanel: View {
         VStack(spacing: 8) {
             HStack {
                 Spacer()
-                Button("Pantalla completa", systemImage: "arrow.up.left.and.arrow.down.right") {
+                Button("Fullscreen", systemImage: "arrow.up.left.and.arrow.down.right") {
                     browser.capture { fullscreen = true }
                 }
             }
@@ -717,7 +717,7 @@ private struct PlayerModernBracketPanel: View {
                 HStack {
                     Text(tournament.title).font(.headline).lineLimit(2)
                     Spacer()
-                    Button("Cerrar", systemImage: "arrow.down.right.and.arrow.up.left") {
+                    Button("Close", systemImage: "arrow.down.right.and.arrow.up.left") {
                         browser.capture { fullscreen = false }
                     }
                 }.padding()
@@ -960,7 +960,7 @@ private struct PlayerBracketStageSection: View {
                                 HStack(alignment: .top, spacing: 18) {
                                     ForEach(Array(groupedRounds.enumerated()), id: \.offset) { index, round in
                                         VStack(alignment: .leading, spacing: 12) {
-                                            Text("Ronda \(round.0)")
+                                            Text("Round \(round.0)")
                                                 .font(.subheadline.weight(.semibold))
                                                 .foregroundStyle(.secondary)
 
@@ -990,7 +990,7 @@ private struct PlayerBracketStageSection: View {
                     HStack(alignment: .top, spacing: 18) {
                         ForEach(Array(rounds.enumerated()), id: \.offset) { index, round in
                             VStack(alignment: .leading, spacing: 12) {
-                                Text("Ronda \(round.0)")
+                                Text("Round \(round.0)")
                                     .font(.subheadline.weight(.semibold))
                                     .foregroundStyle(.secondary)
 
@@ -1129,12 +1129,12 @@ private func buildModernBracketHTML(
         buildModernSectionHTML(section: section, tournament: tournament, selectableMatchIds: selectableMatchIds)
     }.joined(separator: "\n")
     let emptyState = sections.isEmpty
-        ? #"<div class="empty-state">No hay suficiente estructura para renderizar la bracket moderna.</div>"#
+        ? #"<div class="empty-state">There is not enough structure to render the modern bracket.</div>"#
         : ""
 
     return """
     <!doctype html>
-    <html lang="es">
+    <html lang="en">
     <head>
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, user-scalable=yes">
@@ -1773,20 +1773,20 @@ private func buildModernBracketHTML(
                 : 0;
               if (role === 'called') {
                 if (!Number.isFinite(initialTimerSeconds)) {
-                  node.textContent = 'Llamado';
+                  node.textContent = 'Called';
                   return;
                 }
                 const remainingSeconds = Math.max(0, initialTimerSeconds - elapsedSinceRender);
                 node.textContent = remainingSeconds > 0
                   ? `Tiempo restante: ${formatDuration(remainingSeconds)}`
-                  : 'Tiempo agotado';
+                  : 'Time expired';
               } else if (role === 'playing') {
                 if (!Number.isFinite(initialTimerSeconds)) {
-                  node.textContent = 'En juego';
+                  node.textContent = 'Playing';
                   return;
                 }
                 const elapsedSeconds = Math.max(0, initialTimerSeconds + elapsedSinceRender);
-                node.textContent = `Jugando: ${formatDuration(elapsedSeconds)}`;
+                node.textContent = `Playing: ${formatDuration(elapsedSeconds)}`;
               } else {
                 node.textContent = '';
               }
@@ -2016,11 +2016,11 @@ private func buildIOSModernSections(matches: [PlayerBracketMatch]) -> [IOSModern
 }
 
 private func modernSectionSortOrder(_ label: String) -> Int {
-    if label.starts(with: "Pool") || label.starts(with: "Grupo") { return 0 }
+    if label.starts(with: "Pool") || label.starts(with: "Group") { return 0 }
     if label.caseInsensitiveCompare("Pools") == .orderedSame { return 1 }
     if label.caseInsensitiveCompare("Winners bracket") == .orderedSame { return 2 }
     if label.caseInsensitiveCompare("Losers bracket") == .orderedSame { return 3 }
-    if label.caseInsensitiveCompare("Bracket final") == .orderedSame { return 4 }
+    if label.caseInsensitiveCompare("Final bracket") == .orderedSame { return 4 }
     return 5
 }
 
@@ -2149,7 +2149,7 @@ private func modernTournamentBracketLabel(match: PlayerBracketMatch) -> String {
     if !phaseName.isEmpty, phaseName.caseInsensitiveCompare(match.bracketStage) != .orderedSame, phaseName.caseInsensitiveCompare("bracket") != .orderedSame {
         return phaseName
     }
-    return "Bracket final"
+    return "Final bracket"
 }
 
 private func modernRoundTitle(stage: String, round: Int, totalRounds: Int) -> String {
@@ -2159,7 +2159,7 @@ private func modernRoundTitle(stage: String, round: Int, totalRounds: Int) -> St
     case "WINNERS": prefix = "Winners"
     case "LOSERS": prefix = "Losers"
     case "FINALS": prefix = "Grand Final"
-    default: prefix = "Ronda"
+    default: prefix = "Round"
     }
     if stage == "FINALS" {
         return round > 1 ? "Grand Final Reset" : prefix
@@ -2360,31 +2360,31 @@ struct ProfileView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
-                    SectionCard(title: "Perfil") {
+                    SectionCard(title: "Profile") {
                         Text(cleanedSessionTitleForDisplay(session: viewModel.session, profile: viewModel.profile))
-                        Label(viewModel.session == nil ? "Sin sesión de start.gg" : "Conectado con start.gg", systemImage: "person.crop.circle.badge.checkmark")
+                        Label(viewModel.session == nil ? "No start.gg session" : "Connected to start.gg", systemImage: "person.crop.circle.badge.checkmark")
                             .font(.subheadline).foregroundStyle(PlayerPalette.accent)
                         if viewModel.session != nil {
-                            Text("Tu acceso de jugador se mantiene al cerrar la app.")
+                            Text("Your player session is kept when you close the app.")
                                 .font(.footnote).foregroundStyle(.secondary)
                         }
                     }
-                    SectionCard(title: "Apariencia") {
-                        Picker("Tema", selection: Binding(get: { viewModel.themeMode }, set: { viewModel.setTheme($0) })) {
+                    SectionCard(title: "Appearance") {
+                        Picker("Theme", selection: Binding(get: { viewModel.themeMode }, set: { viewModel.setTheme($0) })) {
                             ForEach(PlayerThemeMode.allCases, id: \.rawValue) { mode in Text(mode.title).tag(mode) }
                         }
-                        Picker("Tamaño del texto", selection: $textSize) {
+                        Picker("Text size", selection: $textSize) {
                             ForEach(PlayerTextSize.allCases) { size in Text(size.title).tag(size) }
                         }
                     }
-                    SectionCard(title: "Servidor") {
+                    SectionCard(title: "Server") {
                         Text(BackendConfig.baseURL.absoluteString)
                             .foregroundStyle(.secondary)
                     }
                     if viewModel.session != nil {
-                        SectionCard(title: "Sesión de jugador") {
-                            Button("Cerrar sesión") { viewModel.logout() }.buttonStyle(.bordered)
-                            Button("Eliminar cuenta", role: .destructive) { showDeleteAccountConfirmation = true }
+                        SectionCard(title: "Player session") {
+                            Button("Sign out") { viewModel.logout() }.buttonStyle(.bordered)
+                            Button("Delete account", role: .destructive) { showDeleteAccountConfirmation = true }
                         }
                     }
                 }
@@ -2393,15 +2393,15 @@ struct ProfileView: View {
                 .frame(maxWidth: .infinity)
             }
             .background(PlayerPalette.screenBackground.ignoresSafeArea())
-            .navigationTitle("Perfil")
+            .navigationTitle("Profile")
         }
-        .confirmationDialog("Eliminar cuenta", isPresented: $showDeleteAccountConfirmation, titleVisibility: .visible) {
-            Button("Eliminar cuenta", role: .destructive) {
+        .confirmationDialog("Delete account", isPresented: $showDeleteAccountConfirmation, titleVisibility: .visible) {
+            Button("Delete account", role: .destructive) {
                 Task { await viewModel.deleteAccount() }
             }
-            Button("Cancelar", role: .cancel) {}
+            Button("Cancel", role: .cancel) {}
         } message: {
-            Text("Se cerrara la sesion y se borraran los datos guardados en este dispositivo. Tu cuenta de start.gg no se elimina.")
+            Text("You will be signed out and saved data on this device will be deleted. Your start.gg account will not be deleted.")
         }
     }
 }
@@ -2484,13 +2484,13 @@ struct MatchSummaryView: View {
                     isWinner: match.winnerParticipantId == match.myParticipantId
                 )
                 PlayerMatchParticipantRow(
-                    displayName: match.opponentDisplayName ?? "Rival",
+                    displayName: match.opponentDisplayName ?? "Opponent",
                     scoreLabel: playerMatchScoreLabel(match, participantId: match.opponentParticipantId, score: match.opponentScore),
                     characterName: latestCharacterForParticipant(match, participantId: match.opponentParticipantId),
                     isWinner: match.winnerParticipantId != nil && match.winnerParticipantId == match.opponentParticipantId
                 )
                 if let station = match.stationLabel, !station.isEmpty {
-                    Text("Estacion \(station)").foregroundStyle(.secondary)
+                    Text("Station \(station)").foregroundStyle(.secondary)
                 }
                 if let label = countdownLabel(referenceDate: context.date),
                    match.status == "CALLED" || match.status == "READY_CHECK" {
@@ -2547,15 +2547,15 @@ extension View {
 }
 func playerMatchStatusLabel(_ status: String) -> String {
     switch status {
-    case "PENDING", "CREATED": return "Pendiente"
-    case "CALLED": return "Llamado a jugar"
-    case "PLAYING", "IN_PROGRESS": return "En juego"
-    case "READY_CHECK": return "Confirma que estás listo"
-    case "PENDING_REVIEW", "AWAITING_CONFIRMATION": return "Resultado por confirmar"
-    case "DISPUTED": return "En revisión"
-    case "COMPLETED": return "Finalizado"
-    case "WALKOVER": return "Victoria por ausencia"
-    case "CANCELLED": return "Cancelado"
+    case "PENDING", "CREATED": return "Pending"
+    case "CALLED": return "Called to play"
+    case "PLAYING", "IN_PROGRESS": return "Playing"
+    case "READY_CHECK": return "Confirm you are ready"
+    case "PENDING_REVIEW", "AWAITING_CONFIRMATION": return "Result awaiting confirmation"
+    case "DISPUTED": return "Under review"
+    case "COMPLETED": return "Finished"
+    case "WALKOVER": return "Win by absence"
+    case "CANCELLED": return "Cancelled"
     default: return status
     }
 }
@@ -2578,17 +2578,17 @@ function installModernBracketSearch(activateSection, layoutSections) {
   bar.className = 'bracket-search';
   bar.setAttribute('role', 'search');
   const input = document.createElement('input');
-  input.type = 'search'; input.placeholder = 'Buscar jugador o equipo';
-  input.setAttribute('aria-label', 'Buscar jugador o equipo en todas las fases');
+  input.type = 'search'; input.placeholder = 'Find player or team';
+  input.setAttribute('aria-label', 'Find player or team in all phases');
   input.autocomplete = 'off'; input.maxLength = 120;
   const button = (label, action) => {
     const node = document.createElement('button'); node.type = 'button'; node.textContent = label;
     node.addEventListener('click', action); return node;
   };
   let hits = [], currentId = null, focusRevision = 0;
-  const previous = button('Anterior', () => step(-1));
-  const next = button('Siguiente', () => step(1));
-  const clear = button('Limpiar', () => { input.value = ''; update(false); input.focus(); });
+  const previous = button('Previous', () => step(-1));
+  const next = button('Next', () => step(1));
+  const clear = button('Clear', () => { input.value = ''; update(false); input.focus(); });
   const output = document.createElement('output');
   output.setAttribute('aria-live', 'polite'); output.setAttribute('aria-atomic', 'true');
   bar.append(input, previous, next, clear, output); root.prepend(bar);
@@ -2607,8 +2607,8 @@ function installModernBracketSearch(activateSection, layoutSections) {
     const current = hits[index];
     const phase = current?.closest('.bracket-section')?.querySelector('.section-title')?.textContent || '';
     const matchLabel = current?.querySelector('.match-header span')?.textContent || '';
-    output.textContent = !query ? 'Busca en todas las fases. Enter: siguiente; Mayús + Enter: anterior.' :
-      current ? (index + 1) + ' de ' + hits.length + ' · ' + phase + ' · ' + matchLabel : 'Sin coincidencias';
+    output.textContent = !query ? 'Search all phases. Enter: next; Shift + Enter: previous.' :
+      current ? (index + 1) + ' of ' + hits.length + ' · ' + phase + ' · ' + matchLabel : 'No matches found';
     previous.disabled = next.disabled = hits.length < 2; clear.disabled = !input.value;
     if (center && current) centerCard(current);
   }

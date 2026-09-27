@@ -67,7 +67,7 @@ test('active streams cannot be removed, including pending result review; normal 
   for (const status of ['CALLED', 'CHECKED_IN', 'PLAYING', 'RESULT_REPORTED', 'UNDER_REVIEW']) {
     const repo = repository(tournament(), [match('m1', { status, call: { stationLabel: 'Stream 2' } })]);
     const service = new TournamentsService(repo);
-    await assert.rejects(service.updateSetups('streams-test', 3, 1), /stream.*uso/);
+    await assert.rejects(service.updateSetups('streams-test', 3, 1), /stream.*in use/);
     assert.equal(repo.tournament.settings.streamCount, 2);
     assert.equal((await service.updateSetups('streams-test', 1, 2)).settings.setupCount, 1);
     repo.matches[0].status = 'COMPLETED';

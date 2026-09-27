@@ -39,17 +39,17 @@ test('simultaneous display edits preserve each other and recover after a rejecte
   await Promise.all([
     store.saveDisplaySettings({ displaySettings: { bracketDensity: 'compact', textScale: 110 } }),
     store.saveNotificationSettings({ telegramEnabled: false }),
-    store.saveMessageTemplates({ telegramLadderCompleted: 'Clasificación: {{tournament_title}}' }),
+    store.saveMessageTemplates({ telegramLadderCompleted: 'Standings: {{tournament_title}}' }),
     store.saveTheme({ id: 'test', key: 'test', name: 'Prueba', matchers: [], cssVars: {}, assets: {} }),
   ]);
-  await assert.rejects(store.selectSound('missing'), /no encontrado/);
+  await assert.rejects(store.selectSound('missing'), /not found/);
   await store.saveBracketRenderMode('modern');
   const state = await store.readState();
   assert.equal(state.displaySettings.textScale, 110);
   assert.equal(state.displaySettings.bracketDensity, 'compact');
   assert.equal(state.notifications.telegramEnabled, false);
   assert.equal(state.bracketRenderMode, 'modern');
-  assert.match(state.messageTemplates.telegramLadderCompleted, /Clasificación/);
+  assert.match(state.messageTemplates.telegramLadderCompleted, /Standings/);
   assert(state.themes.some(theme => theme.id === 'test'));
   assert.deepEqual((await fs.readdir(store.dataDir)).filter(name => name.endsWith('.tmp')), []);
 });
@@ -81,7 +81,7 @@ test('HTTP admin persists ladder templates and sparse settings; theme deletion p
   const failure = t.mock.method(store, 'saveDisplaySettings', async () => { throw new Error('simulated storage failure'); });
   const response = await post('/settings/save', { bracketRenderMode: 'classic' });
   assert.equal(response.status, 500, 'An asynchronous storage error must become an HTTP error without terminating the server');
-  assert.match((await response.json()).message, /Inténtalo de nuevo/);
+  assert.match((await response.json()).message, /Try again/);
   failure.mock.restore(); log.mock.restore();
   assert.equal((await post('/settings/save', { bracketRenderMode: 'modern' })).status, 200);
 });

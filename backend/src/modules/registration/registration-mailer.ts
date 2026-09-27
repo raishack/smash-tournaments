@@ -23,11 +23,11 @@ export class SmtpRegistrationMailer implements RegistrationMailer {
     });
   }
   async send(email: string, tournamentTitle: string, verificationUrl: string, notice?: string): Promise<void> {
-    if (!this.configured) throw new Error("Correo de inscripciones sin configurar");
+    if (!this.configured) throw new Error("Registration email is not configured");
     await this.transport.sendMail({
       from: this.from, to: { name: "", address: email },
-      subject: notice ? "Tu inscripción · Tournament Platform" : "Confirma tu inscripción · Tournament Platform",
-      text: notice ? `${tournamentTitle}\n\n${notice}\n\n${verificationUrl}` : `Has solicitado inscribirte en ${tournamentTitle}.\n\nAbre este enlace y pulsa «Confirmar inscripción» para verificar tu correo y completar el registro:\n${verificationUrl}\n\nEl enlace caduca en 24 horas. La plaza se asigna al confirmar, si la inscripción sigue abierta y quedan plazas.\n\nSi no solicitaste esta inscripción, ignora este mensaje. No se añadirá ningún participante sin confirmar.`,
+      subject: notice ? "Your registration · Smash Tournaments" : "Confirm your registration · Smash Tournaments",
+      text: notice ? `${tournamentTitle}\n\n${notice}\n\n${verificationUrl}` : `You requested registration for ${tournamentTitle}.\n\nOpen this link and select Confirm registration to verify your email and complete registration:\n${verificationUrl}\n\nThe link expires in 24 hours. Your place is assigned on confirmation, while registration is open and places remain.\n\nIf you did not request registration, ignore this message. No participant will be added without confirmation.`,
     });
   }
 }

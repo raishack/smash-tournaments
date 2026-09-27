@@ -91,7 +91,7 @@
         state.detail = null;
         state.tournaments = [];
       }
-      state.error = error.message || "No se pudo cargar la gestion web.";
+      state.error = error.message || "Could not load web management.";
     } finally {
       state.loading = false;
       render();
@@ -109,7 +109,7 @@
       state.detail = await api(`${API_BASE}/tournaments/${tournamentId}`);
       state.selectedTournamentId = tournamentId;
     } catch (error) {
-      state.error = error.message || "No se pudo cargar el torneo.";
+      state.error = error.message || "Could not load the tournament.";
     } finally {
       state.loading = false;
       render();
@@ -135,7 +135,7 @@
       flash(successMessage, "success");
       return true;
     } catch (error) {
-      state.error = error.message || "No se pudo completar la accion.";
+      state.error = error.message || "Could not complete the action.";
       render();
       return false;
     } finally {
@@ -309,7 +309,7 @@
       for (const game of payload.games) {
         const hasBlank = (game.selections || []).some((item) => !item.characterName);
         if (hasBlank) {
-          flash("Debes elegir los dos personajes en cada juego.", "error");
+          flash("Choose both characters in every game.", "error");
           return;
         }
       }
@@ -318,7 +318,7 @@
     const saved = await mutate(
       `/tournaments/${tournamentId}/matches/${match.id}/result-detailed`,
       payload,
-      "Resultado anotado.",
+      "Result recorded.",
     );
     if (saved && state.modal === draft) closeModal();
   }
@@ -369,20 +369,20 @@
         <div class="panel stack">
           <div>
             <p class="eyebrow">Smash Tournaments</p>
-            <h1 class="title">Gestion web</h1>
-            <p class="muted">Pensada para iPhone y uso rapido desde Safari.</p>
+            <h1 class="title">Web management</h1>
+            <p class="muted">Designed for iPhone and quick use in Safari.</p>
           </div>
           ${state.error ? `<div class="notice error">${safeHtml(state.error)}</div>` : ""}
           <form id="login-form" class="stack">
             <div class="field">
-              <label>Usuario</label>
+              <label>Username</label>
               <input name="username" value="admin" autocomplete="username">
             </div>
             <div class="field">
-              <label>Clave</label>
+              <label>Password</label>
               <input name="password" type="password" autocomplete="current-password">
             </div>
-            <button class="btn primary" type="submit">Entrar</button>
+            <button class="btn primary" type="submit">Sign in</button>
           </form>
         </div>
       </div>
@@ -393,7 +393,7 @@
       try {
         await login(String(form.get("username") || ""), String(form.get("password") || ""));
       } catch (error) {
-      state.error = error.message || "No se pudo iniciar sesion.";
+      state.error = error.message || "Could not sign in.";
         render();
       }
     });
@@ -401,9 +401,9 @@
 
   function renderTournamentList() {
     return `
-      <div class="toolbar" aria-label="Lista de torneos">
-        <button class="btn ${state.showArchived?'secondary':'primary'}" data-archive-list="current">Actuales</button>
-        <button class="btn ${state.showArchived?'primary':'secondary'}" data-archive-list="archived">Archivados</button>
+      <div class="toolbar" aria-label="Tournament list">
+        <button class="btn ${state.showArchived?'secondary':'primary'}" data-archive-list="current">Current</button>
+        <button class="btn ${state.showArchived?'primary':'secondary'}" data-archive-list="archived">Archived</button>
       </div>
       <div class="list">
         ${state.tournaments.filter(t=>(t.status==='ARCHIVED')===state.showArchived).map((tournament) => `
@@ -413,14 +413,14 @@
                 <p class="eyebrow">${safeHtml(tournament.gameTitle)}</p>
                 <h2 class="card-title">${safeHtml(tournament.title)}</h2>
               </div>
-              <span class="chip">${safeHtml(tournament.status==='ARCHIVED'?'Archivado':tournament.status)}</span>
+              <span class="chip">${safeHtml(tournament.status==='ARCHIVED'?'Archived':tournament.status)}</span>
             </div>
             <div class="chips">
               <span class="chip">${safeHtml(new Date(tournament.startsAt).toLocaleString())}</span>
               ${isStartggMirrored(tournament) ? '<span class="chip">start.gg</span>' : ""}
             </div>
           </button>
-        `).join("") || '<div class="empty">No hay torneos en este backend.</div>'}
+        `).join("") || '<div class="empty">There are no tournaments on this server.</div>'}
       </div>
     `;
   }
@@ -431,24 +431,24 @@
     const final=detail.fortnite?.rounds.find(round=>round.final&&round.closed);
     if(final) {
       const names=new Map(detail.participants.map(player=>[player.id,player.displayName]));
-      return `<section class="panel"><h3>Clasificación final</h3>${final.groups[0].standings.map(row=>`<p>${row.rank}. ${safeHtml(names.get(row.participantId)||'Jugador')} · ${row.points} puntos${row.excluded?' · '+safeHtml(row.excluded):''}</p>`).join('')}</section>`;
+      return `<section class="panel"><h3>Final standings</h3>${final.groups[0].standings.map(row=>`<p>${row.rank}. ${safeHtml(names.get(row.participantId)||'Player')} · ${row.points} points${row.excluded?' · '+safeHtml(row.excluded):''}</p>`).join('')}</section>`;
     }
     const matches=detail.matches.filter(match=>['COMPLETED','WALKOVER'].includes(match.status));
-    return `<section class="panel"><h3>Resultados</h3>${matches.map(match=>`<p>${safeHtml(matchTitle(match))} · ${match.participants.map(player=>`${safeHtml(player.displayName)} ${Number(player.score)||0}`).join(' — ')}</p>`).join('')||'<p>No hay cruces disponibles.</p>'}</section>`;
+    return `<section class="panel"><h3>Results</h3>${matches.map(match=>`<p>${safeHtml(matchTitle(match))} · ${match.participants.map(player=>`${safeHtml(player.displayName)} ${Number(player.score)||0}`).join(' — ')}</p>`).join('')||'<p>No matches are available.</p>'}</section>`;
   }
 
   function renderDetail() {
     const detail = state.detail;
     if (!detail) {
-      return `<div class="empty">Selecciona un torneo para empezar.</div>`;
+      return `<div class="empty">Select a tournament to begin.</div>`;
     }
     const tournament = detail.tournament;
     if(tournament.status==='ARCHIVED')return `<div class="stack">
-      <button class="btn secondary" data-back="1">Volver a la lista</button>
-      <h2>${safeHtml(tournament.title)}</h2><p>Archivado · solo lectura. Este torneo está fuera del display.</p>
-      <button class="btn primary" data-archive="false" ${state.loading?'disabled':''}>Desarchivar torneo</button>
-      ${tournament.settings?.bracketMode==='FORTNITE'?'<button class="btn secondary" data-open-panel="fortnite/session">Consultar resultados Fortnite</button>':''}
-      <section class="panel"><h3>Participantes</h3>${detail.participants.map(p=>`<p>${safeHtml(p.displayName)}</p>`).join('')}</section>
+      <button class="btn secondary" data-back="1">Back to list</button>
+      <h2>${safeHtml(tournament.title)}</h2><p>Archived · read-only. This tournament is hidden from the display.</p>
+      <button class="btn primary" data-archive="false" ${state.loading?'disabled':''}>Unarchive tournament</button>
+      ${tournament.settings?.bracketMode==='FORTNITE'?'<button class="btn secondary" data-open-panel="fortnite/session">View Fortnite results</button>':''}
+      <section class="panel"><h3>Participants</h3>${detail.participants.map(p=>`<p>${safeHtml(p.displayName)}</p>`).join('')}</section>
       ${renderArchivedResults(detail)}
     </div>`;
     const matches = filteredMatches(detail);
@@ -456,7 +456,7 @@
       <div class="stack">
         <div class="row between">
           <div class="stack" style="gap:6px;">
-            <button class="btn secondary small" data-back="1">Volver</button>
+            <button class="btn secondary small" data-back="1">Back</button>
             <h2 class="title" style="font-size:1.7rem">${safeHtml(tournament.title)}</h2>
             <div class="chips">
               <span class="chip">${safeHtml(tournament.gameTitle)}</span>
@@ -465,44 +465,44 @@
             </div>
           </div>
           <div class="toolbar">
-            <button class="btn secondary small" data-refresh="1">Refrescar</button>
+            <button class="btn secondary small" data-refresh="1">Refresh</button>
             ${tournament.settings?.bracketMode !== "FORTNITE" && (tournament.status === "DRAFT" || tournament.status === "READY")
-              ? '<button class="btn primary small" data-start-tournament="1">Iniciar torneo</button>'
+              ? '<button class="btn primary small" data-start-tournament="1">Start tournament</button>'
               : ""}
             ${isStartggMirrored(tournament)
-              ? '<button class="btn secondary small" data-reimport="1">Reimportar bracket</button>'
+              ? '<button class="btn secondary small" data-reimport="1">Reimport bracket</button>'
               : ""}
           </div>
         </div>
 
         <section class="panel stack">
-          <h3 class="section-title">Registro y resultados</h3><div class="toolbar">
-          ${!isStartggMirrored(tournament) ? `<button class="btn secondary" data-open-panel="registration-admin/session">Inscripciones, lista de espera y equipos</button>` : ''}<button class="btn secondary" data-display-toggle="1">${tournament.settings?.displayEnabled === false ? 'Mostrar en display' : 'Ocultar del display'}</button>
-          ${tournament.settings?.bracketMode === 'FORTNITE' ? '<button class="btn primary" data-open-panel="fortnite/session">Grupos y puntuaciones de Fortnite</button>' : ''}
-          ${tournament.status === 'COMPLETED' ? '<button class="btn primary" data-open-panel="top8-session">Crear cartel de resultados</button><button class="btn secondary" data-archive="true">Archivar torneo</button>' : ''}
-          </div><p class="muted">Los cambios de inscripción y las actas se guardan en el servidor.</p>
+          <h3 class="section-title">Registration and results</h3><div class="toolbar">
+          ${!isStartggMirrored(tournament) ? `<button class="btn secondary" data-open-panel="registration-admin/session">Registration, waitlist and teams</button>` : ''}<button class="btn secondary" data-display-toggle="1">${tournament.settings?.displayEnabled === false ? 'Show on display' : 'Hide from display'}</button>
+          ${tournament.settings?.bracketMode === 'FORTNITE' ? '<button class="btn primary" data-open-panel="fortnite/session">Fortnite groups and scores</button>' : ''}
+          ${tournament.status === 'COMPLETED' ? '<button class="btn primary" data-open-panel="top8-session">Create results poster</button><button class="btn secondary" data-archive="true">Archive tournament</button>' : ''}
+          </div><p class="muted">Registration changes and score sheets are saved on the server.</p>
         </section>
         <form class="panel stack" data-resources-form>
-          <h3 class="section-title">Setups y stream</h3>
+          <h3 class="section-title">Setups and streams</h3>
           <div class="row wrap">
-            <div class="field"><label for="setup-count">Setups normales</label><input id="setup-count" type="number" min="1" max="256" required value="${Number(tournament.settings?.setupCount) || 1}"></div>
+            <div class="field"><label for="setup-count">Regular setups</label><input id="setup-count" type="number" min="1" max="256" required value="${Number(tournament.settings?.setupCount) || 1}"></div>
             <div class="field"><label for="stream-count">Stream</label><select id="stream-count">
-              ${[0,1,2].map(count => `<option value="${count}" ${count === (tournament.settings?.streamCount || 0) ? "selected" : ""}>${count ? count + (count === 1 ? " stream" : " streams") : "Sin stream"}</option>`).join("")}
+              ${[0,1,2].map(count => `<option value="${count}" ${count === (tournament.settings?.streamCount || 0) ? "selected" : ""}>${count ? count + (count === 1 ? " stream" : " streams") : "No stream"}</option>`).join("")}
             </select></div>
-            <button class="btn secondary small" type="submit" ${state.loading ? "disabled" : ""}>Guardar setups y stream</button>
+            <button class="btn secondary small" type="submit" ${state.loading ? "disabled" : ""}>Save setups and streams</button>
           </div>
-          <p class="muted">Los streams son destinos independientes de los setups. Las marcas de start.gg son informativas.</p>
+          <p class="muted">Streams are separate destinations from setups. start.gg stream marks are informational.</p>
         </form>
         ${renderLadder(detail)}
 
         <div class="panel stack">
           <div class="row between">
-            <h3 class="section-title">Operativa</h3>
+            <h3 class="section-title">Match operations</h3>
             <div class="field" style="min-width:220px;">
-              <input id="player-filter" placeholder="Buscar por jugador" value="${safeHtml(state.playerFilter)}">
+              <input id="player-filter" placeholder="Search by player" value="${safeHtml(state.playerFilter)}">
             </div>
           </div>
-          ${matches.length ? matches.map((match) => renderMatchCard(tournament, match)).join("") : '<div class="empty">No hay matches pendientes con ese filtro.</div>'}
+          ${matches.length ? matches.map((match) => renderMatchCard(tournament, match)).join("") : '<div class="empty">No pending matches match this filter.</div>'}
         </div>
       </div>
     `;
@@ -519,11 +519,11 @@
     const labels = [...Array.from({length: Math.max(1, tournament.settings?.setupCount || 1)}, (_, i) => `Setup ${i+1}`),
       ...Array.from({length: Math.min(2, tournament.settings?.streamCount || 0)}, (_, i) => `Stream ${i+1}`)];
     const current = normalizedStation(selected);
-    return '<option value="">Sin estación</option>' + labels.map(label => {
+    return '<option value="">No station</option>' + labels.map(label => {
       const occupied = (state.detail?.matches || []).some(other => other.id !== match.id
         && ["CALLED", "CHECKED_IN", "PLAYING", "RESULT_REPORTED", "UNDER_REVIEW"].includes(other.status)
         && normalizedStation(other.call?.stationLabel) === label);
-      return `<option value="${safeHtml(label)}" ${current === label ? "selected" : ""} ${occupied ? "disabled" : ""}>${safeHtml(label)}${occupied ? " · Ocupado" : ""}</option>`;
+      return `<option value="${safeHtml(label)}" ${current === label ? "selected" : ""} ${occupied ? "disabled" : ""}>${safeHtml(label)}${occupied ? " · Occupied" : ""}</option>`;
     }).join("");
   }
 
@@ -538,7 +538,7 @@
             <div class="status">${safeHtml(match.status)} · Bo${effectiveBestOf(match)}</div>
           </div>
           <div class="chips">
-            ${match.call?.stationLabel ? `<span class="chip">Estacion ${safeHtml(match.call.stationLabel)}</span>` : ""}
+            ${match.call?.stationLabel ? `<span class="chip">Station ${safeHtml(match.call.stationLabel)}</span>` : ""}
           </div>
         </div>
         <div class="players">
@@ -550,15 +550,15 @@
           `).join("")}
         </div>
         <div class="field">
-          <label>Destino</label>
-          <select aria-label="Destino del match" data-station-input="${safeHtml(match.id)}">${stationOptions(tournament, match, stationValue)}</select>
+          <label>Destination</label>
+          <select aria-label="Match destination" data-station-input="${safeHtml(match.id)}">${stationOptions(tournament, match, stationValue)}</select>
         </div>
         <div class="toolbar">
-          <button class="btn secondary small" data-call="${safeHtml(match.id)}">Llamar</button>
-          <button class="btn secondary small" data-start-match="${safeHtml(match.id)}">Empezar</button>
-          <button class="btn secondary small" data-cancel-call="${safeHtml(match.id)}">Cancelar</button>
-          <button class="btn warn small" data-reset-match="${safeHtml(match.id)}">Resetear set</button>
-          ${withQuickReport ? `<button class="btn primary small" data-quick-report="${safeHtml(match.id)}">Anotacion rapida</button>` : ""}
+          <button class="btn secondary small" data-call="${safeHtml(match.id)}">Call</button>
+          <button class="btn secondary small" data-start-match="${safeHtml(match.id)}">Start</button>
+          <button class="btn secondary small" data-cancel-call="${safeHtml(match.id)}">Cancel</button>
+          <button class="btn warn small" data-reset-match="${safeHtml(match.id)}">Reset set</button>
+          ${withQuickReport ? `<button class="btn primary small" data-quick-report="${safeHtml(match.id)}">Quick report</button>` : ""}
         </div>
       </div>
     `;
@@ -573,13 +573,13 @@
       <div class="modal-backdrop" data-close-modal="1">
         <div class="modal stack" onclick="event.stopPropagation()">
           <div class="row between">
-            <h3 class="section-title">Anotacion rapida</h3>
-            <button class="btn secondary small" data-close-modal="1">Cerrar</button>
+            <h3 class="section-title">Quick report</h3>
+            <button class="btn secondary small" data-close-modal="1">Close</button>
           </div>
-          <p class="muted modal-copy">Prepara el resultado final, revisa cada juego y anotarlo de una sola vez.</p>
+          <p class="muted modal-copy">Prepare the final result, review each game and submit everything together.</p>
           ${state.error ? `<div class="notice error" role="alert">${safeHtml(state.error)}</div>` : ""}
           <div class="stack modal-section">
-            <div class="section-caption">Resultado final</div>
+            <div class="section-caption">Final result</div>
             <div class="score-options">
               ${options.map((option) => `
                 <button
@@ -593,12 +593,12 @@
             </div>
           </div>
           <div class="stack modal-section">
-            <div class="section-caption">Resumen de juegos</div>
+            <div class="section-caption">Game summary</div>
             <div class="games-list">
             ${state.modal.games.map((game, index) => `
               <div class="game-row stack">
                 <div class="row between wrap">
-                  <strong>Juego ${index + 1}</strong>
+                  <strong>Game ${index + 1}</strong>
                   <div class="winner-toggle-group">
                     ${match.participants.map((participant) => `
                       <button
@@ -620,7 +620,7 @@
                       data-open-character-picker="${index}:${safeHtml(participant.participantId)}"
                       type="button"
                     >
-                      ${safeHtml((game.selections || []).find((item) => item.participantId === participant.participantId)?.characterName || "Elegir personaje")}
+                      ${safeHtml((game.selections || []).find((item) => item.participantId === participant.participantId)?.characterName || "Choose character")}
                     </button>
                   </div>
                 `).join("") : ""}
@@ -630,8 +630,8 @@
           </div>
           <div class="sticky-actions">
             <div class="toolbar">
-              <button class="btn secondary" data-close-modal="1">Cancelar</button>
-              <button class="btn primary" data-submit-quick-report="1">${state.loading ? "Guardando…" : "Anotar resultado"}</button>
+              <button class="btn secondary" data-close-modal="1">Cancel</button>
+              <button class="btn primary" data-submit-quick-report="1">${state.loading ? "Saving…" : "Report result"}</button>
             </div>
           </div>
         </div>
@@ -648,13 +648,13 @@
       <div class="modal-backdrop modal-backdrop-top" data-close-character-picker="1">
         <div class="modal character-picker-modal stack" onclick="event.stopPropagation()">
           <div class="row between">
-            <h3 class="section-title">Elegir personaje</h3>
-            <button class="btn secondary small" data-close-character-picker="1">Cerrar</button>
+            <h3 class="section-title">Choose character</h3>
+            <button class="btn secondary small" data-close-character-picker="1">Close</button>
           </div>
           <p class="muted modal-copy">${safeHtml(participant?.displayName || "")}</p>
           <div class="field">
-            <label>Buscar</label>
-            <input id="character-search" placeholder="Filtrar personaje">
+            <label>Search</label>
+            <input id="character-search" placeholder="Filter characters">
           </div>
           <div class="character-picker-list" id="character-picker-list">
             ${state.smashCharacters.map((character) => `
@@ -680,11 +680,11 @@
         ${state.success ? `<div class="notice success">${safeHtml(state.success)}</div>` : ""}
         <div class="shell-header">
           <div>
-            <p class="eyebrow">Smash Tournaments - Gestion web</p>
-            <h1 class="title">Torneos</h1>
+            <p class="eyebrow">Smash Tournaments - Web management</p>
+            <h1 class="title">Tournaments</h1>
           </div>
           <div class="toolbar">
-            <a class="btn secondary small" href="/account/">Mi cuenta y usuarios</a><button class="btn secondary small" data-logout="1">Salir</button>
+            <a class="btn secondary small" href="/account/">My account and users</a><button class="btn secondary small" data-logout="1">Sign out</button>
           </div>
         </div>
         ${state.selectedTournamentId ? renderDetail() : renderTournamentList()}
@@ -702,8 +702,8 @@
     document.querySelectorAll('[data-archive-list]').forEach(button=>button.addEventListener('click',()=>{state.showArchived=button.dataset.archiveList==='archived';render();}));
     document.querySelector('[data-archive]')?.addEventListener('click',async event=>{
       if(state.loading)return;const archived=event.currentTarget.dataset.archive==='true';
-      if(!confirm(archived?'Se moverá a Archivados, quedará en solo lectura y fuera del display. ¿Archivar?':'Volverá a Finalizado. El display seguirá desactivado hasta que lo habilites. ¿Desarchivar?'))return;
-      await mutate('/tournaments/'+encodeURIComponent(state.selectedTournamentId)+'/archive',{archived},archived?'Torneo archivado':'Torneo desarchivado');
+      if(!confirm(archived?'It will move to Archived, become read-only and disappear from the display. Archive?':'It will return to Completed. The display remains disabled until you enable it. Unarchive?'))return;
+      await mutate('/tournaments/'+encodeURIComponent(state.selectedTournamentId)+'/archive',{archived},archived?'Tournament archived':'Tournament unarchived');
       if(state.detail?.tournament){const current=state.detail.tournament;state.tournaments=state.tournaments.map(t=>t.id===current.id?current:t);}
       render();
     });
@@ -711,13 +711,13 @@
       if(state.loading)return;button.disabled=true;
       try{
         const result=await api(API_BASE+'/tournaments/'+encodeURIComponent(state.selectedTournamentId)+'/'+button.dataset.openPanel,{method:'POST',body:'{}'});
-        const url=new URL(result.url);if(url.origin!==new URL(config.backendUrl).origin)throw Error('El panel tiene un destino no válido');
+        const url=new URL(result.url);if(url.origin!==new URL(config.backendUrl).origin)throw Error('The panel has an invalid destination');
         window.location.assign(url.href);
-      }catch(error){flash(error.message||'No se pudo abrir el panel','error');}finally{button.disabled=false;}
+      }catch(error){flash(error.message||'Could not open the panel','error');}finally{button.disabled=false;}
     }));
     document.querySelector('[data-display-toggle]')?.addEventListener('click',()=>{
       if(state.loading)return;
-      mutate('/tournaments/'+encodeURIComponent(state.selectedTournamentId)+'/public-options',{displayEnabled:state.detail.tournament.settings?.displayEnabled===false},'Visibilidad actualizada.');
+      mutate('/tournaments/'+encodeURIComponent(state.selectedTournamentId)+'/public-options',{displayEnabled:state.detail.tournament.settings?.displayEnabled===false},'Visibility updated.');
     });
     document.querySelectorAll("[data-open-tournament]").forEach((node) => {
       node.addEventListener("click", () => loadTournamentDetail(node.getAttribute("data-open-tournament")));
@@ -746,7 +746,7 @@
       if (state.loading || !event.currentTarget.reportValidity()) return;
       const setupCount = Number(document.getElementById("setup-count").value);
       const streamCount = Number(document.getElementById("stream-count").value);
-      mutate(`/tournaments/${state.selectedTournamentId}/setups`, { setupCount, streamCount }, "Setups y stream guardados.");
+      mutate(`/tournaments/${state.selectedTournamentId}/setups`, { setupCount, streamCount }, "Setups and streams saved.");
     });
     const filterInput = document.getElementById("player-filter");
     if (filterInput) {
@@ -759,7 +759,7 @@
       node.addEventListener("input", (event) => updateStationDraft(node.getAttribute("data-station-input"), event.target.value));
     });
     document.querySelectorAll("[data-start-tournament]").forEach((node) => {
-      node.addEventListener("click", () => mutate(`/tournaments/${state.selectedTournamentId}/start`, {}, "Torneo iniciado."));
+      node.addEventListener("click", () => mutate(`/tournaments/${state.selectedTournamentId}/start`, {}, "Tournament started."));
     });
     document.querySelectorAll("[data-reimport]").forEach((node) => {
       node.addEventListener("click", () => {
@@ -771,12 +771,12 @@
         );
       });
     });
-    window.GTLadderPanel.bind(state.detail, input => mutate(`/tournaments/${state.selectedTournamentId}/ladder/control`, input, "Ladder actualizada."));
+    window.GTLadderPanel.bind(state.detail, input => mutate(`/tournaments/${state.selectedTournamentId}/ladder/control`, input, "Ladder updated."));
     document.querySelectorAll("[data-ladder-start]").forEach((node) => {
-      node.addEventListener("click", () => mutate(`/tournaments/${state.selectedTournamentId}/ladder/start`, { startedByUserId: MANAGE_USER_ID }, "Ladder activada."));
+      node.addEventListener("click", () => mutate(`/tournaments/${state.selectedTournamentId}/ladder/start`, { startedByUserId: MANAGE_USER_ID }, "Ladder enabled."));
     });
     document.querySelectorAll("[data-ladder-finalize]").forEach((node) => {
-      node.addEventListener("click", () => mutate(`/tournaments/${state.selectedTournamentId}/ladder/finalize`, { completedByUserId: MANAGE_USER_ID }, "Inscripciones cerradas; los sets abiertos pueden terminar."));
+      node.addEventListener("click", () => mutate(`/tournaments/${state.selectedTournamentId}/ladder/finalize`, { completedByUserId: MANAGE_USER_ID }, "Registration closed; open sets may finish."));
     });
     document.querySelectorAll("[data-call]").forEach((node) => {
       node.addEventListener("click", () => {
@@ -789,10 +789,10 @@
       });
     });
     document.querySelectorAll("[data-start-match]").forEach((node) => {
-      node.addEventListener("click", () => mutate(`/tournaments/${state.selectedTournamentId}/matches/${node.getAttribute("data-start-match")}/start`, { startedByUserId: MANAGE_USER_ID }, "Match iniciado."));
+      node.addEventListener("click", () => mutate(`/tournaments/${state.selectedTournamentId}/matches/${node.getAttribute("data-start-match")}/start`, { startedByUserId: MANAGE_USER_ID }, "Match started."));
     });
     document.querySelectorAll("[data-cancel-call]").forEach((node) => {
-      node.addEventListener("click", () => mutate(`/tournaments/${state.selectedTournamentId}/matches/${node.getAttribute("data-cancel-call")}/cancel-call`, {}, "Llamada cancelada."));
+      node.addEventListener("click", () => mutate(`/tournaments/${state.selectedTournamentId}/matches/${node.getAttribute("data-cancel-call")}/cancel-call`, {}, "Call cancelled."));
     });
     document.querySelectorAll("[data-reset-match]").forEach((node) => {
       node.addEventListener("click", () => mutate(`/tournaments/${state.selectedTournamentId}/matches/${node.getAttribute("data-reset-match")}/reset`, {}, "Match reseteado."));

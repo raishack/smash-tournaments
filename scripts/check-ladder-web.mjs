@@ -7,9 +7,9 @@ import {displayFixture} from '../backend/tests/fixtures/display-fixtures.mjs';
 const require=createRequire(import.meta.url);
 const {chromium}=require(process.env.PLAYWRIGHT_PATH || 'playwright');
 const fixture=displayFixture(32);fixture.tournament.importSource={provider:'START_GG',entrantSize:1};
-fixture.participants=Array.from({length:32},(_,i)=>({id:'p'+i,displayName:`Jugador ${i+1} · Nombre de prueba largo`,status:'ACTIVE',checkedIn:true}));
+fixture.participants=Array.from({length:32},(_,i)=>({id:'p'+i,displayName:`Player ${i+1} · Name de prueba largo`,status:'ACTIVE',checkedIn:true}));
 fixture.ladder={session:{status:'ACTIVE',options:{revision:'revision-session',settings:{mode:'COMPETITIVE',bestOf:3,readySeconds:300,rematchWaitSeconds:180,minimumSets:3,requireConfirmation:true,setupNumbers:[3,4]}}},
- queue:fixture.participants.slice(20).map(p=>({participantId:p.id,displayName:p.displayName,waitingReason:'Esperando setup libre'})),
+ queue:fixture.participants.slice(20).map(p=>({participantId:p.id,displayName:p.displayName,waitingReason:'Waiting for an available setup'})),
  activeMatches:Array.from({length:10},(_,i)=>({id:'l'+i,status:i===0?'DISPUTED':'PLAYING',bestOf:3,stationLabel:'Setup '+(i+1),participants:fixture.participants.slice(i*2,i*2+2).map((p,j)=>({participantId:p.id,displayName:p.displayName,score:j})),details:{revision:'r'+i}})),completedMatches:[],
  standings:fixture.participants.map((p,i)=>({...p,participantId:p.id,wins:10-i%7,losses:i%3,rating:1400-i*12,eligible:i<25,winRate:75})),activity:[]};
 const posts=[],errors=[];
@@ -43,7 +43,7 @@ try {
  await page.setViewportSize({width:1280,height:900});await page.goto(base+'/manage/');await page.locator('#ladder-panel').waitFor();
  await page.locator('[data-ladder-action="PAUSE"]').click();await page.waitForFunction(()=>document.querySelector('#ladder-panel'));
  assert.equal(posts.at(-1).action,'PAUSE');assert.equal(posts.at(-1).expectedRevision,'revision-session');
- await page.getByText('Ajustes de ladder',{exact:true}).click();await page.locator('#ladder-settings [name="bestOf"]').selectOption('1');await page.locator('#ladder-settings button').click();
+ await page.getByText('Ladder settings',{exact:true}).click();await page.locator('#ladder-settings [name="bestOf"]').selectOption('1');await page.locator('#ladder-settings button').click();
  await page.waitForTimeout(100);assert.equal(posts.at(-1).settings.bestOf,1);
  const set=page.locator('[data-ladder-match="l0"]');await set.locator('..').locator('summary').click();await set.locator('[name="reason"]').fill('Verificado con ambos');await set.locator('[name="score0"]').fill('2');await set.locator('[data-ladder-action="RESOLVE_RESULT"]').click();
  await page.waitForTimeout(100);assert.equal(posts.at(-1).expectedRevision,'r0');assert.equal(posts.at(-1).winnerParticipantId,'p0');

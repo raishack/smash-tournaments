@@ -103,7 +103,7 @@ function defaultThemes(): DisplayThemeRecord[] {
     {
       id: "theme_base",
       key: "base",
-      name: "Tema base",
+      name: "Base theme",
       matchers: [],
       assets: {
         background: "/display-assets/builtin/base-bg-tech.png",
@@ -163,29 +163,29 @@ function defaultThemes(): DisplayThemeRecord[] {
 
 function defaultMessageTemplates(): DisplayMessageTemplates {
   return {
-    telegramMatchCalled: "Llamada a jugar en {{tournament_title}}\n{{players_vs}} en {{station_label}}.\nTeneis {{timeout_minutes}} minutos para presentaros o sereis desclasificados.\nSi hay una partida en curso en esa estacion, esperad a que termine para empezar.",
+    telegramMatchCalled: "Match call in {{tournament_title}}\n{{players_vs}} at {{station_label}}.\nYou have {{timeout_minutes}} minutes to arrive or you may be disqualified.\nIf a match is still in progress at that station, wait for it to finish before starting.",
     telegramTournamentStartedCaption: "Comienza {{tournament_title}}. Bracket inicial adjunta.",
     telegramGameWin: "{{completion_text}} {{tournament_title}}\n{{match_label}} · {{score_text}}",
     telegramMatchResolved: "{{resolved_title}}\n{{resolved_body}}",
-    telegramRoundCompletedCaption: "Fase completada en {{tournament_title}}: {{round_title}}. Bracket actualizada adjunta.",
-    telegramTournamentCompleted: "Torneo completado: {{tournament_title}}\nCampeon: {{winner_name}}",
-    telegramTournamentCompletedCaption: "Bracket final de {{tournament_title}}. Campeon: {{winner_name}}",
-    telegramLadderCompleted: "Ladder finalizada: {{tournament_title}}\nGanador: {{winner_name}}\n{{ladder_top3}}",
-    telegramLadderCompletedCaption: "Clasificacion final de la ladder de {{tournament_title}}. Ganador: {{winner_name}}",
-    whatsappMatchCalled: "Llamada a jugar en {{tournament_title}}\n{{players_vs}} en {{station_label}}.\nTeneis {{timeout_minutes}} minutos para presentaros o sereis desclasificados.\nSi hay una partida en curso en esa estacion, esperad a que termine para empezar.",
+    telegramRoundCompletedCaption: "Phase completed in {{tournament_title}}: {{round_title}}. Updated bracket attached.",
+    telegramTournamentCompleted: "Tournament completed: {{tournament_title}}\nChampion: {{winner_name}}",
+    telegramTournamentCompletedCaption: "Final bracket for {{tournament_title}}. Champion: {{winner_name}}",
+    telegramLadderCompleted: "Ladder finished: {{tournament_title}}\nWinsdor: {{winner_name}}\n{{ladder_top3}}",
+    telegramLadderCompletedCaption: "Final ladder standings for {{tournament_title}}. Winner: {{winner_name}}",
+    whatsappMatchCalled: "Match call in {{tournament_title}}\n{{players_vs}} at {{station_label}}.\nYou have {{timeout_minutes}} minutes to arrive or you may be disqualified.\nIf a match is still in progress at that station, wait for it to finish before starting.",
     whatsappTournamentStartedCaption: "Comienza {{tournament_title}}. Bracket inicial adjunta.",
     whatsappGameWin: "{{completion_text}} {{tournament_title}}\n{{match_label}} · {{score_text}}",
     whatsappMatchResolved: "{{resolved_title}}\n{{resolved_body}}",
-    whatsappRoundCompletedCaption: "Fase completada en {{tournament_title}}: {{round_title}}. Bracket actualizada adjunta.",
-    whatsappTournamentCompleted: "Torneo completado: {{tournament_title}}\nCampeon: {{winner_name}}",
-    whatsappTournamentCompletedCaption: "Bracket final de {{tournament_title}}. Campeon: {{winner_name}}",
-    whatsappLadderCompleted: "Ladder finalizada: {{tournament_title}}\nGanador: {{winner_name}}\n{{ladder_top3}}",
-    whatsappLadderCompletedCaption: "Clasificacion final de la ladder de {{tournament_title}}. Ganador: {{winner_name}}",
-    webCallEyebrow: "Llamada a jugar",
+    whatsappRoundCompletedCaption: "Phase completed in {{tournament_title}}: {{round_title}}. Updated bracket attached.",
+    whatsappTournamentCompleted: "Tournament completed: {{tournament_title}}\nChampion: {{winner_name}}",
+    whatsappTournamentCompletedCaption: "Final bracket for {{tournament_title}}. Champion: {{winner_name}}",
+    whatsappLadderCompleted: "Ladder finished: {{tournament_title}}\nWinsdor: {{winner_name}}\n{{ladder_top3}}",
+    whatsappLadderCompletedCaption: "Final ladder standings for {{tournament_title}}. Winner: {{winner_name}}",
+    webCallEyebrow: "Match call",
     webCallTitle: "{{tournament_title}}",
     webCallBody: "{{players_vs}}",
-    webCallMeta: "Estacion {{station_label}} · {{timeout_minutes}} min",
-    webCallNote: "Presentaos dentro del tiempo asignado. Si la estacion esta ocupada, esperad a que termine la partida en curso.",
+    webCallMeta: "Station {{station_label}} · {{timeout_minutes}} min",
+    webCallNote: "Arrive within the allotted time. If the station is occupied, wait for the current match to finish.",
   };
 }
 
@@ -359,7 +359,7 @@ export class DisplayAdminStore {
   async selectSound(soundId: string | null): Promise<void> {
     return this.mutate(state => {
       if (soundId && !state.sounds.some((sound) => sound.id === soundId)) {
-        throw new Error("Sonido no encontrado");
+        throw new Error("Sound not found");
       }
       state.selectedSoundId = soundId;
     });
@@ -388,7 +388,7 @@ export class DisplayAdminStore {
   }
 
   async deleteTheme(themeId: string): Promise<void> {
-    if (themeId === "theme_base") throw new Error("El tema base no se puede eliminar");
+    if (themeId === "theme_base") throw new Error("The base theme cannot be deleted");
     return this.mutate(state => { state.themes = state.themes.filter((theme) => theme.id !== themeId); });
   }
 
@@ -490,7 +490,7 @@ export class DisplayAdminStore {
       await fs.access(idleImagePath);
       records.unshift({
         id: "builtin_brand_logo",
-        name: "Logo de la organización",
+        name: "Organization logo",
         url: "/brand-logo.png",
         fileName: "brand-logo.png",
       });

@@ -38,7 +38,7 @@ enum ManagementPalette {
 enum ManagementTextSize: String, CaseIterable, Identifiable {
     case normal, large, extraLarge
     var id: String { rawValue }
-    var title: String { switch self { case .normal: return "Normal"; case .large: return "Grande"; case .extraLarge: return "Muy grande" } }
+    var title: String { switch self { case .normal: return "Normal"; case .large: return "Large"; case .extraLarge: return "Extra large" } }
     var minimumSize: DynamicTypeSize { switch self { case .normal: return .xSmall; case .large: return .xLarge; case .extraLarge: return .xxxLarge } }
 }
 
@@ -62,7 +62,7 @@ struct TournamentManagerApp: App {
                     get: { viewModel.error != nil },
                     set: { if !$0 { viewModel.error = nil } }
                 )) {
-                    Button("Aceptar", role: .cancel) {}
+                    Button("Accept", role: .cancel) {}
                 } message: {
                     Text(viewModel.error ?? "")
                 }
@@ -89,19 +89,19 @@ struct ManagementRootView: View {
 
         TabView(selection: $viewModel.currentTab) {
             DashboardView()
-                .tabItem { Label("Inicio", systemImage: "house.fill") }
+                .tabItem { Label("Home", systemImage: "house.fill") }
                 .tag(TournamentManagerViewModel.Tab.dashboard)
 
             TournamentsView()
-                .tabItem { Label("Torneos", systemImage: "list.bullet.rectangle") }
+                .tabItem { Label("Tournaments", systemImage: "list.bullet.rectangle") }
                 .tag(TournamentManagerViewModel.Tab.tournaments)
 
             OperationsView()
-                .tabItem { Label("Operativa", systemImage: "bolt.fill") }
+                .tabItem { Label("Match operations", systemImage: "bolt.fill") }
                 .tag(TournamentManagerViewModel.Tab.operations)
 
             SettingsView()
-                .tabItem { Label("Perfil", systemImage: "gearshape.fill") }
+                .tabItem { Label("Profile", systemImage: "gearshape.fill") }
                 .tag(TournamentManagerViewModel.Tab.settings)
         }
         .overlay(alignment: .top) {
@@ -135,11 +135,11 @@ struct DashboardView: View {
                 HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: 18) {
                         VStack(alignment: .leading, spacing: 14) {
-                            Text("Centro de torneos")
+                            Text("Tournament hub")
                                 .font(.system(.largeTitle, weight: .bold))
                                 .foregroundStyle(Color.primary)
 
-                            Text("Controla torneos, participantes y enfrentamientos en tiempo real.")
+                            Text("Manage tournaments, participants and matches in real time.")
                                 .font(.system(.title3, weight: .regular))
                                 .foregroundStyle(ManagementPalette.secondaryText)
                                 .fixedSize(horizontal: false, vertical: true)
@@ -150,27 +150,27 @@ struct DashboardView: View {
                             onCreateStartggTournament: { showingStartggCreation = true }
                         )
 
-                        Text("Ultimos torneos")
+                        Text("Recent tournaments")
                             .font(.system(.title2, weight: .bold))
                             .padding(.top, 4)
 
                         if viewModel.isLoading && viewModel.tournaments.isEmpty {
                             DashboardInfoCard(
-                                title: "Cargando torneos",
-                                message: "Estamos trayendo los torneos disponibles."
+                                title: "Loading tournaments",
+                                message: "Loading available tournaments."
                             ) {
                                 ProgressView()
                                     .progressViewStyle(.circular)
                             }
                         } else if let error = viewModel.error, viewModel.tournaments.isEmpty {
                             DashboardInfoCard(
-                                title: "Sin conexion",
+                                title: "Offline",
                                 message: error
                             )
                         } else if viewModel.tournaments.isEmpty {
                             DashboardInfoCard(
-                                title: "Sin torneos",
-                                message: "Todavia no hay torneos creados."
+                                title: "No tournaments",
+                                message: "No tournaments created yet."
                             )
                         } else {
                             ForEach(Array(viewModel.tournaments.filter { $0.status != "ARCHIVED" }.prefix(3))) { tournament in
@@ -211,15 +211,15 @@ struct TournamentsView: View {
     var body: some View {
         NavigationStack {
             List {
-                Picker("Lista de torneos", selection: $showArchived) {
-                    Text("Actuales").tag(false)
-                    Text("Archivados").tag(true)
+                Picker("Tournament list", selection: $showArchived) {
+                    Text("Current").tag(false)
+                    Text("Archived").tag(true)
                 }.pickerStyle(.segmented)
                 if !viewModel.isLoading && viewModel.tournaments.filter({ ($0.status == "ARCHIVED") == showArchived }).isEmpty {
-                    Text(showArchived ? "Aquí aparecerán los torneos que archives al finalizar." : "No hay torneos en esta lista.").foregroundStyle(.secondary)
+                    Text(showArchived ? "Tournaments you archive after completion will appear here." : "No tournaments in this list.").foregroundStyle(.secondary)
                 }
                 if viewModel.isLoading && viewModel.tournaments.isEmpty {
-                    ProgressView("Cargando torneos...")
+                    ProgressView("Loading tournaments...")
                 }
 
                 ForEach(viewModel.tournaments.filter { ($0.status == "ARCHIVED") == showArchived }) { tournament in
@@ -234,19 +234,19 @@ struct TournamentsView: View {
                     })
                 }
             }
-            .navigationTitle("Torneos")
+            .navigationTitle("Tournaments")
             .toolbar {
                 ToolbarItemGroup(placement: .topBarTrailing) {
                     Button {
                         showingStartggCreation = true
                     } label: {
-                        Label("Importar start.gg", systemImage: "square.and.arrow.down")
+                        Label("Import start.gg", systemImage: "square.and.arrow.down")
                     }
 
                     Button {
                         showingManualCreation = true
                     } label: {
-                        Label("Nuevo torneo", systemImage: "plus")
+                        Label("New tournament", systemImage: "plus")
                     }
                 }
             }
@@ -275,12 +275,12 @@ struct OperationsView: View {
         NavigationStack {
             List {
                 Section {
-                    Text("Selecciona un torneo para llamar partidas y reportar resultados sin mezclar la operativa.")
+                    Text("Select a tournament to call matches and report results within that event.")
                         .foregroundStyle(.secondary)
                 }
 
                 if viewModel.isLoading && viewModel.tournaments.isEmpty {
-                    ProgressView("Cargando torneos...")
+                    ProgressView("Loading tournaments...")
                 }
 
                 ForEach(viewModel.tournaments.filter { $0.status != "ARCHIVED" }) { tournament in
@@ -295,7 +295,7 @@ struct OperationsView: View {
                     })
                 }
             }
-            .navigationTitle("Operativa")
+            .navigationTitle("Match operations")
             .refreshable {
                 await viewModel.reloadTournaments()
             }
@@ -319,9 +319,9 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Cuenta de gestión") { ManagementAccountControls(showLogout: false) }
-                Section("Apariencia") {
-                    Picker("Tema", selection: Binding(
+                Section("Management account") { ManagementAccountControls(showLogout: false) }
+                Section("Appearance") {
+                    Picker("Theme", selection: Binding(
                         get: { viewModel.themeMode },
                         set: { viewModel.setTheme($0) }
                     )) {
@@ -330,37 +330,37 @@ struct SettingsView: View {
                         }
                     }
                     .pickerStyle(.menu)
-                    Picker("Tamaño del texto", selection: $textSize) {
+                    Picker("Text size", selection: $textSize) {
                         ForEach(ManagementTextSize.allCases) { size in Text(size.title).tag(size) }
                     }
-                    Text("Respeta también el tamaño de texto de Accesibilidad del dispositivo.")
+                    Text("Also follows the device accessibility text size.")
                         .font(.footnote).foregroundStyle(ManagementPalette.secondaryText)
-                    Text("Jugador · Resultado 2–1").font(.body)
+                    Text("Player · Result 2–1").font(.body)
                     if !ManagementPresentation.forceClassic {
-                        Toggle("Interfaz adaptada", isOn: $adaptiveLayout)
-                        Text("Lista compacta y acciones junto a la bracket en pantallas amplias. Desactívala para recuperar la presentación anterior.")
+                        Toggle("Adaptive layout", isOn: $adaptiveLayout)
+                        Text("Compact list with actions beside the bracket on wide screens. Disable it to restore the previous layout.")
                             .font(.footnote).foregroundStyle(.secondary)
                     }
                 }
 
-                Section("Conexion") {
+                Section("Connection") {
                     Text(BackendConfig.baseURL.absoluteString)
                     Text(BackendConfig.displayWebURL.absoluteString)
                         .foregroundStyle(.secondary)
                 }
 
 
-                Section("Notificaciones externas") {
+                Section("External notifications") {
                     Toggle("Telegram", isOn: $viewModel.notificationSettings.telegramEnabled)
                     Toggle("WhatsApp", isOn: $viewModel.notificationSettings.whatsappEnabled)
-                    Button("Guardar ajustes") {
+                    Button("Save settings") {
                         Task { await viewModel.saveNotificationSettings() }
                     }
                     .managementPrimaryButton()
                 }
-                Section { Button("Cerrar sesión", role: .destructive) { Task { await ManagementAccount.shared.logout() } } }
+                Section { Button("Sign out", role: .destructive) { Task { await ManagementAccount.shared.logout() } } }
             }
-            .navigationTitle("Perfil")
+            .navigationTitle("Profile")
         }
     }
 }
@@ -416,27 +416,27 @@ private struct HomeHeroCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
-            Text("Gestion real del torneo")
+            Text("Tournament management")
                 .font(.system(.title, weight: .bold))
                 .foregroundStyle(ManagementPalette.heroTitle)
 
-            Text("Ultimos torneos, creacion configurable, alta de jugadores, bracket y operativa por torneo.")
+            Text("Recent tournaments, flexible creation, player registration, brackets and match operations.")
                 .font(.system(.title3, weight: .regular))
                 .foregroundStyle(ManagementPalette.heroBody)
                 .fixedSize(horizontal: false, vertical: true)
 
             ViewThatFits(in: .horizontal) {
                 HStack(spacing: 12) {
-                    Button("Crear torneo", action: onCreateTournament)
+                    Button("Create tournament", action: onCreateTournament)
                         .buttonStyle(HomePrimaryPillButtonStyle())
-                    Button("Crear start.gg", action: onCreateStartggTournament)
+                    Button("Create start.gg", action: onCreateStartggTournament)
                         .buttonStyle(HomePrimaryPillButtonStyle())
                 }
 
                 VStack(spacing: 12) {
-                    Button("Crear torneo", action: onCreateTournament)
+                    Button("Create tournament", action: onCreateTournament)
                         .buttonStyle(HomePrimaryPillButtonStyle())
-                    Button("Crear start.gg", action: onCreateStartggTournament)
+                    Button("Create start.gg", action: onCreateStartggTournament)
                         .buttonStyle(HomePrimaryPillButtonStyle())
                 }
             }
@@ -503,7 +503,7 @@ private struct DashboardTournamentCard: View {
                 TournamentDetailView()
                     .task { await viewModel.selectTournament(tournament.id) }
             } label: {
-                Text("Abrir torneo")
+                Text("Open tournament")
                     .font(.headline.weight(.semibold))
                     .padding(.horizontal, 28)
                     .padding(.vertical, 12)
@@ -545,9 +545,9 @@ private struct HomePrimaryPillButtonStyle: ButtonStyle {
 }
 
 private func dashboardTournamentSummary(_ tournament: TournamentListItem) -> String {
-    let formatLabel = tournament.settings.bracketMode == "FORTNITE" ? "Fortnite · puntos acumulados" : tournament.settings.format.replacingOccurrences(of: "_", with: " ").capitalized
+    let formatLabel = tournament.settings.bracketMode == "FORTNITE" ? "Fortnite · accumulated points" : tournament.settings.format.replacingOccurrences(of: "_", with: " ").capitalized
     let bestOfLabel: String = {
-        if tournament.settings.bracketMode == "FORTNITE" { return "\(tournament.settings.fortniteLobbySize ?? 20) puestos · \(tournament.settings.fortniteGamesPerRound ?? 3) partidas por ronda" }
+        if tournament.settings.bracketMode == "FORTNITE" { return "\(tournament.settings.fortniteLobbySize ?? 20) seats · \(tournament.settings.fortniteGamesPerRound ?? 3) games per round" }
         let winners = tournament.settings.winnersBestOf ?? tournament.settings.bestOf
         let losers = tournament.settings.losersBestOf ?? tournament.settings.bestOf
         return "W Bo\(winners) / L Bo\(losers)"
@@ -557,7 +557,7 @@ private func dashboardTournamentSummary(_ tournament: TournamentListItem) -> Str
         tournament.gameTitle,
         formatLabel,
         bestOfLabel,
-        "\(tournament.maxParticipants) participantes",
+        "\(tournament.maxParticipants) participants",
         tournament.status
     ].joined(separator: " - ")
 }
@@ -568,11 +568,11 @@ private struct SummaryMetricsCard: View {
     let supportsLadder: Bool
 
     var body: some View {
-        SectionCard(title: "Resumen") {
+        SectionCard(title: "Summary") {
             VStack(alignment: .leading, spacing: 8) {
-                Text("Torneos cargados: \(tournaments)")
-                Text("Torneo activo: \(selectedTournamentTitle ?? "Ninguno")")
-                Text("Ladder: \(supportsLadder ? "Disponible" : "No aplica")")
+                Text("Tournaments loaded: \(tournaments)")
+                Text("Active tournament: \(selectedTournamentTitle ?? "None")")
+                Text("Ladder: \(supportsLadder ? "Available" : "Not applicable")")
                     .foregroundStyle(.secondary)
             }
         }
@@ -614,11 +614,11 @@ private struct CreateTournamentSheet: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 22) {
                     HStack(spacing: 14) {
-                        Button("Cerrar") { dismiss() }
+                        Button("Close") { dismiss() }
                             .buttonStyle(HomePrimaryPillButtonStyle())
                             .frame(maxWidth: 220)
 
-                        Button(mode == .startgg ? "Crear torneo" : "Crear torneo") {
+                        Button(mode == .startgg ? "Create tournament" : "Create tournament") {
                             Task {
                                 if mode == .startgg {
                                     await viewModel.createStartggTournament(
@@ -646,42 +646,42 @@ private struct CreateTournamentSheet: View {
                         .frame(maxWidth: 260)
                     }
 
-                    Text(mode == .startgg ? "Nuevo torneo start.gg" : "Nuevo torneo")
+                    Text(mode == .startgg ? "New start.gg tournament" : "New tournament")
                         .font(.system(.largeTitle, weight: .bold))
 
                     if mode == .startgg {
                         VStack(alignment: .leading, spacing: 18) {
                             CreateFormField(title: nil, placeholder: "") {
-                                TextField("URL del event", text: $startggURL, axis: .vertical)
+                                TextField("Event URL", text: $startggURL, axis: .vertical)
                                     .textInputAutocapitalization(.never)
                                     .autocorrectionDisabled()
                             }
 
                             CreateNumberField(
-                                label: "Minutos para llamada",
+                                label: "Call timeout in minutes",
                                 value: $input.callTimeoutMinutes,
                                 range: 1...60
                             )
 
                             CreateNumberField(
-                                label: "Numero de setups",
+                                label: "Setup count",
                                 value: $input.setupCount,
                                 range: 1...128
                             )
                             StreamCountPicker(selection: $input.streamCount)
 
                             if BackendConfig.supportsLadder {
-                                Toggle("Jugadores pueden reportar", isOn: $input.playerMatchReportingEnabled)
+                                Toggle("Players can report", isOn: $input.playerMatchReportingEnabled)
                                     .tint(ManagementPalette.primaryAction)
                             }
 
-                            Text("La importacion continua en el servidor. Puedes bloquear el movil y volver cuando termine.")
+                            Text("The import continues on the server. You can lock your phone and return when it finishes.")
                                 .foregroundStyle(.secondary)
                         }
                     } else {
                         VStack(alignment: .leading, spacing: 18) {
                             CreateFormField(title: nil, placeholder: "") {
-                                TextField("Nombre del torneo", text: $input.title)
+                                TextField("Tournament name", text: $input.title)
                             }
                             MainTournamentTypes(selection: Binding(
                                 get: { input.teamSize > 1 ? "TEAMS" : input.bracketMode },
@@ -695,13 +695,13 @@ private struct CreateTournamentSheet: View {
 
 
                             CreateFormField(title: nil, placeholder: "") {
-                                TextField("Videojuego", text: $input.gameTitle)
+                                TextField("Game", text: $input.gameTitle)
                             }
 
                             CreateFormField(title: nil, placeholder: "", minHeight: 180) {
                                 ZStack(alignment: .topLeading) {
                                     if input.description.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                                        Text("Descripcion")
+                                        Text("Description")
                                             .font(.system(.body))
                                             .foregroundStyle(.secondary)
                                             .padding(.top, 8)
@@ -714,31 +714,31 @@ private struct CreateTournamentSheet: View {
                                 }
                             }
 
-                            CreateFormField(title: "Plataforma", placeholder: "") {
+                            CreateFormField(title: "Platform", placeholder: "") {
                                 TextField("", text: $input.platform)
                             }
 
                             if input.teamSize > 1 {
-                                Stepper("Titulares: \(input.teamSize)", value: $input.teamSize, in: 2...20)
-                                Stepper("Hasta \(input.reserveCount) reservas", value: $input.reserveCount, in: 0...20)
-                                Toggle("Admitir jugadores sin equipo", isOn: $input.allowSoloRegistration)
-                                Text("El aforo cuenta equipos. Completa los titulares antes de generar la bracket.").font(.footnote)
+                                Stepper("Starters: \(input.teamSize)", value: $input.teamSize, in: 2...20)
+                                Stepper("Up to \(input.reserveCount) reserves", value: $input.reserveCount, in: 0...20)
+                                Toggle("Allow solo players", isOn: $input.allowSoloRegistration)
+                                Text("Capacity counts teams. Complete starter rosters before generating the bracket.").font(.footnote)
                             }
-                            CreateFormField(title: input.teamSize > 1 ? "Máximo de equipos" : "Maximo de participantes", placeholder: "") {
+                            CreateFormField(title: input.teamSize > 1 ? "Maximum teams" : "Maximum participants", placeholder: "") {
                                 TextField("", value: $input.maxParticipants, format: .number)
                                     .keyboardType(.numberPad)
                             }
 
                             if input.bracketMode == "FORTNITE" {
-                                Stepper("Puestos por grupo: \(input.fortniteLobbySize)", value: $input.fortniteLobbySize, in: 5...100, step: 5)
-                                Stepper("Partidas por ronda: \(input.fortniteGamesPerRound)", value: $input.fortniteGamesPerRound, in: 1...20)
-                                Text("Puntos acumulados. Podio 10/6/4 · Kill 1 · VIP 5 extra. Grupos equilibrados y puestos aleatorios.").font(.footnote)
+                                Stepper("Seats per group: \(input.fortniteLobbySize)", value: $input.fortniteLobbySize, in: 5...100, step: 5)
+                                Stepper("Games per round: \(input.fortniteGamesPerRound)", value: $input.fortniteGamesPerRound, in: 1...20)
+                                Text("Accumulated points. Podium 10/6/4 · Kill 1 · VIP 5 extra. Balanced groups and random seats.").font(.footnote)
                             }
-                            CreateSectionTitle("Configuracion")
+                            CreateSectionTitle("Configuration")
 
                             if input.bracketMode != "FORTNITE" {
                             SegmentedOptionBlock(
-                                title: "Formato",
+                                title: "Format",
                                 options: [
                                     ("SINGLE_ELIMINATION", "Elim. simple"),
                                     ("DOUBLE_ELIMINATION", "Doble elim.")
@@ -748,7 +748,7 @@ private struct CreateTournamentSheet: View {
 
                             if input.bracketMode == "MKART" {
                                 SegmentedOptionBlock(
-                                    title: "Bracket principal",
+                                    title: "Main bracket",
                                     options: [
                                         ("1", "MKART pasa 1"),
                                         ("2", "MKART pasa 2")
@@ -761,7 +761,7 @@ private struct CreateTournamentSheet: View {
 
                                 if input.format == "DOUBLE_ELIMINATION" {
                                     SegmentedOptionBlock(
-                                        title: "Bracket de repesca",
+                                        title: "Losers bracket",
                                         options: [
                                             ("1", "MKART pasa 1"),
                                             ("2", "MKART pasa 2")
@@ -774,7 +774,7 @@ private struct CreateTournamentSheet: View {
                                 }
                             } else if input.format == "DOUBLE_ELIMINATION" {
                                 SegmentedOptionBlock(
-                                    title: "Serie winners",
+                                    title: "Winners series",
                                     options: [
                                         ("1", "Bo1"),
                                         ("3", "Bo3"),
@@ -787,7 +787,7 @@ private struct CreateTournamentSheet: View {
                                 )
 
                                 SegmentedOptionBlock(
-                                    title: "Serie losers",
+                                    title: "Losers series",
                                     options: [
                                         ("1", "Bo1"),
                                         ("3", "Bo3"),
@@ -800,7 +800,7 @@ private struct CreateTournamentSheet: View {
                                 )
                             } else {
                                 SegmentedOptionBlock(
-                                    title: "Serie",
+                                    title: "Series",
                                     options: [
                                         ("1", "Bo1"),
                                         ("3", "Bo3"),
@@ -819,20 +819,20 @@ private struct CreateTournamentSheet: View {
                             }
 
                             }
-                            CreateFormField(title: "Minutos para llamada", placeholder: "") {
+                            CreateFormField(title: "Call timeout in minutes", placeholder: "") {
                                 TextField("", value: $input.callTimeoutMinutes, format: .number)
                                     .keyboardType(.numberPad)
                             }
 
-                            CreateFormField(title: "Numero de setups", placeholder: "") {
+                            CreateFormField(title: "Setup count", placeholder: "") {
                                 TextField("", value: $input.setupCount, format: .number)
                                     .keyboardType(.numberPad)
                             }
 
                             StreamCountPicker(selection: $input.streamCount)
 
-                            CreateFormField(title: "Zona de juego (opcional)", placeholder: "") {
-                                TextField("Ej. Sala principal", text: $input.playAreaName)
+                            CreateFormField(title: "Play area (optional)", placeholder: "") {
+                                TextField("e.g. Main hall", text: $input.playAreaName)
                                     .onChange(of: input.playAreaName) { _, value in
                                         if value.count > 80 { input.playAreaName = String(value.prefix(80)) }
                                     }
@@ -842,7 +842,7 @@ private struct CreateTournamentSheet: View {
                                 title: "Seeding",
                                 options: [
                                     ("MANUAL", "Manual"),
-                                    ("RANDOM", "Aleatorio")
+                                    ("RANDOM", "Random")
                                 ],
                                 selected: $input.seedingMethod
                             )
@@ -996,7 +996,7 @@ struct StreamCountPicker: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Stream").font(.headline)
             Picker("Stream", selection: $selection) {
-                Text("Sin stream").tag(0)
+                Text("No stream").tag(0)
                 Text("1 stream").tag(1)
                 Text("2 streams").tag(2)
             }.pickerStyle(.segmented)
@@ -1033,41 +1033,41 @@ struct ManagementLoginView: View {
             VStack(alignment: .leading, spacing: 22) {
                 VStack(alignment: .leading, spacing: 6) {
                     Text("Smash Tournaments").font(.largeTitle.bold()).foregroundStyle(ManagementPalette.heroTitle)
-                    Text("Gestión de torneos").font(.title3).foregroundStyle(ManagementPalette.heroBody)
+                    Text("Tournament management").font(.title3).foregroundStyle(ManagementPalette.heroBody)
                 }.frame(maxWidth: .infinity, alignment: .leading).padding(24)
                     .background(ManagementPalette.heroFill, in: RoundedRectangle(cornerRadius: 22))
-                Text("Iniciar sesión").font(.title2.bold())
-                Text("Utiliza la misma cuenta que en el administrador del display.").foregroundStyle(ManagementPalette.secondaryText)
+                Text("Sign in").font(.title2.bold())
+                Text("Use the same account as display administration.").foregroundStyle(ManagementPalette.secondaryText)
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Usuario").font(.subheadline.weight(.semibold))
-                    TextField("Tu usuario", text: $username, prompt: Text("Tu usuario").foregroundStyle(ManagementPalette.secondaryText))
+                    Text("Username").font(.subheadline.weight(.semibold))
+                    TextField("Your username", text: $username, prompt: Text("Your username").foregroundStyle(ManagementPalette.secondaryText))
                         .textContentType(.username).textInputAutocapitalization(.never).autocorrectionDisabled()
                         .focused($focusedField, equals: .username).submitLabel(.next)
                         .onSubmit { focusedField = .password }
                         .modifier(MainLoginFieldStyle())
-                    Text("Contraseña").font(.subheadline.weight(.semibold))
+                    Text("Password").font(.subheadline.weight(.semibold))
                     passwordLayout {
                         Group {
                             if visiblePassword {
-                                TextField("Contraseña", text: $password, prompt: Text("Contraseña").foregroundStyle(ManagementPalette.secondaryText))
+                                TextField("Password", text: $password, prompt: Text("Password").foregroundStyle(ManagementPalette.secondaryText))
                             } else {
-                                SecureField("Contraseña", text: $password, prompt: Text("Contraseña").foregroundStyle(ManagementPalette.secondaryText))
+                                SecureField("Password", text: $password, prompt: Text("Password").foregroundStyle(ManagementPalette.secondaryText))
                             }
                         }.textContentType(.password).textInputAutocapitalization(.never).autocorrectionDisabled()
                             .modifier(MainLoginFieldStyle()).focused($focusedField, equals: .password).submitLabel(.go).onSubmit(login)
-                        Button(visiblePassword ? "Ocultar" : "Mostrar") { visiblePassword.toggle() }
+                        Button(visiblePassword ? "Hide" : "Show") { visiblePassword.toggle() }
                             .frame(minHeight: 44).fixedSize(horizontal: true, vertical: false)
-                            .accessibilityLabel(visiblePassword ? "Ocultar contraseña" : "Mostrar contraseña")
+                            .accessibilityLabel(visiblePassword ? "Hide password" : "Show password")
                     }
                 }.disabled(busy)
                 if let error { Label(error, systemImage: "exclamationmark.circle").foregroundStyle(ManagementPalette.danger) }
                 Button(action: login) {
-                    HStack { if busy { ProgressView().tint(ManagementPalette.secondaryText) }; Text(busy ? "Accediendo…" : "Entrar").fontWeight(.semibold) }.frame(maxWidth: .infinity, minHeight: 36)
+                    HStack { if busy { ProgressView().tint(ManagementPalette.secondaryText) }; Text(busy ? "Signing in…" : "Sign in").fontWeight(.semibold) }.frame(maxWidth: .infinity, minHeight: 36)
                 }.managementPrimaryButton().tint(ManagementPalette.primaryAction)
                     .foregroundStyle(canSubmit ? Color.white : ManagementPalette.secondaryText).disabled(!canSubmit)
                 Text(BackendConfig.baseURL.host ?? "").font(.footnote.weight(.medium))
-                Text("La sesión se conservará al cerrar la app. Puedes cerrarla desde Perfil.").font(.footnote).foregroundStyle(ManagementPalette.secondaryText)
-                Text("Si necesitas una cuenta o recuperar tu contraseña, contacta con el superadministrador.").font(.footnote).foregroundStyle(ManagementPalette.secondaryText)
+                Text("Your session is kept when you close the app. You can sign out from Profile.").font(.footnote).foregroundStyle(ManagementPalette.secondaryText)
+                Text("Contact the superadmin if you need an account or password recovery.").font(.footnote).foregroundStyle(ManagementPalette.secondaryText)
             }.frame(maxWidth: 480).padding(24).frame(maxWidth: .infinity)
         }.scrollDismissesKeyboard(.interactively).background(ManagementPalette.screenBackground.ignoresSafeArea())
     }
@@ -1100,9 +1100,9 @@ struct ManagementAccountControls: View {
     var body: some View {
         if let session = account.session {
             Text(session.user.username).font(.headline)
-            MainStatusBadge(label: session.user.role == "SUPER_ADMIN" ? "Superadministrador" : "Gestor", state: "")
-            Link(session.user.role == "SUPER_ADMIN" ? "Mi cuenta y usuarios" : "Mi cuenta y contraseña", destination: BackendConfig.baseURL.appendingPathComponent("account/"))
-            if showLogout { Button("Cerrar sesión", role: .destructive) { Task { await account.logout() } } }
+            MainStatusBadge(label: session.user.role == "SUPER_ADMIN" ? "Superadmin" : "Manager", state: "")
+            Link(session.user.role == "SUPER_ADMIN" ? "My account and users" : "My account and password", destination: BackendConfig.baseURL.appendingPathComponent("account/"))
+            if showLogout { Button("Sign out", role: .destructive) { Task { await account.logout() } } }
         }
     }
 }
@@ -1123,15 +1123,15 @@ struct MainStatusBadge: View {
 struct MainTournamentTypes: View {
     @Binding var selection: String
     private let types = [
-        ("STANDARD", "Individual", "Bracket de eliminación simple o doble.", "person.fill"),
-        ("TEAMS", "Por equipos · LoL / Valorant", "Titulares, reservas y jugadores que buscan equipo.", "person.3.fill"),
-        ("FORTNITE", "Fortnite", "Grupos, partidas y puntos acumulados. VIP externo.", "scope"),
-        ("MKART", "Mario Kart", "Varios jugadores por carrera y plazas de clasificación.", "flag.checkered")
+        ("STANDARD", "Individual", "Single or double elimination bracket.", "person.fill"),
+        ("TEAMS", "Teams · LoL / Valorant", "Starters, reserves and players looking for a team.", "person.3.fill"),
+        ("FORTNITE", "Fortnite", "Groups, games and accumulated points. External VIP.", "scope"),
+        ("MKART", "Mario Kart", "Multiple players per race with qualifying places.", "flag.checkered")
     ]
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Tipo de torneo").font(.headline)
-            Text("Elige cómo van a competir los participantes.").font(.subheadline).foregroundStyle(ManagementPalette.secondaryText)
+            Text("Tournament type").font(.headline)
+            Text("Choose how participants will compete.").font(.subheadline).foregroundStyle(ManagementPalette.secondaryText)
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 250), spacing: 12)], spacing: 12) {
                 ForEach(types, id: \.0) { type in
                     Button { selection = type.0 } label: {

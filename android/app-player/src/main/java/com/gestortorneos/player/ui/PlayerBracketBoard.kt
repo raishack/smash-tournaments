@@ -57,8 +57,8 @@ import com.gestortorneos.player.data.remote.PlayerTournamentDto
 import kotlinx.coroutines.launch
 
 private enum class PlayerBracketRenderMode(val key: String, val label: String) {
-    Classic("classic", "Clasico"),
-    Modern("modern", "Moderna"),
+    Classic("classic", "Classic"),
+    Modern("modern", "Modern"),
 }
 
 private data class PlayerBracketMatchSummary(
@@ -168,7 +168,7 @@ internal fun BracketSection(
 ) {
     if (session == null) {
         Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-            Text("Inicia sesion con start.gg para ver la bracket de tus torneos.")
+            Text("Sign in with start.gg to view your tournament brackets.")
         }
         return
     }
@@ -190,7 +190,7 @@ internal fun BracketSection(
 
     if (tournamentsWithBracket.isEmpty()) {
         Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-            Text("No hay brackets disponibles ahora mismo.")
+            Text("No brackets are currently available.")
         }
         return
     }
@@ -229,7 +229,7 @@ internal fun BracketSection(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Text("Bracket del torneo", fontWeight = FontWeight.SemiBold)
+                        Text("Tournament bracket", fontWeight = FontWeight.SemiBold)
                         TextButton(
                             onClick = {
                                 val nextExpanded = !expanded
@@ -243,14 +243,14 @@ internal fun BracketSection(
                                         }.onSuccess { detail ->
                                             loadedBracketTournaments[tournament.tournamentId] = detail
                                         }.onFailure { throwable ->
-                                            errorState[tournament.tournamentId] = throwable.message ?: "No se pudo cargar la bracket"
+                                            errorState[tournament.tournamentId] = throwable.message ?: "Could not load the bracket"
                                         }
                                         loadingState[tournament.tournamentId] = false
                                     }
                                 }
                             }
                         ) {
-                            Text(if (expanded) "Ocultar" else "Mostrar")
+                            Text(if (expanded) "Hide" else "Show")
                         }
                     }
                     when {
@@ -290,7 +290,7 @@ internal fun PlayerTournamentBracketSection(
     val rawBracketMatches = tournament.bracketMatches.orEmpty()
     if (rawBracketMatches.isEmpty()) {
         Text(
-            "La bracket todavia no esta disponible para este torneo.",
+            "The bracket is not available for this tournament yet.",
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         return
@@ -306,9 +306,9 @@ internal fun PlayerTournamentBracketSection(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text("Bracket del torneo", fontWeight = FontWeight.SemiBold)
+            Text("Tournament bracket", fontWeight = FontWeight.SemiBold)
             TextButton(onClick = { showBracket = !showBracket }) {
-                Text(if (showBracket) "Ocultar" else "Mostrar")
+                Text(if (showBracket) "Hide" else "Show")
             }
         }
     }
@@ -379,7 +379,7 @@ private fun PlayerClassicBracketBoard(matches: List<PlayerBracketMatchSummary>) 
 
     if (sections.isEmpty()) {
         Text(
-            text = "No hay suficiente estructura para mostrar la bracket.",
+            text = "There is not enough structure to display the bracket.",
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         return
@@ -491,7 +491,7 @@ private fun PlayerBracketMatchCard(match: PlayerBracketMatchSummary) {
                 )
             }
             if (!match.stationLabel.isNullOrBlank()) {
-                Text("Estacion: ${match.stationLabel}", color = mutedColor)
+                Text("Station: ${match.stationLabel}", color = mutedColor)
             }
             if (match.advancersRequired <= 1) {
                 Text("Bo${match.effectiveBestOf}", color = mutedColor)
@@ -693,7 +693,7 @@ private fun buildPlayerBracketSections(matches: List<PlayerBracketMatchSummary>)
     return sections.sortedBy { section ->
         when {
             section.label.startsWith("Pool ", ignoreCase = true) -> "0:${section.label}"
-            section.label.equals("Bracket final", ignoreCase = true) -> "1:${section.label}"
+            section.label.equals("Final bracket", ignoreCase = true) -> "1:${section.label}"
             else -> "2:${section.label}"
         }
     }
@@ -862,7 +862,7 @@ private fun playerClusterFromStageGroups(
             .toSortedMap()
             .map { (_, roundMatches) ->
                 PlayerBracketRound(
-                    title = roundMatches.firstOrNull()?.roundDisplayTitle ?: "Ronda",
+                    title = roundMatches.firstOrNull()?.roundDisplayTitle ?: "Round",
                     matches = roundMatches.sortedBy { it.matchNumber },
                 )
             }
@@ -884,7 +884,7 @@ private fun playerClusterFromMatches(
         .toSortedMap()
         .map { (_, roundMatches) ->
             PlayerBracketRound(
-                title = roundMatches.firstOrNull()?.roundDisplayTitle ?: "Ronda",
+                title = roundMatches.firstOrNull()?.roundDisplayTitle ?: "Round",
                 matches = roundMatches.sortedBy { it.matchNumber },
             )
         }
@@ -901,7 +901,7 @@ private fun playerTournamentBracketLabel(match: PlayerBracketMatchSummary): Stri
             !it.equals(match.bracketStage, ignoreCase = true) &&
             !it.equals("bracket", ignoreCase = true)
     }
-    return customPhaseName ?: "Bracket final"
+    return customPhaseName ?: "Final bracket"
 }
 
 private fun playerModernSourceMatchIds(

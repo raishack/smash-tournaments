@@ -15,7 +15,7 @@ const item=(review,id)=>review.items.find(row=>row.id===id);
 test('Preparation distinguishes confirmed attendance, optional check-in and unopened draw', () => {
   const data=input(), before=structuredClone(data), review=tournamentReview(data,now);
   assert.equal(item(review,'participants').level,'BLOCKED');
-  assert.match(item(review,'attendance').detail,/Quedarán fuera/);
+  assert.match(item(review,'attendance').detail,/left out of the draw/);
   assert.equal(item(review,'draw').level,'BLOCKED');
   assert.equal(item(review,'registration').level,'WARNING');
   assert.deepEqual(data,before);
@@ -40,7 +40,7 @@ test('Expired/cancelled registrations do not inflate pending counts; no private 
   data.registrations=[registration,{...registration,expiresAt:'2026-09-25T12:00:00Z'}, {...registration,meta:{waitingAt:'today'}},{...registration,meta:{cancelledAt:'today'}}];
   const review=tournamentReview(data,now);
   assert.equal(item(review,'registration').level,'OK');
-  assert.match(item(review,'waiting').detail,/1 en lista de espera · 1 correos/);
+  assert.match(item(review,'waiting').detail,/1 waitlisted · 1 emails/);
   assert.doesNotMatch(JSON.stringify(review),/private-token|private@example|Private/);
 });
 test('Closing uses only current failed sync jobs and blocks archive until resolved', () => {
@@ -87,7 +87,7 @@ test('Attendance preserves current names and seeds, invalidates required-check-i
   assert.equal(rows[0].displayName,'Renamed 0');assert.equal(rows[0].seed,1);assert.equal(rows[0].checkedIn,false);
   assert.equal((await f.repo.listMatches(f.tournament.id)).length,0);
   await f.repo.saveTournament({...await f.repo.getTournament(f.tournament.id),status:'ARCHIVED'});
-  await assert.rejects(f.tournaments.updateAttendance(f.tournament.id,f.participants[0].id,true),/archivado/i);
+  await assert.rejects(f.tournaments.updateAttendance(f.tournament.id,f.participants[0].id,true),/archived/i);
 });
 
 test('Review route denies public reads, uses no-store and returns 404 for a missing tournament', async t => {

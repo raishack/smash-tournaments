@@ -40,7 +40,7 @@ enum PlayerAPIError: Error, LocalizedError {
     var errorDescription: String? {
         switch self {
         case .invalidResponse:
-            return "Respuesta invalida del backend."
+            return "Invalid backend response."
         case let .http(code, message):
             return message.isEmpty ? "HTTP \(code)" : message
         }
@@ -84,7 +84,7 @@ final class PlayerAPIClient {
         guard let http = response as? HTTPURLResponse else { throw PlayerAPIError.invalidResponse }
         guard (200...299).contains(http.statusCode) else {
             let envelope = try? JSONDecoder().decode(PlayerErrorEnvelope.self, from: data)
-            throw PlayerAPIError.http(http.statusCode, envelope?.error ?? envelope?.message ?? "No se pudo completar la operación (HTTP \(http.statusCode)).")
+            throw PlayerAPIError.http(http.statusCode, envelope?.error ?? envelope?.message ?? "Could not complete the operation (HTTP \(http.statusCode)).")
         }
         return try decoder.decode(T.self, from: data)
     }
@@ -166,10 +166,10 @@ final class PlayerRepository {
 @MainActor
 final class PlayerAppViewModel: ObservableObject {
     enum Section: String, CaseIterable {
-        case dashboard = "Inicio"
-        case tournaments = "Torneos"
+        case dashboard = "Home"
+        case tournaments = "Tournaments"
         case bracket = "Bracket"
-        case profile = "Perfil"
+        case profile = "Profile"
     }
 
     @Published var currentSection: Section = .dashboard

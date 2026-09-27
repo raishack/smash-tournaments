@@ -15,9 +15,9 @@ test('one complete canvas covers all 256-player matches once and preserves every
   const svg = renderBracketSvg(tournament, matches);
   const ids = [...svg.matchAll(/data-match-id="([^"]+)"/g)].map(match => match[1]);
   assert.deepEqual(ids.sort(), matches.map(match => match.id).sort());
-  const text = svg.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ');
+  const text = svg.replace(/<\/?tspan\b[^>]*>/g, '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ');
   for (let team = 1; team <= 256; team++) {
-    assert(text.includes(`Equipo ${team} · Jugador Álvarez / Jugador Fernández`));
+    assert(text.includes(`Team ${team} · Player Álvarez / Player Fernández`));
   }
 });
 
@@ -142,7 +142,7 @@ test('very tall PNG retains both ends at native text scale without the SVG heigh
 
 test('PNG size limits fail explicitly and a failed render does not block later exports', async () => {
   const huge = '<svg width="32768" height="1000000"></svg>';
-  await assert.rejects(renderSvgPng(huge), /tamaño máximo/);
+  await assert.rejects(renderSvgPng(huge), /maximum readable PNG size/);
   const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"><rect width="20" height="20" fill="red"/></svg>';
   await assert.rejects(renderPngInBands(svg, 20, 20, 20, 20, 40), /49 MB/);
   assert.equal((await sharp(await renderSvgPng(svg)).metadata()).format, 'png');

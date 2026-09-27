@@ -2,34 +2,34 @@ package com.gestortorneos.ui
 
 fun tournamentClientStatus(status: String, importState: String?): String = when {
     status == "ARCHIVED" -> "ARCHIVED"
-    importState == "RUNNING" -> "IMPORTANDO"
-    importState == "FAILED" -> "ERROR IMPORTACION"
+    importState == "RUNNING" -> "IMPORTING"
+    importState == "FAILED" -> "IMPORT ERROR"
     else -> status.replace('_', ' ')
 }
 
 fun mainStatusLabel(status: String): String = when (status) {
-    "DRAFT" -> "Borrador"
-    "PUBLISHED" -> "Publicado"
-    "CHECK_IN" -> "Confirmación de asistencia"
-    "READY" -> "Preparado para empezar"
-    "IN_PROGRESS", "IN PROGRESS" -> "En curso"
-    "COMPLETED" -> "Finalizado"
-    "ARCHIVED" -> "Archivado · solo lectura"
-    "CANCELLED" -> "Cancelado"
-    "IMPORTANDO" -> "Importando"
-    "ERROR IMPORTACION" -> "Error de importación"
-    "PENDING" -> "Pendiente"
-    "CALLED" -> "Llamado"
-    "CHECKED_IN" -> "Asistencia confirmada"
-    "PLAYING" -> "En juego"
-    "WALKOVER" -> "Resuelto por ausencia"
-    "RESULT_REPORTED" -> "Resultado enviado"
-    "UNDER_REVIEW" -> "En revisión"
+    "DRAFT" -> "Draft"
+    "PUBLISHED" -> "Published"
+    "CHECK_IN" -> "Attendance confirmation"
+    "READY" -> "Ready to start"
+    "IN_PROGRESS", "IN PROGRESS" -> "In progress"
+    "COMPLETED" -> "Finished"
+    "ARCHIVED" -> "Archived · read-only"
+    "CANCELLED" -> "Cancelled"
+    "IMPORTING" -> "Importing"
+    "IMPORT ERROR" -> "Import error"
+    "PENDING" -> "Pending"
+    "CALLED" -> "Called"
+    "CHECKED_IN" -> "Attendance confirmed"
+    "PLAYING" -> "Playing"
+    "WALKOVER" -> "Resolved due to absence"
+    "RESULT_REPORTED" -> "Result submitted"
+    "UNDER_REVIEW" -> "Under review"
     else -> status
 }
 
 fun tournamentNextStep(status: String, fortnite: Boolean): String? = when (status) {
-    "READY" -> if (fortnite) "Abre el panel Fortnite para iniciar las partidas y anotar puntuaciones." else "La bracket está preparada. Pulsa Iniciar torneo para comenzar."
-    "IN_PROGRESS", "IN PROGRESS" -> if (fortnite) "Confirma las actas y cierra la final desde el panel Fortnite. Después podrás crear la imagen Top 8." else "El torneo finaliza al resolver todos los cruces necesarios. Entonces podrás crear la imagen Top 8."
+    "READY" -> if (fortnite) "Open the Fortnite panel to start games and enter scores." else "The bracket is ready. Select Start tournament to begin."
+    "IN_PROGRESS", "IN PROGRESS" -> if (fortnite) "Confirm score sheets and close the final in the Fortnite panel. You can then create the Top 8 image." else "The tournament finishes when all required matches are resolved. You can then create the Top 8 image."
     else -> null
 }

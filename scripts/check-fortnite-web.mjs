@@ -28,23 +28,23 @@ try{
   let releaseRefresh, refreshSeen;const heldRefresh=new Promise(r=>releaseRefresh=r),seenRefresh=new Promise(r=>refreshSeen=r);
   await page.route('**/api/fortnite/view',async route=>{const response=await route.fetch();refreshSeen();await heldRefresh;await route.fulfill({response});},{times:1});
   await page.locator('#refresh').click();await seenRefresh;
-  await page.locator('#start').click();await page.waitForFunction(()=>document.getElementById('game-status').textContent==='En juego / acta en borrador');
+  await page.locator('#start').click();await page.waitForFunction(()=>document.getElementById('game-status').textContent==='Playing / draft score sheet');
   const staleResponse=page.waitForResponse(r=>r.url().endsWith('/api/fortnite/view'));releaseRefresh();await staleResponse;
   await page.waitForTimeout(100);
-  assert.equal(await page.locator('#game-status').textContent(),'En juego / acta en borrador');
+  assert.equal(await page.locator('#game-status').textContent(),'Playing / draft score sheet');
   let view=await f.view(),group=view.state.rounds[0].groups[0],seatOrder=[...group.slots].sort((a,b)=>a.seat-b.seat);
   for(let i=0;i<3;i++)await page.locator(`[data-id="${seatOrder[i].participantId}"] [data-placement]`).selectOption(String(i+1));
   await page.locator('#vip').fill('VIP invitado');
   await page.locator(`[data-id="${seatOrder[0].participantId}"] [data-kills]`).fill('1');
   await page.locator(`[data-id="${seatOrder[0].participantId}"] [data-vip]`).check();
-  await page.locator('#draft').click();await page.waitForFunction(()=>document.getElementById('message').textContent==='Guardado en el servidor.');
+  await page.locator('#draft').click();await page.waitForFunction(()=>document.getElementById('message').textContent==='Saved on the server.');
   view=await f.view();assert(view.summary.rounds[0].groups[0].standings.every(r=>r.points===0));
   await page.reload();await page.locator('.score-row').first().waitFor();assert.equal(await page.locator(`[data-id="${seatOrder[0].participantId}"] [data-kills]`).inputValue(),'1');
   await page.setViewportSize({width:390,height:844});await page.screenshot({path:path.join(output,'management-mobile.png')});
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
   await page.locator('#player-filter').fill('Player 99');assert.equal(await page.locator('.score-row:visible').count(),1);
   assert.equal(await page.locator('.score-row').count(),100);
-  await page.locator('#confirm').click();await page.waitForFunction(()=>document.querySelector('#game-status').textContent==='Acta confirmada');
+  await page.locator('#confirm').click();await page.waitForFunction(()=>document.querySelector('#game-status').textContent==='Score sheet confirmed');
   assert.equal(await page.locator('#player-filter').inputValue(),'Player 99');assert.equal(await page.locator('.score-row:visible').count(),1);await page.locator('#player-filter').fill('');
   view=await f.view();assert.equal(view.summary.rounds[0].groups[0].standings[0].points,16);
   await page.setViewportSize({width:1440,height:1000});await page.screenshot({path:path.join(output,'management-desktop.png')});
@@ -52,9 +52,9 @@ try{
   await page.locator(`[data-id="${seatOrder[1].participantId}"] [data-kills]`).fill('2');
   const external=report(view.state.rounds[0].groups[0]);external.rows=view.state.rounds[0].groups[0].games[0].rows.map(r=>({...r}));external.vipName='VIP invitado';
   external.rows.find(r=>r.participantId===seatOrder[1].participantId).kills=1;await f.action(external);
-  await page.locator('#confirm').click();await page.waitForFunction(()=>document.getElementById('message').textContent.includes('Otro dispositivo'));
+  await page.locator('#confirm').click();await page.waitForFunction(()=>document.getElementById('message').textContent.includes('Another device'));
   assert.equal(await page.locator(`[data-id="${seatOrder[1].participantId}"] [data-kills]`).inputValue(),'2');
-  await page.locator('#refresh').click();await page.waitForFunction(()=>document.getElementById('draft-note').textContent.includes('El servidor cambió'));
+  await page.locator('#refresh').click();await page.waitForFunction(()=>document.getElementById('draft-note').textContent.includes('The server has changed'));
   await page.locator('#discard').click();assert.equal(await page.locator(`[data-id="${seatOrder[1].participantId}"] [data-kills]`).inputValue(),'1');
   const display=await browser.newPage({viewport:{width:1920,height:1080},deviceScaleFactor:1});display.on('pageerror',e=>errors.push(e.message));
   await display.goto(base+'/');await display.locator('.fortnite-table').first().waitFor();
@@ -68,10 +68,10 @@ try{
   assert.equal(new Set(allIds).size,100);
   // A changed external VIP survives refresh; unsaved edits cannot close a round.
   await page.locator('#vip').fill('VIP nuevo');await page.locator('#refresh').click();await page.waitForFunction(()=>document.querySelector('#vip').value==='VIP nuevo');
-  await page.locator('#advance').click();await page.waitForFunction(()=>document.querySelector('#message').textContent.includes('borradores locales'));
+  await page.locator('#advance').click();await page.waitForFunction(()=>document.querySelector('#message').textContent.includes('local drafts'));
   assert.notEqual((await f.view()).tournament.status,'COMPLETED');await page.locator('#discard').click();
-  await page.locator('#advance').click();await page.waitForFunction(()=>document.getElementById('progress').textContent.includes('Torneo completado'));
-  await display.waitForFunction(()=>document.querySelector('.fortnite-badge')?.textContent.includes('Ganador:'));
+  await page.locator('#advance').click();await page.waitForFunction(()=>document.getElementById('progress').textContent.includes('Tournament completed'));
+  await display.waitForFunction(()=>document.querySelector('.fortnite-badge')?.textContent.includes('Winner:'));
   await page.reload();await page.locator('.score-row').first().waitFor();assert.equal(await page.locator('#confirm').isDisabled(),true);
   // Another device may close with a stale draft in this tab: show official rows and a warning.
   const groupId=(await f.view()).state.rounds[0].groups[0].id;

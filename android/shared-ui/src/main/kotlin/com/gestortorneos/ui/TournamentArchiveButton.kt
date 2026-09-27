@@ -6,14 +6,14 @@ import androidx.compose.runtime.*
 @Composable
 fun TournamentArchiveButton(archived: Boolean, busy: Boolean = false, onConfirm: () -> Unit) {
     var confirm by remember(archived) { mutableStateOf(false) }
-    val label = if (archived) "Desarchivar torneo" else "Archivar torneo"
+    val label = if (archived) "Unarchive tournament" else "Archive tournament"
     OutlinedButton(onClick = { confirm = true }, enabled = !busy) { Text(label) }
     if (confirm) AlertDialog(
         onDismissRequest = { confirm = false },
         title = { Text(label) },
-        text = { Text(if (archived) "Volverá a Finalizado y podrás editarlo. El display seguirá desactivado hasta que lo habilites."
-            else "Se moverá a Archivados, dejará de aparecer en el display y quedará en solo lectura. Podrás desarchivarlo después.") },
-        confirmButton = { TextButton(onClick = { confirm = false; onConfirm() }, enabled = !busy) { Text(if (archived) "Desarchivar" else "Archivar") } },
-        dismissButton = { TextButton(onClick = { confirm = false }) { Text("Cancelar") } }
+        text = { Text(if (archived) "It will return to Completed and become editable. The display remains disabled until you enable it."
+            else "It will move to Archived, disappear from the display and become read-only. You can unarchive it later.") },
+        confirmButton = { TextButton(onClick = { confirm = false; onConfirm() }, enabled = !busy) { Text(if (archived) "Unarchive" else "Archive") } },
+        dismissButton = { TextButton(onClick = { confirm = false }) { Text("Cancel") } }
     )
 }

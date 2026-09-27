@@ -14,7 +14,7 @@ const output = path.resolve('build/display-review');
 await fs.mkdir(output, { recursive: true });
 const store = new DisplayAdminStore(directory); await store.ensureReady();
 await store.saveBracketRenderMode('modern');
-await store.saveTheme({ id: 'test-theme', key: 'test', name: 'Tema de prueba', matchers: ['demo'], cssVars: { '--custom-var': 'kept' }, assets: {} });
+await store.saveTheme({ id: 'test-theme', key: 'test', name: 'Theme de prueba', matchers: ['demo'], cssVars: { '--custom-var': 'kept' }, assets: {} });
 const fixture = displayFixture(32);
 const app = express(); app.use(express.json());
 let writes = 0;
@@ -66,7 +66,7 @@ try {
   await page.waitForFunction(() => document.querySelector('iframe').contentDocument.querySelectorAll('.modern-bracket-cluster').length === 1);
   await page.screenshot({ path: path.join(output, 'admin-display-desktop.png'), animations: 'disabled', fullPage: true });
   await page.locator('#display-settings-form [type="submit"]').click();
-  await page.waitForFunction(() => document.querySelector('[data-settings-status]').textContent === 'Guardado');
+  await page.waitForFunction(() => document.querySelector('[data-settings-status]').textContent === 'Saved');
   assert.equal((await store.readState()).displaySettings.bracketDensity, 'compact');
 
   // A draft in one section must survive saving a different form and refetching state.
@@ -79,29 +79,29 @@ try {
   await page.locator('[name="msg_whatsappLadderCompletedCaption"]').fill('Ladder WA de {{tournament_title}}');
   await page.locator('[data-nav="themes"]').click();
   await page.locator('[data-theme-id="test-theme"]').click();
-  await page.locator('#theme-form [name="name"]').fill('Tema actualizado');
+  await page.locator('#theme-form [name="name"]').fill('Theme actualizado');
   await page.locator('#theme-form [name="raw_--accent"]').fill('#ffaa00');
   assert.match(await page.locator('#theme-preview-live').innerHTML(), /#ffaa00/);
   await page.locator('#theme-form [type="submit"]').click();
-  await page.waitForFunction(() => document.querySelector('#theme-form [data-form-status]').textContent === 'Sin cambios pendientes');
+  await page.waitForFunction(() => document.querySelector('#theme-form [data-form-status]').textContent === 'No pending changes');
   assert.equal((await store.readState()).themes.find(t => t.id === 'test-theme').cssVars['--custom-var'], 'kept');
   await page.locator('[data-nav="display"]').click();
   assert.equal(await page.locator('[name="textScale"]').inputValue(), '115');
-  assert.match(await page.locator('#display-settings-form [data-form-status]').textContent(), /sin guardar/);
+  assert.match(await page.locator('#display-settings-form [data-form-status]').textContent(), /Unsaved changes/);
   await page.locator('[data-nav="messages"]').click();
   assert.equal(await page.locator('[name="msg_telegramLadderCompleted"]').inputValue(), 'Ladder de {{tournament_title}}');
   await page.locator('#messages-form [type="submit"]').click();
-  await page.waitForFunction(() => document.querySelector('#messages-form [data-form-status]').textContent === 'Sin cambios pendientes');
+  await page.waitForFunction(() => document.querySelector('#messages-form [data-form-status]').textContent === 'No pending changes');
   assert.equal((await store.readState()).messageTemplates.whatsappLadderCompletedCaption, 'Ladder WA de {{tournament_title}}');
   await page.locator('[data-nav="themes"]').click();
   await page.locator('#duplicate-theme-btn').click();
   assert.equal(await page.locator('#theme-form [name="id"]').inputValue(), '');
-  assert.match(await page.locator('#theme-form [name="name"]').inputValue(), /copia/);
+  assert.match(await page.locator('#theme-form [name="name"]').inputValue(), /copy/);
   await page.locator('#theme-form [type="submit"]').click();
   await page.waitForFunction(() => document.querySelector('#theme-form [name="id"]').value !== '');
   page.once('dialog', dialog => dialog.accept());
   await page.locator('#delete-theme-btn').click();
-  await page.waitForFunction(() => ![...document.querySelectorAll('[data-theme-id]')].some(e => e.textContent.includes('copia')));
+  await page.waitForFunction(() => ![...document.querySelectorAll('[data-theme-id]')].some(e => e.textContent.includes('copy')));
   assert(await page.locator('[data-theme-id="theme_base"]').count());
 
   await page.locator('[data-nav="display"]').click();

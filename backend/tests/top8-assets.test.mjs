@@ -82,8 +82,8 @@ test('Originals are verified once, cached and shared by thumbnail/preview reques
 });
 test('Corrupt and oversized downloads do not enter the cache and can be retried', async t => {
   const f = await fixture(t, (count, png) => count === 1 ? new Response('not the image') : count === 2 ? new Response(png, { headers: { 'content-length': String(33 * 1024 * 1024) } }) : new Response(png));
-  await assert.rejects(f.store.file(f.hash, 'full'), /no coincide/);
-  await assert.rejects(f.store.file(f.hash, 'full'), /descargar/);
+  await assert.rejects(f.store.file(f.hash, 'full'), /does not match/);
+  await assert.rejects(f.store.file(f.hash, 'full'), /download/);
   const filename = await f.store.file(f.hash, 'full'); assert.deepEqual(await fs.readFile(filename), f.png); assert.equal(f.count(), 3);
 });
 test('Public image router serves only catalogued images with immutable caching and no auth data', async t => {

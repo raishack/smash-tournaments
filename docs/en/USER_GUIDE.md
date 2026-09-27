@@ -2,7 +2,7 @@
 
 [Back to the project](../../README.md)
 
-The interfaces are currently primarily Spanish. This English guide includes the visible labels in parentheses.
+All application interfaces in this template use English.
 
 ## Accounts and entry points
 
@@ -20,7 +20,7 @@ Management sessions are shared in purpose and account identity, not as a univers
 
 ## 1. Create an event
 
-In a management app, choose **Create tournament (Crear torneo)**. Set its name, game, platform, start time, maximum entrants, format and match best-of. Choose setups and optionally one or two streams. You can change operational setup/stream availability later; structural settings are locked once the tournament has started.
+In a management app, choose **Create tournament**. Set its name, game, platform, start time, maximum entrants, format and match best-of. Choose setups and optionally one or two streams. You can change operational setup/stream availability later; structural settings are locked once the tournament has started.
 
 For ordinary local brackets choose single elimination, double elimination or round robin. For games such as LoL/Valorant, choose team entries and configure starters, reserves and optional solo registration. For Fortnite choose its dedicated mode instead of a normal head-to-head bracket.
 
@@ -28,7 +28,7 @@ Imported start.gg events retain source phase/group and match information. Import
 
 ## 2. Participants, teams and registration
 
-Add entrants manually, or enable **Online registration (Inscripción online)** and copy its public URL. SMTP must be configured. Players provide their nickname and email and confirm using the emailed link; unverified requests do not become confirmed entrants.
+Add entrants manually, or enable **Online registration** and copy its public URL. SMTP must be configured. Players provide their nickname and email and confirm using the emailed link; unverified requests do not become confirmed entrants.
 
 Capacity and optional waitlists are controlled by the event. Registration can be closed manually **before** generating the bracket, or using a deadline. Verify the actual confirmed entrants before drawing.
 
@@ -36,9 +36,9 @@ For team events, bracket entries use team names. Expand a team in administration
 
 ## 3. Prepare and seed
 
-Use **Review preparation and closing (Revisar preparación y cierre)** to check registration, attendance, rosters, draw readiness and synchronization. Each finding links to its relevant section.
+Use **Review preparation and completion** to check registration, attendance, rosters, draw readiness and synchronization. Each finding links to its relevant section.
 
-Confirm **Attendance (Asistencia)** if check-in is required. Set seed numbers manually or choose random seeding, then generate the bracket. Only eligible active/check-in entrants enter the draw. If eligibility changes before starting, regenerate the prepared bracket. After starting, use the appropriate absence/DQ operations instead.
+Confirm **Attendance** if check-in is required. Set seed numbers manually or choose random seeding, then generate the bracket. Only eligible active/check-in entrants enter the draw. If eligibility changes before starting, regenerate the prepared bracket. After starting, use the appropriate absence/DQ operations instead.
 
 Double-elimination drops cross branches to reduce early rematches. This is not a guarantee that a rematch can never occur. Existing brackets are not silently rebuilt when the algorithm changes.
 
@@ -52,11 +52,11 @@ Double-elimination drops cross branches to reduce early rematches. This is not a
 
 Character reporting supports the relevant Smash/Rivals workflows, including team selections where available. A score correction preserving the winner keeps dependent completed results; changing the winner can reset dependent rounds. Review the impact before correcting a result.
 
-The modern bracket supports search, previous/next matching matches, pan/zoom and fullscreen. Opening/closing match actions preserves fullscreen. On wide screens adaptive operations use a side panel; mobile uses dialogs. **Profile/Settings → Appearance → Adaptive interface (Interfaz adaptada)** restores the classic presentation if preferred.
+The modern bracket supports search, previous/next matching matches, pan/zoom and fullscreen. Opening/closing match actions preserves fullscreen. On wide screens adaptive operations use a side panel; mobile uses dialogs. **Profile/Settings → Appearance → Adaptive layout** restores the classic presentation if preferred.
 
 ## 5. Show the venue display
 
-Enable the event's **Show on display (Mostrar en display)** option, then open `/` on the presentation computer. Archived/disabled events are excluded.
+Enable the event's **Show on display** option, then open `/` on the presentation computer. Archived/disabled events are excluded.
 
 In `/admin/`, choose modern/classic rendering, density, paging, display timing and winners/losers presentation. Preview changes before saving. Separate winners/losers views can be more readable than trying to fit an entire large bracket in one frame. Select the relevant tournament/pool when operating a dedicated screen.
 
@@ -78,7 +78,7 @@ Open the event's ladder controls, configure its operational settings and availab
 
 ## 8. Finish, export and archive
 
-Once all required matches are resolved, review tournament completion and pending synchronization. Open **Results poster / Top 8 (Cartel de resultados)** from the completed event.
+Once all required matches are resolved, review tournament completion and pending synchronization. Open **Top 8 image · create / edit** from the completed event.
 
 - Imported events use final start.gg standings when available. If they cannot be obtained, verify and complete uncertain positions before export.
 - Local events fill the participants/known placements; customize all visuals.
@@ -86,4 +86,4 @@ Once all required matches are resolved, review tournament completion and pending
 - Set layout, colors, background opacity, event logo, typography and image placement.
 - Save a project for later editing and export a single high-resolution **PNG**.
 
-Finally choose **Archive tournament (Archivar torneo)**. Archived events move to their own list, disappear from the display and become read-only. **Unarchive (Desarchivar torneo)** explicitly restores a completed event for corrections; display visibility remains off until enabled again.
+Finally choose **Archive tournament**. Archived events move to their own list, disappear from the display and become read-only. **Unarchive tournament** explicitly restores a completed event for corrections; display visibility remains off until enabled again.

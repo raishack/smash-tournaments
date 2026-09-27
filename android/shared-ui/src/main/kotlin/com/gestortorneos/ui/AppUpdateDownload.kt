@@ -34,15 +34,15 @@ class AppUpdateDownloader(
     private fun validatePackage(pkg: UpdatePackage) {
         val url = pkg.url.toHttpUrl()
         val origin = trustedBaseUrl.toHttpUrl()
-        val platform = when (pkg.extension) { "apk" -> "android"; "msi" -> "windows"; else -> error("Formato de actualización no admitido.") }
+        val platform = when (pkg.extension) { "apk" -> "android"; "msi" -> "windows"; else -> error("Unsupported update format.") }
         require(origin.isHttps && origin.username.isEmpty() && origin.password.isEmpty() &&
             url.isHttps && url.host == origin.host && url.port == origin.port &&
             url.username.isEmpty() && url.password.isEmpty() && url.query == null && url.fragment == null &&
             url.encodedPath.startsWith("/downloads/$platform/") && url.pathSegments.size == 3 &&
-            url.pathSegments.last().endsWith(".${pkg.extension}")) { "La dirección de actualización no es válida para Smash Tournaments." }
+            url.pathSegments.last().endsWith(".${pkg.extension}")) { "The update URL is invalid for Smash Tournaments." }
         require(pkg.sha256?.matches(Regex("[a-fA-F0-9]{64}")) == true &&
             pkg.sizeBytes != null && pkg.sizeBytes in 8..1_073_741_824L) {
-            "El servidor no ha publicado los datos de verificación. Vuelve a comprobar las actualizaciones."
+            "The server has not published verification data. Check for updates again."
         }
     }
 
@@ -67,12 +67,12 @@ class AppUpdateDownloader(
 
     suspend fun download(pkg: UpdatePackage, progress: (Long, Long) -> Unit): File = withContext(Dispatchers.IO) {
         validatePackage(pkg)
-        check(directory.isDirectory || directory.mkdirs()) { "No se pudo crear la carpeta de actualizaciones." }
+        check(directory.isDirectory || directory.mkdirs()) { "Could not create the updates folder." }
         val target = File(directory, "${pkg.sha256!!.lowercase()}.${pkg.extension}")
         val partial = File(directory, "${target.name}.part")
         if (verify(target, pkg)) { progress(pkg.sizeBytes!!, pkg.sizeBytes); return@withContext target }
         target.delete()
-        require(directory.usableSpace > pkg.sizeBytes!! + 16_777_216L) { "No hay espacio suficiente para descargar la actualización." }
+        require(directory.usableSpace > pkg.sizeBytes!! + 16_777_216L) { "There is not enough space to download the update." }
         val call = client.newCall(Request.Builder().url(pkg.url).build())
         coroutineScope {
             // Closing the call interrupts a blocked socket read as soon as the user cancels.
@@ -81,9 +81,9 @@ class AppUpdateDownloader(
             }
             try {
                 call.execute().use { response ->
-                    if (response.code != 200) throw IOException("No se pudo descargar la actualización (HTTP ${response.code}).")
-                    val body = response.body ?: throw IOException("El servidor devolvió un archivo vacío.")
-                    require(body.contentLength() == -1L || body.contentLength() == pkg.sizeBytes) { "El tamaño de la actualización no coincide. Vuelve a intentarlo." }
+                    if (response.code != 200) throw IOException("Could not download the update (HTTP ${response.code}).")
+                    val body = response.body ?: throw IOException("The server returned an empty file.")
+                    require(body.contentLength() == -1L || body.contentLength() == pkg.sizeBytes) { "The update size does not match. Try again." }
                     var received = 0L
                     var lastProgress = 0L
                     body.byteStream().use { input ->
@@ -94,7 +94,7 @@ class AppUpdateDownloader(
                                 val count = input.read(buffer)
                                 if (count < 0) break
                                 received += count
-                                require(received <= pkg.sizeBytes) { "La descarga supera el tamaño esperado." }
+                                require(received <= pkg.sizeBytes) { "The download exceeds the expected size." }
                                 output.write(buffer, 0, count)
                                 val now = System.nanoTime()
                                 if (now - lastProgress > 100_000_000L) { progress(received, pkg.sizeBytes); lastProgress = now }
@@ -103,7 +103,7 @@ class AppUpdateDownloader(
                         }
                     }
                 }
-                check(verify(partial, pkg)) { "El archivo está incompleto o no supera la verificación. Vuelve a descargarlo." }
+                check(verify(partial, pkg)) { "The file is incomplete or failed verification. Download it again." }
                 ensureActive()
                 Files.move(partial.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING)
                 progress(pkg.sizeBytes, pkg.sizeBytes)
@@ -145,7 +145,7 @@ class AppUpdateTransfer(private val scope: CoroutineScope, private val downloade
                 mutable.value = UpdateDownloadState()
                 throw error
             } catch (error: Exception) {
-                mutable.value = UpdateDownloadState(error = error.message ?: "No se pudo descargar la actualización.")
+                mutable.value = UpdateDownloadState(error = error.message ?: "Could not download the update.")
             }
         }
     }

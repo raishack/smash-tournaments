@@ -25,20 +25,20 @@ data class TeamRoster(val teamSize: Int, val reserveCount: Int, val allowSoloReg
 @Composable
 fun TeamConfigurationFields(size: Int, reserves: Int, solo: Boolean, showToggle: Boolean = true, onChange: (Int, Int, Boolean) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        if (showToggle) Row { Switch(checked = size > 1, onCheckedChange = { onChange(if (it) 5 else 1, 0, false) }); Text("Torneo por equipos") }
+        if (showToggle) Row { Switch(checked = size > 1, onCheckedChange = { onChange(if (it) 5 else 1, 0, false) }); Text("Team tournament") }
         if (size > 1) {
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 OutlinedButton(onClick = { onChange(size - 1, reserves, solo) }, enabled = size > 2) { Text("−") }
-                Text("$size titulares")
+                Text("$size starters")
                 OutlinedButton(onClick = { onChange(size + 1, reserves, solo) }, enabled = size < 20) { Text("+") }
             }
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 OutlinedButton(onClick = { onChange(size, reserves - 1, solo) }, enabled = reserves > 0) { Text("−") }
-                Text("Hasta $reserves reservas")
+                Text("Up to $reserves reserves")
                 OutlinedButton(onClick = { onChange(size, reserves + 1, solo) }, enabled = reserves < 20) { Text("+") }
             }
-            Row { Switch(checked = solo, onCheckedChange = { onChange(size, reserves, it) }); Text("Admitir jugadores sin equipo") }
-            Text("El aforo cuenta equipos. Cada equipo debe completar sus titulares antes de generar la bracket.", style = MaterialTheme.typography.bodySmall)
+            Row { Switch(checked = solo, onCheckedChange = { onChange(size, reserves, it) }); Text("Allow solo players") }
+            Text("Capacity counts teams. Each team must have all starters before generating the bracket.", style = MaterialTheme.typography.bodySmall)
         }
     }
 }
@@ -47,7 +47,7 @@ fun TeamConfigurationFields(size: Int, reserves: Int, solo: Boolean, showToggle:
 private fun RosterChoice(label: String, value: String, options: List<Pair<String, String>>, onChange: (String) -> Unit) {
     var open by remember { mutableStateOf(false) }
     Box {
-        OutlinedButton(onClick = { open = true }) { Text("$label: ${options.find { it.first == value }?.second ?: "Seleccionar"}") }
+        OutlinedButton(onClick = { open = true }) { Text("$label: ${options.find { it.first == value }?.second ?: "Select"}") }
         DropdownMenu(expanded = open, onDismissRequest = { open = false }, modifier = Modifier.heightIn(max = 320.dp)) {
             options.forEach { (key, text) -> DropdownMenuItem(text = { Text(text) }, onClick = { onChange(key); open = false }) }
         }
@@ -77,7 +77,7 @@ fun TeamRosterPanel(tournamentId: String, onChanged: () -> Unit = {}) {
         val currentGeneration = generation
         try { val refreshed = repository.teamRoster(tournamentId); if (currentGeneration == generation) data = refreshed }
         catch (e: CancellationException) { throw e }
-        catch (e: Exception) { error = e.message ?: "No se pudieron cargar las plantillas" }
+        catch (e: Exception) { error = e.message ?: "Could not load templates" }
     }
     fun action(body: Map<String, Any?>) {
         if (busy) return
@@ -90,45 +90,45 @@ fun TeamRosterPanel(tournamentId: String, onChanged: () -> Unit = {}) {
                 onChanged()
             }
             catch (e: CancellationException) { throw e }
-            catch (e: Exception) { error = e.message ?: "No se pudo guardar"; refresh() }
+            catch (e: Exception) { error = e.message ?: "Could not save"; refresh() }
             finally { busy = false }
         }
     }
     LaunchedEffect(tournamentId) { while (isActive) { if (!busy) refresh(); delay(15000) } }
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Text("Equipos y plantillas", style = MaterialTheme.typography.titleLarge)
+            Text("Teams and rosters", style = MaterialTheme.typography.titleLarge)
             error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
-            if (data == null) OutlinedButton(onClick = { scope.launch { refresh() } }) { Text("Cargar plantillas") }
+            if (data == null) OutlinedButton(onClick = { scope.launch { refresh() } }) { Text("Load templates") }
             data?.let { roster ->
                 val enabled = roster.canEdit && !busy
-                val destinations = listOf("" to "Sin equipo") + roster.teams.map { it.id to it.name }
-                val roles = if (roster.reserveCount > 0) listOf("PLAYER" to "Titular", "RESERVE" to "Reserva") else listOf("PLAYER" to "Titular")
-                Text("${roster.teamSize} titulares · hasta ${roster.reserveCount} reservas por equipo")
-                if (!roster.canEdit) Text("Las altas están cerradas. Para cambiar titulares por reservas usa «Inscripciones, lista de espera y sustituciones».")
+                val destinations = listOf("" to "No team") + roster.teams.map { it.id to it.name }
+                val roles = if (roster.reserveCount > 0) listOf("PLAYER" to "Starter", "RESERVE" to "Reserve") else listOf("PLAYER" to "Starter")
+                Text("${roster.teamSize} starters · up to ${roster.reserveCount} reserves per team")
+                if (!roster.canEdit) Text("New entries are closed. Use Registration, waitlist and substitutions to swap starters with reserves.")
                 Button(onClick = { action(mapOf("action" to "SOLO_OPTION", "enabled" to !roster.allowSoloRegistration)) }, enabled = enabled) {
-                    Text(if (roster.allowSoloRegistration) "Deshabilitar inscripción sin equipo" else "Habilitar inscripción sin equipo")
+                    Text(if (roster.allowSoloRegistration) "Disable solo registration" else "Enable solo registration")
                 }
                 roster.teams.forEach { team ->
                     OutlinedButton(onClick = { expanded = if (team.id in expanded) expanded - team.id else expanded + team.id }, modifier = Modifier.fillMaxWidth()) {
-                        Text("${if (team.id in expanded) "▾" else "▸"} ${team.name} · ${team.members.count { it.role == "PLAYER" }}/${roster.teamSize} titulares · ${team.members.count { it.role == "RESERVE" }}/${roster.reserveCount} reservas")
+                        Text("${if (team.id in expanded) "▾" else "▸"} ${team.name} · ${team.members.count { it.role == "PLAYER" }}/${roster.teamSize} starters · ${team.members.count { it.role == "RESERVE" }}/${roster.reserveCount} reserves")
                     }
                     if (team.id in expanded) {
-                        Text("${if (team.complete) "Equipo completo" else "Equipo incompleto"} · ${if (team.checkedIn) "Asistencia confirmada" else "Sin check-in"}")
-                        Text("Código: ${team.code}", style = MaterialTheme.typography.bodySmall)
-                        OutlinedButton(onClick = { clipboard.setText(AnnotatedString(team.code)) }) { Text("Copiar código de equipo") }
+                        Text("${if (team.complete) "Complete team" else "Incomplete team"} · ${if (team.checkedIn) "Attendance confirmed" else "Not checked in"}")
+                        Text("Code: ${team.code}", style = MaterialTheme.typography.bodySmall)
+                        OutlinedButton(onClick = { clipboard.setText(AnnotatedString(team.code)) }) { Text("Copy team code") }
                         team.members.forEach { member ->
-                            Text("${member.nickname} · ${if (member.role == "RESERVE") "Reserva" else "Titular"}")
-                            Text(listOfNotNull(if (member.meta?.captain == true) "Capitán" else null, member.meta?.gameId, member.meta?.preferredRole).filter { it.isNotBlank() }.joinToString(" · "), style = MaterialTheme.typography.bodySmall)
+                            Text("${member.nickname} · ${if (member.role == "RESERVE") "Reserve" else "Starter"}")
+                            Text(listOfNotNull(if (member.meta?.captain == true) "Captain" else null, member.meta?.gameId, member.meta?.preferredRole).filter { it.isNotBlank() }.joinToString(" · "), style = MaterialTheme.typography.bodySmall)
                             if (enabled) FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                                OutlinedButton(onClick = { moving = member; target = member.teamId.orEmpty(); role = member.role }) { Text("Mover / cambiar plaza") }
-                                TextButton(onClick = { removing = member }) { Text("Retirar") }
+                                OutlinedButton(onClick = { moving = member; target = member.teamId.orEmpty(); role = member.role }) { Text("Move / change role") }
+                                TextButton(onClick = { removing = member }) { Text("Remove") }
                             }
                         }
                     }
                 }
-                Text("Sin equipo (${roster.unassigned.size})", style = MaterialTheme.typography.titleMedium)
-                Text("Esta lista no ocupa plazas en la bracket. Selecciona jugadores para formar un equipo o asígnalos a uno existente.", style = MaterialTheme.typography.bodySmall)
+                Text("No team (${roster.unassigned.size})", style = MaterialTheme.typography.titleMedium)
+                Text("This list does not take up bracket places. Select players to form a team or assign them to an existing one.", style = MaterialTheme.typography.bodySmall)
                 roster.unassigned.forEach { member ->
                     Column {
                         Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
@@ -136,26 +136,26 @@ fun TeamRosterPanel(tournamentId: String, onChanged: () -> Unit = {}) {
                             Text(listOfNotNull(member.nickname, member.meta?.gameId, member.meta?.preferredRole).filter { it.isNotBlank() }.joinToString(" · "), modifier = Modifier.weight(1f))
                         }
                         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            TextButton(enabled = enabled, onClick = { moving = member; target = ""; role = "PLAYER" }) { Text("Asignar") }
-                            TextButton(enabled = enabled, onClick = { removing = member }) { Text("Retirar") }
+                            TextButton(enabled = enabled, onClick = { moving = member; target = ""; role = "PLAYER" }) { Text("Assign") }
+                            TextButton(enabled = enabled, onClick = { removing = member }) { Text("Remove") }
                         }
                     }
                 }
                 if (roster.canEdit) {
-                    OutlinedTextField(value = name, onValueChange = { name = it.take(80) }, label = { Text("Nombre del nuevo equipo") }, modifier = Modifier.fillMaxWidth())
+                    OutlinedTextField(value = name, onValueChange = { name = it.take(80) }, label = { Text("New team name") }, modifier = Modifier.fillMaxWidth())
                     Button(enabled = enabled && name.trim().length >= 2 && selected.size <= roster.teamSize, onClick = {
                         action(mapOf("action" to "CREATE_TEAM", "name" to name.trim(), "members" to selected.map { mapOf("id" to it, "role" to "PLAYER") }))
-                    }) { Text("Crear equipo · ${selected.size} titulares seleccionados") }
-                    Text("Los reservas se pueden asignar después. También puedes crear un equipo vacío y completar su plantilla.", style = MaterialTheme.typography.bodySmall)
-                    OutlinedTextField(value = nick, onValueChange = { nick = it.take(80) }, label = { Text("Añadir jugador manualmente: nick") }, modifier = Modifier.fillMaxWidth())
-                    RosterChoice("Destino", addTeam, destinations) { addTeam = it }
-                    if (addTeam.isNotEmpty()) RosterChoice("Plaza", addRole, roles) { addRole = it }
-                    Button(enabled = enabled && nick.trim().length >= 2, onClick = { action(mapOf("action" to "ADD_MEMBER", "nickname" to nick.trim(), "teamId" to addTeam.ifEmpty { null }, "role" to addRole)) }) { Text("Añadir jugador a plantilla / lista") }
+                    }) { Text("Create team · ${selected.size} starters selected") }
+                    Text("Reserves can be assigned later. You can also create an empty team and complete its roster.", style = MaterialTheme.typography.bodySmall)
+                    OutlinedTextField(value = nick, onValueChange = { nick = it.take(80) }, label = { Text("Add player manually: nickname") }, modifier = Modifier.fillMaxWidth())
+                    RosterChoice("Destination", addTeam, destinations) { addTeam = it }
+                    if (addTeam.isNotEmpty()) RosterChoice("Place", addRole, roles) { addRole = it }
+                    Button(enabled = enabled && nick.trim().length >= 2, onClick = { action(mapOf("action" to "ADD_MEMBER", "nickname" to nick.trim(), "teamId" to addTeam.ifEmpty { null }, "role" to addRole)) }) { Text("Add player to roster / list") }
                 }
                 moving?.let { member -> AlertDialog(onDismissRequest = { moving = null }, title = { Text(member.nickname) }, text = {
-                    Column { RosterChoice("Destino", target, destinations) { target = it }; if (target.isNotEmpty()) RosterChoice("Plaza", role, roles) { role = it } }
-                }, confirmButton = { Button(onClick = { action(mapOf("action" to "MOVE_MEMBER", "id" to member.id, "revision" to member.revision, "teamId" to target.ifEmpty { null }, "role" to role)); moving = null }, enabled = enabled) { Text("Guardar asignación") } }, dismissButton = { TextButton(onClick = { moving = null }) { Text("Cancelar") } }) }
-                removing?.let { member -> AlertDialog(onDismissRequest = { removing = null }, title = { Text("Retirar a ${member.nickname}") }, text = { Text("Se eliminará su inscripción de la plantilla o lista sin equipo.") }, confirmButton = { Button(onClick = { action(mapOf("action" to "REMOVE_MEMBER", "id" to member.id, "revision" to member.revision)); removing = null }, enabled = enabled) { Text("Retirar") } }, dismissButton = { TextButton(onClick = { removing = null }) { Text("Cancelar") } }) }
+                    Column { RosterChoice("Destination", target, destinations) { target = it }; if (target.isNotEmpty()) RosterChoice("Place", role, roles) { role = it } }
+                }, confirmButton = { Button(onClick = { action(mapOf("action" to "MOVE_MEMBER", "id" to member.id, "revision" to member.revision, "teamId" to target.ifEmpty { null }, "role" to role)); moving = null }, enabled = enabled) { Text("Save assignment") } }, dismissButton = { TextButton(onClick = { moving = null }) { Text("Cancel") } }) }
+                removing?.let { member -> AlertDialog(onDismissRequest = { removing = null }, title = { Text("Remove a ${member.nickname}") }, text = { Text("Their registration will be removed from the roster or solo player list.") }, confirmButton = { Button(onClick = { action(mapOf("action" to "REMOVE_MEMBER", "id" to member.id, "revision" to member.revision)); removing = null }, enabled = enabled) { Text("Remove") } }, dismissButton = { TextButton(onClick = { removing = null }) { Text("Cancel") } }) }
             }
         }
     }

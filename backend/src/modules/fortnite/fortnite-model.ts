@@ -9,8 +9,8 @@ export type FortniteRound = { number:number; final:boolean; closed:boolean; grou
 export type FortniteState = { revision:string; rounds:FortniteRound[] };
 export function fortniteConfig(settings:TournamentSettings) {
   const lobbySize = settings.fortniteLobbySize ?? 20, gamesPerRound = settings.fortniteGamesPerRound ?? 3;
-  if (!Number.isInteger(lobbySize) || lobbySize < 5 || lobbySize > 100 || lobbySize % 5 || !Number.isInteger(gamesPerRound) || gamesPerRound < 1 || gamesPerRound > 20) throw Error('Fortnite: grupos de 5 a 100 puestos, en múltiplos de 5, y de 1 a 20 partidas por ronda');
-  if ((settings.teamSize ?? 1) > 1) throw Error('El formato Fortnite es individual; desactiva el torneo por equipos');
+  if (!Number.isInteger(lobbySize) || lobbySize < 5 || lobbySize > 100 || lobbySize % 5 || !Number.isInteger(gamesPerRound) || gamesPerRound < 1 || gamesPerRound > 20) throw Error('Fortnite: groups of 5 to 100 seats, in multiples of 5, and 1 to 20 games per round');
+  if ((settings.teamSize ?? 1) > 1) throw Error('Fortnite is an individual format; disable team mode');
   return { lobbySize,gamesPerRound };
 }
 export function shuffle<T>(values:T[]):T[] {

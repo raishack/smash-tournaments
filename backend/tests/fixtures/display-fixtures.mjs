@@ -1,8 +1,8 @@
 export function displayFixture(size = 16, id = 'screen-test') {
-  const tournament = { id, title: 'MAIN · Torneo de prueba', gameTitle: 'Super Smash Bros. Ultimate', status: 'IN_PROGRESS',
+  const tournament = { id, title: 'Community example tournament', gameTitle: 'Super Smash Bros. Ultimate', status: 'IN_PROGRESS',
     settings: { format: 'DOUBLE_ELIMINATION', bestOf: 3, setupCount: 4, callTimeoutMinutes: 10, playAreaName: 'Zona principal' },
     importSource: { provider: 'START_GG', entrantSize: 2, eventId: 'demo' } };
-  const participants = Array.from({ length: size }, (_, i) => ({ id: `p${i}`, displayName: `Equipo ${i + 1} · Jugador Álvarez / Jugador Fernández` }));
+  const participants = Array.from({ length: size }, (_, i) => ({ id: `p${i}`, displayName: `Team ${i + 1} · Player Álvarez / Player Fernández` }));
   const matches = [];
   let number = 0;
   function add(stage, count, round, previous = []) {
@@ -13,7 +13,7 @@ export function displayFixture(size = 16, id = 'screen-test') {
         const source = previous[i * 2 + slot];
         const entrant = participants[(i * 2 + slot) % size];
         return { id: `${matchId}-${slot}`, slot: slot + 1, participantId: source ? `winner_of_${source.id}` : entrant.id,
-          displayName: source ? `Ganador de ${source.displayIdentifier}` : entrant.displayName, score: 0 };
+          displayName: source ? `Winner of ${source.displayIdentifier}` : entrant.displayName, score: 0 };
       });
       const match = { id: matchId, tournamentId: id, bracketStage: stage, roundNumber: round, matchNumber: ++number,
         displayIdentifier: `${stage === 'LOSERS' ? 'L' : 'W'}${round}-${i + 1}`, roundLabel: `${stage === 'LOSERS' ? 'Losers' : 'Winners'} Round ${round}`,

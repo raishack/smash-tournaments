@@ -86,13 +86,13 @@ fun MainTournamentSummary(title: String, subtitle: String, status: String, statu
 @Composable
 fun MainTournamentKinds(selected: String, onSelect: (String) -> Unit) {
     val options = listOf(
-        Triple("STANDARD", "Individual", "Bracket de eliminación simple o doble."),
-        Triple("TEAMS", "Por equipos · LoL / Valorant", "Titulares, reservas y jugadores que buscan equipo."),
-        Triple("FORTNITE", "Fortnite", "Grupos, partidas y puntos acumulados. VIP externo."),
-        Triple("MKART", "Mario Kart", "Varios jugadores por carrera y plazas de clasificación.")
+        Triple("STANDARD", "Individual", "Single or double elimination bracket."),
+        Triple("TEAMS", "Teams · LoL / Valorant", "Starters, reserves and players looking for a team."),
+        Triple("FORTNITE", "Fortnite", "Groups, games and accumulated points. External VIP."),
+        Triple("MKART", "Mario Kart", "Multiple players per race with qualifying places.")
     )
     Column(Modifier.fillMaxWidth().selectableGroup(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        MainSectionHeading("Tipo de torneo", "Elige cómo van a competir los participantes.")
+        MainSectionHeading("Tournament type", "Choose how participants will compete.")
         BoxWithConstraints {
             val columns = if (maxWidth >= 620.dp) 2 else 1
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -134,7 +134,7 @@ fun MainAdaptivePair(first: @Composable () -> Unit, second: @Composable () -> Un
 fun MainOtherActions(content: @Composable ColumnScope.() -> Unit) {
     var expanded by rememberSaveable { mutableStateOf(false) }
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        TextButton(onClick = { expanded = !expanded }) { Text(if (expanded) "Ocultar otras acciones  −" else "Otras acciones  +") }
+        TextButton(onClick = { expanded = !expanded }) { Text(if (expanded) "Hide other actions  −" else "Other actions  +") }
         if (expanded) {
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
             Column(verticalArrangement = Arrangement.spacedBy(8.dp), content = content)

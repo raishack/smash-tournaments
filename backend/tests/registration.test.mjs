@@ -21,7 +21,7 @@ test('registration: confirmed links use the current name after an organiser corr
   assert.equal((await f.repo.listParticipants('local')).length, 1);
   await f.tournaments.deleteParticipant('local', participant.id);
   assert.equal((await f.service.status(token)).removed, true);
-  await assert.rejects(f.service.confirm(token), /retirado/);
+  await assert.rejects(f.service.confirm(token), /removed|withdrawn/);
 });
 
 async function fixture(t) {
@@ -78,18 +78,18 @@ test('registration: concurrent confirmations cannot exceed capacity or repeat ni
   assert.equal((await f.repo.listParticipants('local')).length, 1);
   assert.equal(results.find(r => r.status === 'rejected').reason.status, 409);
   await f.repo.saveTournament({ ...await f.repo.getTournament('local'), maxParticipants: 8 });
-  await assert.rejects(f.request('Ｏｎｅ', 'another@example.test'), /nick ya/);
+  await assert.rejects(f.request('Ｏｎｅ', 'another@example.test'), /nickname is already/);
 });
 
 test('registration: resend invalidates old links, expired links fail and SMTP failure creates no participant', async t => {
   const f = await fixture(t); await f.service.updateOptions('local', { registrationEnabled: true });
   await f.request(); const old = f.token(); await f.request(); assert.equal(f.mailer.messages.length, 1);
   await f.db.exec("update tournament_registrations set sent_at=now()-interval '2 minutes'");
-  await f.request(); await assert.rejects(f.service.confirm(old), /caducado/);
+  await f.request(); await assert.rejects(f.service.confirm(old), /expired/);
   await f.db.exec("update tournament_registrations set expires_at=now()-interval '1 second'");
-  await assert.rejects(f.service.confirm(f.token()), /caducado/);
+  await assert.rejects(f.service.confirm(f.token()), /expired/);
   f.mailer.fail = true;
-  await assert.rejects(f.request('Fail', 'fail@example.test'), /enviar el correo/);
+  await assert.rejects(f.request('Fail', 'fail@example.test'), /send the email/);
   assert.equal((await f.repo.listParticipants('local')).length, 0);
   f.mailer.fail = false; await f.request('Fail', 'fail@example.test');
   await f.service.confirm(f.token()); assert.equal((await f.repo.listParticipants('local')).length, 1);
@@ -98,7 +98,7 @@ test('registration: resend invalidates old links, expired links fail and SMTP fa
 test('registration: closing and generating bracket invalidate pending confirmation; options survive legacy edits', async t => {
   const f = await fixture(t); await f.service.updateOptions('local', { registrationEnabled: true, displayEnabled: false });
   await f.request(); await f.service.updateOptions('local', { registrationEnabled: false });
-  await assert.rejects(f.service.confirm(f.token()), /cerradas/);
+  await assert.rejects(f.service.confirm(f.token()), /closed/);
   await f.service.updateOptions('local', { registrationEnabled: true });
   await f.tournaments.addParticipant('local', { displayName: 'Local One' });
   await f.tournaments.addParticipant('local', { displayName: 'Local Two' });
@@ -107,19 +107,19 @@ test('registration: closing and generating bracket invalidate pending confirmati
   assert.equal((await f.repo.getTournament('local')).settings.displayEnabled, false);
   await f.tournaments.generateBracket('local');
   assert.equal((await f.repo.getTournament('local')).settings.registrationEnabled, false);
-  await assert.rejects(f.service.confirm(f.token()), /cerradas/);
-  await assert.rejects(f.service.updateOptions('local', { registrationEnabled: true }), /antes de generar/);
+  await assert.rejects(f.service.confirm(f.token()), /closed/);
+  await assert.rejects(f.service.updateOptions('local', { registrationEnabled: true }), /before generating/);
   await f.service.updateOptions('local', { displayEnabled: true });
 });
 
 test('registration: missing SMTP blocks opening only; start.gg supports display visibility but not local registration', async t => {
   const f = await fixture(t); f.mailer.configured = false;
   await f.service.updateOptions('local', { displayEnabled: false });
-  await assert.rejects(f.service.updateOptions('local', { registrationEnabled: true }), /configurar/);
+  await assert.rejects(f.service.updateOptions('local', { registrationEnabled: true }), /[Cc]onfigure/);
   await f.repo.saveTournament({ ...f.tournament, importSource: { provider: 'START_GG', eventId: '1' } });
-  await assert.rejects(f.service.publicInfo('local'), /no disponible/);
+  await assert.rejects(f.service.publicInfo('local'), /unavailable/);
   assert.equal((await f.service.updateOptions('local', { displayEnabled: false })).settings.displayEnabled, false);
-  await assert.rejects(f.service.updateOptions('local', { registrationEnabled: true }), /no disponible/);
+  await assert.rejects(f.service.updateOptions('local', { registrationEnabled: true }), /unavailable/);
 });
 
 test('registration: failed confirmation rolls back the participant, quotas persist and cleanup removes expired requests', async t => {

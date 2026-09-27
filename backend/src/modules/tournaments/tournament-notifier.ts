@@ -150,7 +150,7 @@ export class TelegramTournamentNotifier implements TournamentNotifier {
     await this.sendMessage(await buildLadderCompletedMessage(tournament, winnerName, standings, "telegram", this.templates));
     await this.sendDocument(
       await renderLadderStandingsPng(tournament, standings),
-      `${sanitizeFileName(tournament.title)}-ladder-clasificacion.png`,
+      `${sanitizeFileName(tournament.title)}-ladder-standings.png`,
       await buildLadderCompletedCaption(tournament, winnerName, standings, "telegram", this.templates),
     );
   }
@@ -274,7 +274,7 @@ export class WhatsAppTournamentNotifier implements TournamentNotifier {
     await this.sendText(await buildLadderCompletedMessage(tournament, winnerName, standings, "whatsapp", this.templates));
     await this.sendDocument(
       await renderLadderStandingsPng(tournament, standings),
-      `${sanitizeFileName(tournament.title)}-ladder-clasificacion.png`,
+      `${sanitizeFileName(tournament.title)}-ladder-standings.png`,
       await buildLadderCompletedCaption(tournament, winnerName, standings, "whatsapp", this.templates),
     );
   }
@@ -349,23 +349,23 @@ function templateValues(tournament: Tournament, match?: Match, winnerName?: stri
     : "";
   const completionText = match
     ? match.status === "COMPLETED"
-      ? `Match para ${matchWinner || winnerName || ""}.`
-      : `Partida para ${matchWinner || winnerName || ""}.`
+      ? `Match won by ${matchWinner || winnerName || ""}.`
+      : `Game won by ${matchWinner || winnerName || ""}.`
     : "";
   const resolvedTitle = match
     ? match.advancersRequired > 1 || match.participants.length > 2
-      ? (match.bracketStage === "FINALS" ? `Final completada en ${tournament.title}` : `Heat completado en ${tournament.title}`)
-      : `Resultado confirmado en ${tournament.title}`
+      ? (match.bracketStage === "FINALS" ? `Final completed in ${tournament.title}` : `Heat completed in ${tournament.title}`)
+      : `Result confirmed in ${tournament.title}`
     : "";
   const resolvedBody = match
     ? match.advancersRequired > 1 || match.participants.length > 2
       ? `${matchLabel(match)} · Clasifican: ${((match.advancingParticipantIds ?? [])
         .map((id) => match.participants.find((participant) => participant.participantId === id)?.displayName)
         .filter((name): name is string => Boolean(name))
-        .join(", ")) || "sin clasificados"}`
+        .join(", ")) || "no qualifiers"}`
       : (() => {
         const resolvedWinner = match.participants.find((participant) => participant.participantId === match.winnerParticipantId)?.displayName || "";
-        const extra = match.status === "WALKOVER" ? "por incomparecencia" : `con ${describeScore(match)}`;
+        const extra = match.status === "WALKOVER" ? "due to absence" : `with ${describeScore(match)}`;
         return `${matchLabel(match)} · ${resolvedWinner} gana ${extra}.`;
       })()
     : "";
@@ -393,7 +393,7 @@ function ladderTemplateValues(tournament: Tournament, winnerName: string, standi
     `${index + 1}. ${standing.displayName} (${standing.wins}-${standing.losses}, ${standing.rankingMode === "COMPETITIVE" ? `rating ${standing.rating}${standing.eligible ? "" : " provisional"}` : `diff ${formatDifferential(standing.gameDifferential)}`})`,
   ).join("\n");
   const rows = standings.map((standing, index) =>
-    `${index + 1}. ${standing.displayName} · ${standing.wins}-${standing.losses} · Juegos ${standing.gamesWon}-${standing.gamesLost} · ${standing.rankingMode === "COMPETITIVE" ? `Rating ${standing.rating}${standing.eligible ? "" : " · provisional"}` : `Diff ${formatDifferential(standing.gameDifferential)}`}`,
+    `${index + 1}. ${standing.displayName} · ${standing.wins}-${standing.losses} · Games ${standing.gamesWon}-${standing.gamesLost} · ${standing.rankingMode === "COMPETITIVE" ? `Rating ${standing.rating}${standing.eligible ? "" : " · provisional"}` : `Diff ${formatDifferential(standing.gameDifferential)}`}`,
   ).join("\n");
   return {
     tournament_title: tournament.title,
@@ -412,12 +412,12 @@ async function buildMatchCalledMessage(tournament: Tournament, match: Match, cha
   const playAreaName = tournament.settings.playAreaName?.trim();
   const station = match.call?.stationLabel?.trim()
     ? `estacion ${match.call.stationLabel}${playAreaName ? `, en ${playAreaName}` : ""}`
-    : "la estacion asignada";
+    : "the assigned station";
   const fallback = [
-    `Llamada a jugar en ${tournament.title}`,
-    `${players.join(" vs ")} en ${station}.`,
-    `Teneis ${timeout} minutos para presentaros o sereis desclasificados.`,
-    "Si hay una partida en curso en esa estacion, esperad a que termine para empezar.",
+    `Match call in ${tournament.title}`,
+    `${players.join(" vs ")} at ${station}.`,
+    `You have ${timeout} minutes to arrive or you may be disqualified.`,
+    "If a match is in progress at that station, wait for it to finish before starting.",
   ].join("\n");
   const template = channel === "telegram" ? templates?.telegramMatchCalled : templates?.whatsappMatchCalled;
   return renderTemplate(template || fallback, templateValues(tournament, match));
@@ -433,7 +433,7 @@ async function buildGameWinMessage(tournament: Tournament, match: Match, partici
   const templates = await loadTemplates(store);
   const winner = match.participants.find((participant) => participant.participantId === participantId);
   if (!winner) {
-    return `Actualizacion de score en ${tournament.title}`;
+    return `Score update in ${tournament.title}`;
   }
   const template = channel === "telegram" ? templates?.telegramGameWin : templates?.whatsappGameWin;
   return renderTemplate(template || "{{completion_text}} {{tournament_title}}\n{{match_label}} · {{score_text}}", templateValues(tournament, match, winner.displayName, participantId));
@@ -454,20 +454,20 @@ async function buildMatchResolvedMessage(tournament: Tournament, match: Match, c
 
     return [
       match.bracketStage === "FINALS"
-        ? `Final completada en ${tournament.title}`
-        : `Heat completado en ${tournament.title}`,
-      `${matchLabel(match)} · Clasifican: ${advancingNames.join(", ") || "sin clasificados"}`,
+        ? `Final completed in ${tournament.title}`
+        : `Heat completed in ${tournament.title}`,
+      `${matchLabel(match)} · Qualifiers: ${advancingNames.join(", ") || "no qualifiers"}`,
     ].join("\n");
   }
 
   const winner = match.participants.find((participant) => participant.participantId === match.winnerParticipantId);
   if (!winner) {
-    return `Resultado actualizado en ${tournament.title}`;
+    return `Result updated in ${tournament.title}`;
   }
 
-  const extra = match.status === "WALKOVER" ? "por incomparecencia" : `con ${describeScore(match)}`;
+  const extra = match.status === "WALKOVER" ? "due to absence" : `with ${describeScore(match)}`;
   return [
-    `Resultado confirmado en ${tournament.title}`,
+    `Result confirmed in ${tournament.title}`,
     `${matchLabel(match)} · ${winner.displayName} gana ${extra}.`,
   ].join("\n");
 }
@@ -475,19 +475,19 @@ async function buildMatchResolvedMessage(tournament: Tournament, match: Match, c
 async function buildRoundCompletedCaption(tournament: Tournament, match: Match, channel: "telegram" | "whatsapp", store?: DisplayAdminStore): Promise<string> {
   const templates = await loadTemplates(store);
   const template = channel === "telegram" ? templates?.telegramRoundCompletedCaption : templates?.whatsappRoundCompletedCaption;
-  return renderTemplate(template || "Fase completada en {{tournament_title}}: {{round_title}}. Bracket actualizada adjunta.", templateValues(tournament, match));
+  return renderTemplate(template || "Phase completed in {{tournament_title}}: {{round_title}}. Updated bracket attached.", templateValues(tournament, match));
 }
 
 async function buildTournamentCompletedMessage(tournament: Tournament, winnerName: string, channel: "telegram" | "whatsapp", store?: DisplayAdminStore): Promise<string> {
   const templates = await loadTemplates(store);
   const template = channel === "telegram" ? templates?.telegramTournamentCompleted : templates?.whatsappTournamentCompleted;
-  return renderTemplate(template || "Torneo completado: {{tournament_title}}\nCampeon: {{winner_name}}", templateValues(tournament, undefined, winnerName));
+  return renderTemplate(template || "Tournament completed: {{tournament_title}}\nChampion: {{winner_name}}", templateValues(tournament, undefined, winnerName));
 }
 
 async function buildTournamentCompletedCaption(tournament: Tournament, winnerName: string, channel: "telegram" | "whatsapp", store?: DisplayAdminStore): Promise<string> {
   const templates = await loadTemplates(store);
   const template = channel === "telegram" ? templates?.telegramTournamentCompletedCaption : templates?.whatsappTournamentCompletedCaption;
-  return renderTemplate(template || "Bracket final de {{tournament_title}}. Campeon: {{winner_name}}", templateValues(tournament, undefined, winnerName));
+  return renderTemplate(template || "Final bracket for {{tournament_title}}. Champion: {{winner_name}}", templateValues(tournament, undefined, winnerName));
 }
 
 async function buildLadderCompletedMessage(
@@ -505,8 +505,8 @@ async function buildLadderCompletedMessage(
   const topLines = standings.slice(0, 3).map((standing, index) =>
     `${index + 1}. ${standing.displayName} (${standing.wins}-${standing.losses}, diff ${formatDifferential(standing.gameDifferential)})`);
   return [
-    `Ladder finalizada en ${tournament.title}`,
-    `Ganador: ${winnerName}`,
+    `Ladder completed in ${tournament.title}`,
+    `Winner: ${winnerName}`,
     ...topLines,
   ].join("\n");
 }
@@ -521,7 +521,7 @@ async function buildLadderCompletedCaption(
   const templates = await loadTemplates(store);
   const template = channel === "telegram" ? templates?.telegramLadderCompletedCaption : templates?.whatsappLadderCompletedCaption;
   return renderTemplate(
-    template || "Clasificacion final de la ladder de {{tournament_title}}. Ganador: {{winner_name}}",
+    template || "Final ladder standings for {{tournament_title}}. Winner: {{winner_name}}",
     ladderTemplateValues(tournament, winnerName, standings),
   );
 }
@@ -529,7 +529,7 @@ async function buildLadderCompletedCaption(
 function renderLadderStandingsSvg(tournament: Tournament, standings: LadderStanding[]): string {
   const visibleStandings = standings.length > 0 ? standings : [{
     participantId: "empty",
-    displayName: "Sin resultados",
+    displayName: "No results",
     matchesPlayed: 0,
     wins: 0,
     losses: 0,
@@ -551,7 +551,7 @@ function renderLadderStandingsSvg(tournament: Tournament, standings: LadderStand
       <text x="86" y="${y + 40}" fill="#f8fafc" font-size="28" font-family="Arial, sans-serif" font-weight="700">${index + 1}</text>
       <text x="150" y="${y + 40}" fill="#f8fafc" font-size="28" font-family="Arial, sans-serif" font-weight="700">${escapeXml(standing.displayName)}</text>
       <text x="${width - 470}" y="${y + 40}" fill="#cbd5e1" font-size="22" font-family="Arial, sans-serif">W-L ${standing.wins}-${standing.losses}</text>
-      <text x="${width - 300}" y="${y + 40}" fill="#cbd5e1" font-size="22" font-family="Arial, sans-serif">Juegos ${standing.gamesWon}-${standing.gamesLost}</text>
+      <text x="${width - 300}" y="${y + 40}" fill="#cbd5e1" font-size="22" font-family="Arial, sans-serif">Games ${standing.gamesWon}-${standing.gamesLost}</text>
       <text x="${width - 110}" y="${y + 40}" fill="#fbbf24" font-size="22" font-family="Arial, sans-serif" text-anchor="end">${standing.rankingMode === "COMPETITIVE" ? `${standing.rating}${standing.eligible ? "" : " *"}` : `Diff ${escapeXml(formatDifferential(standing.gameDifferential))}`}</text>
     `;
   }).join("");
@@ -561,7 +561,7 @@ function renderLadderStandingsSvg(tournament: Tournament, standings: LadderStand
       <rect width="${width}" height="${height}" fill="#08111f"/>
       <rect x="24" y="24" width="${width - 48}" height="${height - 48}" rx="30" fill="#0f172a" stroke="rgba(148,163,184,0.24)" stroke-width="2"/>
       <text x="60" y="86" fill="#f8fafc" font-size="48" font-family="Arial, sans-serif" font-weight="800">${escapeXml(tournament.title)}</text>
-      <text x="60" y="126" fill="#93c5fd" font-size="28" font-family="Arial, sans-serif" font-weight="700">Clasificacion final de ladder${standings[0]?.rankingMode === "COMPETITIVE" ? " · Rating (* provisional)" : ""}</text>
+      <text x="60" y="126" fill="#93c5fd" font-size="28" font-family="Arial, sans-serif" font-weight="700">Final ladder standings${standings[0]?.rankingMode === "COMPETITIVE" ? " · Rating (* provisional)" : ""}</text>
       <text x="60" y="160" fill="#cbd5e1" font-size="22" font-family="Arial, sans-serif">${escapeXml(tournament.gameTitle)}</text>
       ${rows}
     </svg>

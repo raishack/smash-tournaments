@@ -48,9 +48,9 @@ class MainVisualReviewTest {
         compose.setContent { MainTheme(MainAppearance(theme = if (dark) MainThemeMode.Dark else MainThemeMode.Light)) { ManagementLoginScreen("https://your-domain.example/") } }
         capture("login-light")
         compose.runOnIdle { dark = true }; capture("login-dark")
-        compose.onNodeWithText("Mostrar").performScrollTo().performClick()
-        compose.onNodeWithText("Ocultar").assertIsDisplayed().performClick()
-        compose.onNodeWithText("Entrar").performScrollTo().assertIsNotEnabled()
+        compose.onNodeWithText("Show").performScrollTo().performClick()
+        compose.onNodeWithText("Hide").assertIsDisplayed().performClick()
+        compose.onNode(hasText("Sign in") and hasClickAction()).performScrollTo().assertIsNotEnabled()
     }
 
     @Test fun summaryAndScoringKeepLongPlayerNamesAndActionsReachable() {
@@ -59,19 +59,19 @@ class MainVisualReviewTest {
         compose.setContent {
             MainTheme(MainAppearance(theme = if (dark) MainThemeMode.Dark else MainThemeMode.Light, textSize = MainTextSize.Large)) {
                 Surface { Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                    MainTournamentSummary("MAIN Weekly · Smash Ultimate", "Doble eliminación · Bo3", "IN_PROGRESS", "En curso", "32/32 participantes", "La competición está en marcha. Gestiona los partidos desde Operativa.")
-                    MainStatusBadge("En juego · Winners semifinal", "PLAYING")
-                    ParticipantScoreRow("Nombre de jugador especialmente largo", wins, 2, false, null, false, true, "+1 partida") { wins++ }
-                    ParticipantScoreRow("Segundo jugador", 0, 2, false, null, false, false, "+1 partida") {}
+                    MainTournamentSummary("MAIN Weekly · Smash Ultimate", "Doble eliminación · Bo3", "IN_PROGRESS", "In progress", "32/32 participantes", "La competición está en marcha. Gestiona los partidos desde Match operations.")
+                    MainStatusBadge("Playing · Winners semifinal", "PLAYING")
+                    ParticipantScoreRow("Name de jugador especialmente largo", wins, 2, false, null, false, true, "+1 game") { wins++ }
+                    ParticipantScoreRow("Segundo jugador", 0, 2, false, null, false, false, "+1 game") {}
                     MainDangerButton("DQ Segundo jugador", onClick = {})
                 } }
             }
         }
         capture("tournament-light")
         compose.runOnIdle { dark = true }; capture("tournament-dark")
-        compose.onNodeWithText("Nombre de jugador especialmente largo").assertIsDisplayed()
-        compose.onAllNodesWithText("+1 partida")[0].performScrollTo().performClick()
-        compose.onNodeWithText("2 de 2 partidas para ganar").assertIsDisplayed()
+        compose.onNodeWithText("Name de jugador especialmente largo").assertIsDisplayed()
+        compose.onAllNodesWithText("+1 game")[0].performScrollTo().performClick()
+        compose.onNodeWithText("2 of 2 games needed to win").assertIsDisplayed()
         compose.onNodeWithText("DQ Segundo jugador").performScrollTo().assertIsDisplayed()
     }
 
@@ -81,13 +81,13 @@ class MainVisualReviewTest {
         compose.setContent {
             MainTheme(MainAppearance()) { Surface {
                 Column(Modifier.fillMaxSize().padding(24.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
-                    MainTournamentSummary("MAIN · Nuevo torneo", "Configura la competición", "DRAFT", "Borrador", "Inscripciones", null)
+                    MainTournamentSummary("MAIN · New tournament", "Configura la competición", "DRAFT", "Draft", "Registrations", null)
                     MainAdaptivePair(first = { MainTournamentKinds(kind) { kind = it } }, second = {
                         Card { Column(Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                             MainSectionHeading("Display e inscripciones")
-                            MainSwitchRow("Mostrar en el display", "Visible en las pantallas del torneo", true) {}
-                            MainStatusBadge("Inscripción abierta", "OPEN")
-                            OutlinedButton(onClick = {}) { Text("Copiar enlace") }
+                            MainSwitchRow("Show on display", "Visible on tournament displays", true) {}
+                            MainStatusBadge("Registration open", "OPEN")
+                            OutlinedButton(onClick = {}) { Text("Copy link") }
                         } }
                     })
                 }
@@ -95,7 +95,7 @@ class MainVisualReviewTest {
         }
         compose.onNodeWithText("Fortnite").performClick(); compose.runOnIdle { org.junit.Assert.assertEquals("FORTNITE", kind) }
         capture("tablet-two-columns")
-        compose.onNodeWithText("Por equipos · LoL / Valorant").performClick(); compose.runOnIdle { org.junit.Assert.assertEquals("TEAMS", kind) }
+        compose.onNodeWithText("Teams · LoL / Valorant").performClick(); compose.runOnIdle { org.junit.Assert.assertEquals("TEAMS", kind) }
     }
 
     @Test fun profileShowsAccountFirstAndOtherActionsRequireExpansion() {
@@ -118,7 +118,7 @@ class MainVisualReviewTest {
             compose.onNodeWithText("demo-admin").assertIsDisplayed()
             capture("profile-light")
             compose.runOnIdle { dark = true }; capture("profile-dark")
-            compose.onNodeWithText("Cerrar sesión").performScrollTo().assertIsDisplayed()
+            compose.onNodeWithText("Sign out").performScrollTo().assertIsDisplayed()
         } finally {
             server.enqueue(MockResponse().setBody("{}"))
             runBlocking { ManagementSession.logout() }; server.close()
@@ -128,12 +128,12 @@ class MainVisualReviewTest {
     @Test fun destructiveTournamentActionIsSeparatedAndCanBeFound() {
         var calls = 0
         compose.setContent { MainTheme(MainAppearance()) { Column {
-            Button(onClick = {}) { Text("Iniciar torneo") }
-            MainOtherActions { MainDangerButton("Reiniciar torneo", onClick = { calls++ }) }
+            Button(onClick = {}) { Text("Start tournament") }
+            MainOtherActions { MainDangerButton("Reset tournament", onClick = { calls++ }) }
         } } }
-        compose.onNodeWithText("Reiniciar torneo").assertDoesNotExist()
-        compose.onNodeWithText("Otras acciones  +").performClick()
-        compose.onNodeWithText("Reiniciar torneo").performClick()
+        compose.onNodeWithText("Reset tournament").assertDoesNotExist()
+        compose.onNodeWithText("Other actions  +").performClick()
+        compose.onNodeWithText("Reset tournament").performClick()
         org.junit.Assert.assertEquals(1, calls)
     }
 }

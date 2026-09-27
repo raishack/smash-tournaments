@@ -291,7 +291,7 @@ export class TournamentsPostgresRepository {
     return this.withTournamentTransaction(id,async()=>{
       assertTournamentWritable(await this.getTournament(id));
       const previous=await this.getTopProject(id);
-      if((previous?.revision??0)!==revision)throw Error('Otro dispositivo ha guardado el diseño. Carga la versión del servidor antes de reemplazarla');
+      if((previous?.revision??0)!==revision)throw Error('Another device saved the design. Load the server version before replacing it');
       await this.connection.query('insert into tournament_top_projects(tournament_id,revision,project) values($1,$2,$3::jsonb) on conflict(tournament_id) do update set revision=excluded.revision,project=excluded.project',[id,revision+1,JSON.stringify(project)]);
       return revision+1;
     });

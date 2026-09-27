@@ -34,4 +34,4 @@ try { for(const edit of edits){
  if(failed.length)throw Error('Could not restore these switches after an error: '+failed.join(', '),{cause:error});
  throw Error('Rollback not applied; original switches restored.',{cause:error});
 }
-if(mode!=='--check')console.log('Source changed. Rebuild and publish separately. Existing app: use Appearance → Interfaz adaptada for an immediate local rollback.');
+if(mode!=='--check')console.log('Source changed. Rebuild and publish separately. Existing app: use Appearance → Adaptive layout for an immediate local rollback.');

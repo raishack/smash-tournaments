@@ -21,11 +21,11 @@ fun RegistrationAdminButton(tournamentId: String, adminKey: String) {
             scope.launch {
                 try { uri.openUri(repository.createRegistrationAdminSession(tournamentId, adminKey)) }
                 catch (e: CancellationException) { throw e }
-                catch (e: Exception) { error = e.message ?: "No se pudo abrir el editor" }
+                catch (e: Exception) { error = e.message ?: "Could not open the editor" }
                 finally { busy = false }
             }
-        }) { Text(if (busy) "Abriendo panel…" else "Inscripciones, lista de espera y sustituciones") }
-        Text("Cierre automático, estado de equipos, capitanes y sustitución de reservas.", style = MaterialTheme.typography.bodySmall)
+        }) { Text(if (busy) "Opening panel…" else "Registration, waitlist and substitutions") }
+        Text("Automatic closing, team status, captains and reserve substitutions.", style = MaterialTheme.typography.bodySmall)
         error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
     }
 }

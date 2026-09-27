@@ -463,7 +463,7 @@ func activePlayerMatchTimelineAnchor(_ match: PlayerMatch) -> TimeInterval {
 
 enum PlayerThemeMode: String, Codable, CaseIterable {
     case system, light, dark
-    var title: String { switch self { case .system: return "Sistema"; case .light: return "Claro"; case .dark: return "Oscuro" } }
+    var title: String { switch self { case .system: return "System"; case .light: return "Light"; case .dark: return "Dark" } }
 }
 
 enum PlayerBracketRenderMode: String, CaseIterable, Identifiable {
@@ -471,7 +471,7 @@ enum PlayerBracketRenderMode: String, CaseIterable, Identifiable {
     case modern
 
     var id: String { rawValue }
-    var title: String { self == .classic ? "Clasico" : "Moderna" }
+    var title: String { self == .classic ? "Classic" : "Modern" }
 }
 
 private extension String {

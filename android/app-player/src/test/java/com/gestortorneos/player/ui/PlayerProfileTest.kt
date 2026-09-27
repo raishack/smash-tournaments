@@ -51,29 +51,29 @@ class PlayerProfileTest {
             MainTheme(MainAppearance(MainThemeMode.Dark, MainTextSize.ExtraLarge)) {
                 Scaffold(containerColor = Color.Transparent) { padding ->
                     Box(Modifier.fillMaxSize().padding(padding)) {
-                        ProfileSection(PlayerSession("fixture-startgg-session", "Jugador", "Player"), null, null,
+                        ProfileSection(PlayerSession("fixture-startgg-session", "Player", "Player"), null, null,
                             MainThemeMode.Dark, true, true, true, false, {}, {},
                             { notificationSettings = true }, { batterySettings = true }, { loggedOut = true })
                     }
                 }
             }
         }
-        compose.onNodeWithText("Conectado con start.gg").assertExists()
+        compose.onNodeWithText("Connected to start.gg").assertExists()
         capture("profile-top-dark-large")
-        compose.onNodeWithText("Contraseña").assertDoesNotExist()
-        compose.onNodeWithText("Canal de llamadas", useUnmergedTree = true).performScrollTo().performClick()
-        compose.onNodeWithText("Bateria", useUnmergedTree = true).performScrollTo().performClick()
-        compose.onNodeWithText("Actualizaciones").performScrollTo().assertIsDisplayed()
-        compose.onNodeWithText("Cerrar sesión").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("Password").assertDoesNotExist()
+        compose.onNodeWithText("Match call channel", useUnmergedTree = true).performScrollTo().performClick()
+        compose.onNodeWithText("Battery", useUnmergedTree = true).performScrollTo().performClick()
+        compose.onNodeWithText("Updates").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("Sign out").performScrollTo().assertIsDisplayed()
         capture("profile-bottom-dark-large")
         assertTrue(notificationSettings); assertTrue(batterySettings); assertFalse(loggedOut)
-        compose.onNodeWithText("Cerrar sesión").performClick()
+        compose.onNodeWithText("Sign out").performClick()
         assertTrue(loggedOut)
     }
 
     @Test fun playerStartggSessionSurvivesReloadAndIsSeparateFromManagement() {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        val expected = PlayerSession("fixture-startgg-session", "Jugador", "Player")
+        val expected = PlayerSession("fixture-startgg-session", "Player", "Player")
         PlayerSessionStore.save(context, expected)
         assertEquals(expected, PlayerSessionStore.load(context))
         runBlocking { ManagementSession.logout() }

@@ -1,7 +1,7 @@
 window.GTDisplayThemes = {
   default: {
     key: "base",
-    name: "Tema base",
+    name: "Base theme",
     assets: {
       background: "./themes/assets/base-bg-tech.png",
       bracketOverlay: "./themes/assets/base-bracket-overlay.png",

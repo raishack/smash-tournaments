@@ -46,13 +46,13 @@ async function rasterize(svg: string): Promise<Uint8Array> {
   const outputWidth = Math.ceil(width * scale);
   const outputHeight = Math.ceil(height * outputWidth / width);
   if (outputWidth > 32767 || outputHeight > 1_000_000 || outputWidth * outputHeight > 1_000_000_000) {
-    throw new Error("La bracket supera el tamaño máximo de un PNG legible; no se ha reducido ni recortado.");
+    throw new Error("The bracket exceeds the maximum readable PNG size; it has not been reduced or cropped.");
   }
   if (outputWidth * outputHeight > 16_000_000 || outputHeight > 32767) {
     return renderPngInBands(svg, width, height, outputWidth, outputHeight, MAX_FILE_BYTES);
   }
   const png = await sharp(Buffer.from(svg), { density: 72 * scale, limitInputPixels: 17_000_000 })
     .png({ compressionLevel: 6 }).toBuffer();
-  if (png.length > MAX_FILE_BYTES) throw new Error("El PNG completo supera el límite de 49 MB para los avisos.");
+  if (png.length > MAX_FILE_BYTES) throw new Error("The full PNG exceeds the 49 MB notification limit.");
   return png;
 }

@@ -57,7 +57,7 @@ enum ManagementThemeMode: String, Codable, CaseIterable, Identifiable {
     case dark
 
     var id: String { rawValue }
-    var title: String { self == .system ? "Sistema" : self == .light ? "Claro" : "Oscuro" }
+    var title: String { self == .system ? "System" : self == .light ? "Light" : "Dark" }
 }
 
 enum ManagementBracketRenderMode: String, CaseIterable, Identifiable {
@@ -65,7 +65,7 @@ enum ManagementBracketRenderMode: String, CaseIterable, Identifiable {
     case modern
 
     var id: String { rawValue }
-    var title: String { self == .classic ? "Clasica" : "Moderna" }
+    var title: String { self == .classic ? "Classic" : "Modern" }
 }
 
 struct TournamentImportSource: Codable {
@@ -131,19 +131,19 @@ struct TournamentListItem: Codable, Identifiable {
     var isStartggMirrored: Bool { importSource?.provider == "START_GG" || settings.importJob != nil }
     var importEventUrl: String? { importSource?.eventUrl ?? settings.importJob?.eventUrl }
     var statusLabel: String {
-        if status == "ARCHIVED" { return "Archivado · solo lectura" }
-        if settings.importJob?.state == "RUNNING" { return "Importando" }
-        if settings.importJob?.state == "FAILED" { return "Error de importación" }
-        return ["DRAFT": "Borrador", "PUBLISHED": "Publicado", "CHECK_IN": "Confirmación de asistencia",
-                "READY": "Preparado para empezar", "IN_PROGRESS": "En curso", "COMPLETED": "Finalizado", "ARCHIVED": "Archivado · solo lectura",
-                "CANCELLED": "Cancelado"][status] ?? status
+        if status == "ARCHIVED" { return "Archived · read-only" }
+        if settings.importJob?.state == "RUNNING" { return "Importing" }
+        if settings.importJob?.state == "FAILED" { return "Import error" }
+        return ["DRAFT": "Draft", "PUBLISHED": "Published", "CHECK_IN": "Attendance confirmation",
+                "READY": "Ready to start", "IN_PROGRESS": "In progress", "COMPLETED": "Finished", "ARCHIVED": "Archived · read-only",
+                "CANCELLED": "Cancelled"][status] ?? status
     }
     var nextStepHint: String? {
         if status == "READY" {
-            return settings.bracketMode == "FORTNITE" ? "Abre el panel Fortnite para iniciar las partidas y anotar puntuaciones." : "La bracket está preparada. Pulsa Iniciar torneo para comenzar."
+            return settings.bracketMode == "FORTNITE" ? "Open the Fortnite panel to start games and enter scores." : "The bracket is ready. Select Start tournament to begin."
         }
         if status == "IN_PROGRESS" {
-            return settings.bracketMode == "FORTNITE" ? "Confirma las actas y cierra la final desde el panel Fortnite. Después podrás crear la imagen Top 8." : "El torneo finaliza al resolver todos los cruces necesarios. Entonces podrás crear la imagen Top 8."
+            return settings.bracketMode == "FORTNITE" ? "Confirm score sheets and close the final in the Fortnite panel. You can then create the Top 8 image." : "The tournament finishes when all required matches are resolved. You can then create the Top 8 image."
         }
         return nil
     }
@@ -223,7 +223,7 @@ struct Match: Codable, Identifiable {
     let call: MatchCall?
     let externalRef: MatchExternalRef?
 
-    var label: String { displayLabel ?? "Ronda \(roundNumber) · Set \(matchNumber)" }
+    var label: String { displayLabel ?? "Round \(roundNumber) · Set \(matchNumber)" }
     var participantsLabel: String {
         participants
             .sorted { $0.slot < $1.slot }
@@ -521,7 +521,7 @@ func matchStageLabel(_ stage: String) -> String? {
     case "WINNERS": return "Bracket Winners"
     case "LOSERS": return "Bracket Losers"
     case "FINALS": return "Bracket Finals"
-    case "LADDER": return "Ladder interna"
+    case "LADDER": return "Internal ladder"
     default: return nil
     }
 }

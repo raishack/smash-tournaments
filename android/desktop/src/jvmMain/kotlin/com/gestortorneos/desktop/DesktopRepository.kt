@@ -845,7 +845,7 @@ class DesktopTournamentRepository {
             throw IllegalStateException(error.toBackendMessage())
         }
 
-        require(remote.applicationId == DesktopConfig.desktopApplicationId) { "La actualización no corresponde a Smash Tournaments." }
+        require(remote.applicationId == DesktopConfig.desktopApplicationId) { "The update is not for Smash Tournaments." }
         if (compareVersionStrings(remote.version, DesktopConfig.desktopVersion) <= 0) {
             return null
         }
@@ -909,10 +909,10 @@ class DesktopTournamentRepository {
             throw IllegalStateException(error.toBackendMessage())
         }
         val formatLabel = when (preview.format) {
-            "DOUBLE_ELIMINATION" -> "Doble eliminacion - W Bo${preview.winnersBestOf} / L Bo${preview.losersBestOf}"
+            "DOUBLE_ELIMINATION" -> "Double elimination - W Bo${preview.winnersBestOf} / L Bo${preview.losersBestOf}"
             "GROUPS_PLAYOFF" -> "Pools + bracket - W Bo${preview.winnersBestOf} / L Bo${preview.losersBestOf}"
             "ROUND_ROBIN" -> "Pools - Bo${preview.bestOf}"
-            else -> "Eliminacion simple - Bo${preview.bestOf}"
+            else -> "Single elimination - Bo${preview.bestOf}"
         }
         return DesktopStartggPreview(
             eventName = preview.eventName,
@@ -925,7 +925,7 @@ class DesktopTournamentRepository {
                     displayName = it.displayName,
                     seed = it.seed,
                     seedLabel = "Seed ${it.seed}",
-                    status = "IMPORTADO"
+                    status = "IMPORTED"
                 )
             }
         )
@@ -968,15 +968,15 @@ class DesktopTournamentRepository {
     }
 
     suspend fun createRegistrationAdminSession(tournamentId: String, adminKey: String): String {
-        return api.createRegistrationAdminSession(tournamentId, adminKey)["url"] ?: error("No se pudo abrir el panel")
+        return api.createRegistrationAdminSession(tournamentId, adminKey)["url"] ?: error("Could not open the panel")
     }
 
     suspend fun createFortniteSession(tournamentId: String): String {
-        return api.createFortniteSession(tournamentId)["url"] ?: error("No se pudo abrir Fortnite")
+        return api.createFortniteSession(tournamentId)["url"] ?: error("Could not open Fortnite")
     }
 
     suspend fun createTop8Session(tournamentId: String): String {
-        try { return api.createTop8Session(tournamentId)["url"] ?: error("No se pudo abrir el editor") }
+        try { return api.createTop8Session(tournamentId)["url"] ?: error("Could not open the editor") }
         catch (error: HttpException) { throw IllegalStateException(error.toBackendMessage()) }
     }
 
@@ -1385,7 +1385,7 @@ private fun TournamentDetailDto.toModel(): DesktopTournamentDetail {
                 id = it.id,
                 displayName = it.displayName,
                 seed = it.seed,
-                seedLabel = it.seed?.let { seed -> "Seed $seed" } ?: "Sin seed",
+                seedLabel = it.seed?.let { seed -> "Seed $seed" } ?: "No seed",
                 status = it.status.replace('_', ' ')
             )
         },
@@ -1527,9 +1527,9 @@ private fun DesktopTournamentDetail.toSummary(): DesktopTournamentSummary {
 }
 
 private fun TournamentSettingsDto.toFormatLabel(): String {
-    if (bracketMode == "FORTNITE") return "Fortnite · ${fortniteLobbySize ?: 20} puestos · ${fortniteGamesPerRound ?: 3} partidas por ronda"
+    if (bracketMode == "FORTNITE") return "Fortnite · ${fortniteLobbySize ?: 20} seats · ${fortniteGamesPerRound ?: 3} games per round"
     if ((bracketMode ?: "STANDARD") == "MKART") {
-        val formatBase = if (format == "DOUBLE_ELIMINATION") "MKART doble" else "MKART simple"
+        val formatBase = if (format == "DOUBLE_ELIMINATION") "MKART double" else "MKART single"
         val winnersAdvance = mkartAdvanceCount ?: 1
         val losersAdvance = mkartLosersAdvanceCount ?: winnersAdvance
         return if (format == "DOUBLE_ELIMINATION") {
@@ -1542,11 +1542,11 @@ private fun TournamentSettingsDto.toFormatLabel(): String {
     val winners = winnersBestOf ?: bestOf
     val losers = losersBestOf ?: winners
     return if (format == "DOUBLE_ELIMINATION") {
-        "Doble eliminacion - W Bo$winners / L Bo$losers"
+        "Double elimination - W Bo$winners / L Bo$losers"
     } else if (format == "GROUPS_PLAYOFF") {
         "Grupos + playoff - W Bo$winners / L Bo$losers"
     } else {
-        "Eliminacion simple - Bo$winners"
+        "Single elimination - Bo$winners"
     }
 }
 
@@ -1556,7 +1556,7 @@ private fun String.toStageLabel(roundNumber: Int, matchNumber: Int): String {
         "WINNERS" -> "Winners"
         "LOSERS" -> "Losers"
         "FINALS" -> "Grand Final"
-        else -> "Ronda"
+        else -> "Round"
     }
     return if (this == "FINALS") stage else "$stage R$roundNumber - Match $matchNumber"
 }

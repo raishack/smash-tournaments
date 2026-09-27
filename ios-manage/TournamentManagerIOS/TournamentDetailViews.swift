@@ -58,62 +58,62 @@ private struct TeamRosterPanel: View {
         target = member.teamId ?? ""; role = member.role; moving = member
     }
     private func destination(_ selection: Binding<String>) -> some View {
-        Picker("Destino", selection: selection) {
-            Text("Sin equipo").tag("")
+        Picker("Destination", selection: selection) {
+            Text("No team").tag("")
             ForEach(roster?.teams ?? []) { Text($0.name).tag($0.id) }
         }
     }
     private func place(_ selection: Binding<String>) -> some View {
-        Picker("Plaza", selection: selection) {
-            Text("Titular").tag("PLAYER")
-            if (roster?.reserveCount ?? 0) > 0 { Text("Reserva").tag("RESERVE") }
+        Picker("Place", selection: selection) {
+            Text("Starter").tag("PLAYER")
+            if (roster?.reserveCount ?? 0) > 0 { Text("Reserve").tag("RESERVE") }
         }.pickerStyle(.segmented)
     }
     private func memberRow(_ member: TeamMember, editable: Bool) -> some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text(member.nickname + (member.teamId == nil ? "" : (member.role == "RESERVE" ? " · Reserva" : " · Titular")))
-            Text([member.meta?.captain == true ? "Capitán" : nil, member.meta?.gameId, member.meta?.preferredRole].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " · ")).font(.caption).foregroundStyle(.secondary)
+            Text(member.nickname + (member.teamId == nil ? "" : (member.role == "RESERVE" ? " · Reserve" : " · Starter")))
+            Text([member.meta?.captain == true ? "Captain" : nil, member.meta?.gameId, member.meta?.preferredRole].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " · ")).font(.caption).foregroundStyle(.secondary)
             if editable {
                 HStack {
-                    Button(member.teamId == nil ? "Asignar" : "Mover / cambiar plaza") { beginMove(member) }
-                    Button("Retirar", role: .destructive) { removing = member }
+                    Button(member.teamId == nil ? "Assign" : "Move / change role") { beginMove(member) }
+                    Button("Remove", role: .destructive) { removing = member }
                 }.buttonStyle(.bordered).disabled(busy)
             }
         }
     }
     var body: some View {
-        SectionCard(title: "Equipos y plantillas") {
+        SectionCard(title: "Teams and rosters") {
             VStack(alignment: .leading, spacing: 12) {
                 if let error { Text(error).foregroundStyle(ManagementPalette.danger) }
                 if busy { ProgressView() }
                 if let roster {
-                    Text("\(roster.teamSize) titulares · hasta \(roster.reserveCount) reservas por equipo")
-                    if !roster.canEdit { Text("Las altas están cerradas. Usa «Inscripciones, lista de espera y sustituciones» para cambiar titulares por reservas.").font(.footnote) }
-                    Button(roster.allowSoloRegistration ? "Deshabilitar inscripción sin equipo" : "Habilitar inscripción sin equipo") {
+                    Text("\(roster.teamSize) starters · up to \(roster.reserveCount) reserves per team")
+                    if !roster.canEdit { Text("New entries are closed. Use Registration, waitlist and substitutions to swap starters with reserves.").font(.footnote) }
+                    Button(roster.allowSoloRegistration ? "Disable solo registration" : "Enable solo registration") {
                         submit(TeamRosterAction(action: "SOLO_OPTION", enabled: !roster.allowSoloRegistration))
                     }.disabled(busy || !roster.canEdit).buttonStyle(.bordered)
                     ForEach(roster.teams) { team in
                         DisclosureGroup {
                             VStack(alignment: .leading, spacing: 10) {
-                                Text((team.complete == true ? "Equipo completo" : "Equipo incompleto") + " · " + (team.checkedIn == true ? "Asistencia confirmada" : "Sin check-in")).font(.caption)
-                                Text("Código: \(team.code)").font(.caption).textSelection(.enabled)
-                                Button("Copiar código de equipo") { UIPasteboard.general.string = team.code }.buttonStyle(.bordered)
+                                Text((team.complete == true ? "Complete team" : "Incomplete team") + " · " + (team.checkedIn == true ? "Attendance confirmed" : "Not checked in")).font(.caption)
+                                Text("Code: \(team.code)").font(.caption).textSelection(.enabled)
+                                Button("Copy team code") { UIPasteboard.general.string = team.code }.buttonStyle(.bordered)
                                 ForEach(team.members) { memberRow($0, editable: roster.canEdit) }
                             }.padding(.vertical, 8)
                         } label: {
                             VStack(alignment: .leading) {
                                 Text(team.name).font(.headline)
-                                Text("\(team.members.filter { $0.role == "PLAYER" }.count)/\(roster.teamSize) titulares · \(team.members.filter { $0.role == "RESERVE" }.count)/\(roster.reserveCount) reservas").font(.caption)
+                                Text("\(team.members.filter { $0.role == "PLAYER" }.count)/\(roster.teamSize) starters · \(team.members.filter { $0.role == "RESERVE" }.count)/\(roster.reserveCount) reserves").font(.caption)
                             }
                         }
                     }
                     Divider()
-                    Text("Sin equipo (\(roster.unassigned.count))").font(.headline)
-                    Text("Esta lista no ocupa plazas en la bracket. Selecciona jugadores para formar un equipo o asígnalos a uno existente.").font(.footnote)
+                    Text("No team (\(roster.unassigned.count))").font(.headline)
+                    Text("This list does not take up bracket places. Select players to form a team or assign them to an existing one.").font(.footnote)
                     ForEach(roster.unassigned) { member in
                         VStack(alignment: .leading) {
                             if roster.canEdit {
-                                Toggle("Seleccionar \(member.nickname)", isOn: Binding(get: { selected.contains(member.id) }, set: { value in
+                                Toggle("Select \(member.nickname)", isOn: Binding(get: { selected.contains(member.id) }, set: { value in
                                     if value { selected.insert(member.id) } else { selected.remove(member.id) }
                                 })).disabled(busy)
                             }
@@ -121,19 +121,19 @@ private struct TeamRosterPanel: View {
                         }
                     }
                     if roster.canEdit {
-                        TextField("Nombre del nuevo equipo", text: $name).textFieldStyle(.roundedBorder)
-                        Button("Crear equipo · \(selected.count) titulares seleccionados") {
+                        TextField("New team name", text: $name).textFieldStyle(.roundedBorder)
+                        Button("Create team · \(selected.count) starters selected") {
                             submit(TeamRosterAction(action: "CREATE_TEAM", name: name, members: selected.map { ["id": $0, "role": "PLAYER"] }))
                         }.managementPrimaryButton().disabled(busy || name.trimmingCharacters(in: .whitespacesAndNewlines).count < 2 || selected.count > roster.teamSize)
-                        Text("Puedes crear un equipo vacío y completar su plantilla. Asigna los reservas después.").font(.footnote)
-                        TextField("Añadir jugador manualmente: nick", text: $nickname).textFieldStyle(.roundedBorder)
+                        Text("You can create an empty team and complete its roster. Assign reserves later.").font(.footnote)
+                        TextField("Add player manually: nickname", text: $nickname).textFieldStyle(.roundedBorder)
                         destination($addTeam)
                         if !addTeam.isEmpty { place($addRole) }
-                        Button("Añadir jugador a plantilla / lista") {
+                        Button("Add player to roster / list") {
                             submit(TeamRosterAction(action: "ADD_MEMBER", nickname: nickname, teamId: addTeam.isEmpty ? nil : addTeam, role: addRole))
                         }.buttonStyle(.bordered).disabled(busy || nickname.trimmingCharacters(in: .whitespacesAndNewlines).count < 2)
                     }
-                } else { Button("Cargar plantillas") { Task { await refresh() } } }
+                } else { Button("Load templates") { Task { await refresh() } } }
             }
         }
         .task(id: tournamentId) {
@@ -147,21 +147,21 @@ private struct TeamRosterPanel: View {
                 Form {
                     destination($target)
                     if !target.isEmpty { place($role) }
-                    Button("Guardar asignación") {
+                    Button("Save assignment") {
                         submit(TeamRosterAction(action: "MOVE_MEMBER", id: member.id, revision: member.revision, teamId: target.isEmpty ? nil : target, role: role))
                         moving = nil
                     }.disabled(busy || !(roster?.canEdit ?? false))
                 }.navigationTitle(member.nickname)
-                    .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Cancelar") { moving = nil } } }
+                    .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Cancel") { moving = nil } } }
             }
         }
-        .alert("Retirar jugador", isPresented: Binding(get: { removing != nil }, set: { if !$0 { removing = nil } })) {
-            Button("Cancelar", role: .cancel) { removing = nil }
-            Button("Retirar", role: .destructive) {
+        .alert("Remove player", isPresented: Binding(get: { removing != nil }, set: { if !$0 { removing = nil } })) {
+            Button("Cancel", role: .cancel) { removing = nil }
+            Button("Remove", role: .destructive) {
                 if let member = removing { submit(TeamRosterAction(action: "REMOVE_MEMBER", id: member.id, revision: member.revision)) }
                 removing = nil
             }
-        } message: { Text("Se eliminará la inscripción de \(removing?.nickname ?? "este jugador").") }
+        } message: { Text("Registration will be removed for \(removing?.nickname ?? "este jugador").") }
     }
 }
 
@@ -169,7 +169,7 @@ private struct TournamentActivityButton: View {
     let tournamentId: String
     @State private var open = false
     var body: some View {
-        Button("Historial y diagnóstico") { open = true }.buttonStyle(.bordered)
+        Button("History and diagnostics") { open = true }.buttonStyle(.bordered)
             .sheet(isPresented: $open) { TournamentActivitySheet(tournamentId: tournamentId) }
     }
 }
@@ -187,11 +187,11 @@ private struct TournamentActivitySheet: View {
                 VStack(alignment: .leading, spacing: 16) {
                     if loading { ProgressView() }
                     if let error { Text(error).foregroundStyle(ManagementPalette.danger) }
-                    ShareLink(item: (activity?.diagnosticText ?? "Diagnóstico del torneo\nTorneo: \(tournamentId)\nServidor no disponible") + "\n" + ManagementOperationNetwork.shared.diagnostics()) {
-                            Label("Compartir diagnóstico", systemImage: "square.and.arrow.up")
+                    ShareLink(item: (activity?.diagnosticText ?? "Tournament diagnostics\nTournament: \(tournamentId)\nServer unavailable") + "\n" + ManagementOperationNetwork.shared.diagnostics()) {
+                            Label("Share diagnostics", systemImage: "square.and.arrow.up")
                         }
                     if let activity {
-                        if activity.entries.isEmpty { Text("Todavía no hay operaciones registradas.") }
+                        if activity.entries.isEmpty { Text("No operations recorded yet.") }
                         ForEach(activity.entries) { entry in
                             Text(entry.summary).font(.headline)
                             Text(entry.createdAt + (entry.matchLabel.map { " · " + $0 } ?? "")).font(.caption)
@@ -201,11 +201,11 @@ private struct TournamentActivitySheet: View {
                     }
                 }.padding()
             }
-            .navigationTitle("Historial y diagnóstico")
+            .navigationTitle("History and diagnostics")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("Cerrar") { dismiss() } }
-                ToolbarItem(placement: .confirmationAction) { Button("Actualizar") { refresh += 1 }.disabled(loading) }
+                ToolbarItem(placement: .cancellationAction) { Button("Close") { dismiss() } }
+                ToolbarItem(placement: .confirmationAction) { Button("Refresh") { refresh += 1 }.disabled(loading) }
             }
             .task(id: refresh) {
                 loading = true
@@ -228,33 +228,33 @@ private struct PublicTournamentOptionsCard: View {
         let settings = detail.tournament.settings
         let visible = settings.displayEnabled ?? true
         let registration = settings.registrationEnabled ?? false
-        SectionCard(title: detail.tournament.isStartggMirrored ? "Display web" : "Display e inscripción online") {
+        SectionCard(title: detail.tournament.isStartggMirrored ? "Display web" : "Display and online registration") {
             VStack(alignment: .leading, spacing: 12) {
                 Toggle(isOn: Binding(get: { visible }, set: { value in Task { await viewModel.updatePublicOptions(["displayEnabled": value]) } })) {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Mostrar en el display").font(.headline)
-                        Text(visible ? "Visible en las pantallas del torneo" : "Oculto en las pantallas del torneo").font(.footnote).foregroundStyle(ManagementPalette.secondaryText)
+                        Text("Show on display").font(.headline)
+                        Text(visible ? "Visible on tournament displays" : "Hidden from tournament displays").font(.footnote).foregroundStyle(ManagementPalette.secondaryText)
                     }
                 }.disabled(viewModel.isMutating || viewModel.adminDeleteKey.isEmpty)
                 if !detail.tournament.isStartggMirrored {
                 Divider()
-                MainStatusBadge(label: registration && canOpen ? "Inscripción abierta" : "Inscripción cerrada", state: registration && canOpen ? "OPEN" : "CLOSED")
-                if !canOpen { Text("Con la bracket generada las inscripciones permanecen cerradas.").font(.footnote).foregroundStyle(ManagementPalette.secondaryText) }
-                Button(registration ? "Cerrar inscripción" : "Abrir inscripción online") {
+                MainStatusBadge(label: registration && canOpen ? "Registration open" : "Registration closed", state: registration && canOpen ? "OPEN" : "CLOSED")
+                if !canOpen { Text("Registration remains closed once the bracket is generated.").font(.footnote).foregroundStyle(ManagementPalette.secondaryText) }
+                Button(registration ? "Close registration" : "Open online registration") {
                     Task { await viewModel.updatePublicOptions(["registrationEnabled": !registration]) }
                 }.managementPrimaryButton()
                     .disabled(viewModel.isMutating || viewModel.adminDeleteKey.isEmpty || (!registration && !canOpen))
                 RegistrationAdminButton(tournamentId: detail.tournament.id, adminKey: viewModel.adminDeleteKey)
-                Text("El jugador indica nick y correo y se añade después de verificarlo. La inscripción se cierra al generar la bracket.")
+                Text("Players enter their nickname and email and are added after verification. Registration closes when the bracket is generated.")
                     .font(.footnote).foregroundStyle(.secondary)
                 if viewModel.adminDeleteKey.isEmpty {
-                    Text("Para cambiar estas opciones, inicia sesión con tu cuenta de gestión.").font(.footnote)
+                    Text("Sign in with your management account to change these settings.").font(.footnote)
                 }
                 if let link = settings.registrationUrl, let url = URL(string: link) {
                     Text(link).font(.footnote).textSelection(.enabled)
                     FlowActions {
-                        Button("Copiar enlace") { UIPasteboard.general.string = link }.buttonStyle(.bordered)
-                        Link("Abrir", destination: url).buttonStyle(.bordered)
+                        Button("Copy link") { UIPasteboard.general.string = link }.buttonStyle(.bordered)
+                        Link("Open", destination: url).buttonStyle(.bordered)
                         ShareLink(item: url).buttonStyle(.bordered)
                     }
                 }
@@ -271,9 +271,9 @@ private struct Top8EditorButton: View {
     @State private var error: String?
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            MainStatusBadge(label: "Torneo finalizado", state: "COMPLETED")
-            Text("Comparte los resultados").font(.title2.bold())
-            Button(busy ? "Preparando imagen…" : "Imagen Top 8 · crear / editar") {
+            MainStatusBadge(label: "Tournament finished", state: "COMPLETED")
+            Text("Share results").font(.title2.bold())
+            Button(busy ? "Preparing image…" : "Top 8 image · create / edit") {
                 busy = true
                 error = nil
                 Task {
@@ -282,7 +282,7 @@ private struct Top8EditorButton: View {
                     catch { self.error = error.localizedDescription }
                 }
             }.managementPrimaryButton().disabled(busy)
-            Text("Resultados precargados. Edita jugadores, personajes y diseño, guarda el proyecto y descarga una imagen PNG en 4K u 8K.").font(.footnote).foregroundStyle(.secondary)
+            Text("Results prefilled. Edit players, characters and design, save the project and download a 4K or 8K PNG.").font(.footnote).foregroundStyle(.secondary)
             if let error { Text(error).foregroundStyle(ManagementPalette.danger) }
         }.frame(maxWidth: .infinity, alignment: .leading).padding(20)
             .background(ManagementPalette.heroFill, in: RoundedRectangle(cornerRadius: 20))
@@ -296,7 +296,7 @@ private struct FortnitePanelButton: View {
     @State private var error: String?
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Button(busy ? "Abriendo Fortnite…" : "Gestionar Fortnite: grupos y puntuaciones") {
+            Button(busy ? "Opening Fortnite…" : "Manage Fortnite: groups and scores") {
                 busy = true
                 error = nil
                 Task {
@@ -305,7 +305,7 @@ private struct FortnitePanelButton: View {
                     catch { self.error = error.localizedDescription }
                 }
             }.managementPrimaryButton().disabled(busy)
-            Text("Abre el panel de grupos, puestos, actas y clasificación, adaptado a móvil y PC.").font(.footnote).foregroundStyle(.secondary)
+            Text("Open groups, seats, score sheets and standings. Works on mobile and desktop.").font(.footnote).foregroundStyle(.secondary)
             if let error { Text(error).foregroundStyle(ManagementPalette.danger) }
         }
     }
@@ -318,7 +318,7 @@ private struct RegistrationAdminButton: View {
     @State private var error: String?
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Button(busy ? "Abriendo panel…" : "Inscripciones, lista de espera y sustituciones") {
+            Button(busy ? "Opening panel…" : "Registration, waitlist and substitutions") {
                 busy = true
                 error = nil
                 Task {
@@ -327,7 +327,7 @@ private struct RegistrationAdminButton: View {
                     catch { self.error = error.localizedDescription }
                 }
             }.managementPrimaryButton().disabled(busy || adminKey.isEmpty)
-            Text("Cierre automático, capitanes y sustitución de reservas.").font(.footnote).foregroundStyle(.secondary)
+            Text("Automatic closing, captains and reserve substitutions.").font(.footnote).foregroundStyle(.secondary)
             if let error { Text(error).foregroundStyle(ManagementPalette.danger) }
         }
     }
@@ -343,7 +343,7 @@ private struct TournamentReviewButton: View {
     @State private var refresh = 0
     @State private var showAttendance = false
     private func levelLabel(_ level: String) -> String {
-        switch level { case "OK": "✓ Correcto"; case "BLOCKED": "! Pendiente"; case "WARNING": "△ Revisar"; default: "ⓘ Información" }
+        switch level { case "OK": "✓ Ready"; case "BLOCKED": "! Pending"; case "WARNING": "△ Review"; default: "ⓘ Information" }
     }
     private func reviewRow(_ item: TournamentReviewItem) -> some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -351,17 +351,17 @@ private struct TournamentReviewButton: View {
                 .foregroundStyle(item.level == "BLOCKED" ? ManagementPalette.danger : Color.primary)
             Text(item.detail)
             if item.id == "attendance", showAttendance, let review {
-                Text("Cambiar la asistencia obligatoria puede invalidar un sorteo preparado. Después tendrás que generarlo de nuevo.").font(.footnote)
+                Text("Changing mandatory attendance may invalidate a prepared draw. You will then need to generate it again.").font(.footnote)
                 ForEach(review.participants) { participant in
-                    Text(participant.name + (participant.checkedIn ? " · ✓ Asistencia confirmada" : " · Sin confirmar"))
-                    Button(participant.checkedIn ? "Quitar asistencia" : "Confirmar asistencia") {
+                    Text(participant.name + (participant.checkedIn ? " · ✓ Attendance confirmed" : " · Unconfirmed"))
+                    Button(participant.checkedIn ? "Clear attendance" : "Confirm attendance") {
                         loading = true
                         Task { @MainActor in
                             defer { loading = false }
                             do {
                                 try await TournamentManagementRepository().updateAttendance(tournamentId, participant: participant, checkedIn: !participant.checkedIn)
                                 self.review = try await TournamentManagementRepository().getReview(tournamentId)
-                            } catch { self.error = "No se pudo comprobar la asistencia. Actualiza antes de volver a intentarlo." }
+                            } catch { self.error = "Could not check attendance. Refresh before trying again." }
                         }
                     }.buttonStyle(.bordered).disabled(!review.editable || participant.status != "ACTIVE" || loading || error != nil)
                 }
@@ -378,7 +378,7 @@ private struct TournamentReviewButton: View {
         }
     }
     var body: some View {
-        Button("Revisar preparación y cierre") { open = true }.buttonStyle(.bordered).frame(minHeight: 44)
+        Button("Review preparation and completion") { open = true }.buttonStyle(.bordered).frame(minHeight: 44)
             .sheet(isPresented: $open) {
                 NavigationStack {
                     ScrollView {
@@ -386,30 +386,30 @@ private struct TournamentReviewButton: View {
                             if loading { ProgressView() }
                             if let error { Text(error).foregroundStyle(ManagementPalette.danger) }
                             if let review {
-                                Text("Revisión orientativa. Los controles vuelven a validar los datos al guardar.").font(.footnote)
+                                Text("Advisory review. Actions validate the data again when saving.").font(.footnote)
                                 ForEach(review.items) { reviewRow($0) }
                                 if !review.standings.isEmpty {
-                                    Text("Clasificación · Top 8").font(.headline)
+                                    Text("Standings · Top 8").font(.headline)
                                     ForEach(Array(review.standings.enumerated()), id: \.offset) { _, row in
-                                        Text((row.placement.map(String.init) ?? "Por revisar") + " · " + row.name)
+                                        Text((row.placement.map(String.init) ?? "Needs review") + " · " + row.name)
                                     }
                                 }
                                 if !review.standingsNote.isEmpty { Text(review.standingsNote).font(.footnote) }
-                                Text("Comprobado: " + review.checkedAt).font(.caption)
+                                Text("Checked: " + review.checkedAt).font(.caption)
                             }
                         }.padding(20).frame(maxWidth: .infinity, alignment: .leading)
                     }
-                    .navigationTitle(review?.title ?? "Revisión del torneo")
+                    .navigationTitle(review?.title ?? "Tournament review")
                     .toolbar {
-                        ToolbarItem(placement: .cancellationAction) { Button("Cerrar") { open = false } }
-                        ToolbarItem(placement: .confirmationAction) { Button("Actualizar") { refresh += 1 }.disabled(loading) }
+                        ToolbarItem(placement: .cancellationAction) { Button("Close") { open = false } }
+                        ToolbarItem(placement: .confirmationAction) { Button("Refresh") { refresh += 1 }.disabled(loading) }
                     }
                     .task(id: refresh) {
                         loading = true; error = nil
                         defer { loading = false }
                         do { review = try await TournamentManagementRepository().getReview(tournamentId) }
                         catch is CancellationError { }
-                        catch { self.error = "No se pudo comprobar el torneo. Actualiza para reintentar; no se ha cambiado ningún dato." }
+                        catch { self.error = "Could not check the tournament. Refresh to retry; no data has changed." }
                     }
                 }
             }
@@ -451,17 +451,17 @@ struct TournamentDetailView: View {
                     ScrollView {
                         VStack(alignment: .leading, spacing: 16) {
                             Text(detail.tournament.title).font(.title)
-                            Text("Archivado · solo lectura. Está fuera del display. Desarchívalo para hacer cambios.")
+                            Text("Archived · read-only. Hidden from the display. Unarchive to make changes.")
                             TournamentArchiveAction(archived: true)
                             TournamentActivityButton(tournamentId: detail.tournament.id)
                             Color.clear.frame(height: 1).id("FORTNITE")
                         if detail.tournament.settings.bracketMode == "FORTNITE" { FortnitePanelButton(tournamentId: detail.tournament.id) }
                             else { TournamentBracketPanel(detail: detail, matches: sortedMatches, renderMode: .modern) }
                             if (detail.tournament.settings.teamSize ?? 1) > 1 && !detail.tournament.isStartggMirrored { TeamRosterPanel(tournamentId: detail.tournament.id) }
-                            Text("Participantes").font(.headline)
+                            Text("Participants").font(.headline)
                             ForEach(detail.participants) { Text($0.displayName) }
                         }.padding(20)
-                    }.navigationTitle("Archivado")
+                    }.navigationTitle("Archived")
                 } else {
                 ScrollViewReader { reviewProxy in
                 ScrollView {
@@ -483,7 +483,7 @@ struct TournamentDetailView: View {
                                 }
                             }
                         }
-                        if reviewOperations || reviewManagement { Button("Volver a la vista anterior") { reviewOperations = false; reviewManagement = false } }
+                        if reviewOperations || reviewManagement { Button("Return to previous view") { reviewOperations = false; reviewManagement = false } }
                         TournamentOverviewCard(detail: detail)
                         TournamentActivityButton(tournamentId: detail.tournament.id)
                         Color.clear.frame(height: 1).id("FORTNITE")
@@ -496,7 +496,7 @@ struct TournamentDetailView: View {
                         }
                         if let job = detail.tournament.settings.importJob, job.state != "COMPLETED" {
                             if let progress = job.progress { Text(progress.label).foregroundStyle(.secondary) }
-                            Text(job.state == "RUNNING" ? "Importando en el servidor. Puedes bloquear el movil." : (job.error ?? "No se pudo importar. Pulsa Reimportar bracket para reintentarlo."))
+                            Text(job.state == "RUNNING" ? "Importing on the server. You can lock your phone." : (job.error ?? "Could not import. Select Reimport bracket to retry."))
                                 .foregroundStyle(job.state == "FAILED" ? ManagementPalette.danger : Color.secondary)
                         }
 
@@ -520,28 +520,28 @@ struct TournamentDetailView: View {
                                 }
                             }
                         Color.clear.frame(height: 1).id("COMPETITION")
-                            SectionCard(title: "Competición") {
+                            SectionCard(title: "Competition") {
                                 FlowActions {
                                     if !detail.tournament.isStartggMirrored {
-                                        Button(detail.matches.isEmpty ? "Generar bracket" : "Regenerar bracket") {
+                                        Button(detail.matches.isEmpty ? "Generate bracket" : "Regenerate bracket") {
                                             if detail.matches.isEmpty { Task { await viewModel.generateBracket() } }
                                             else { showRegenerateConfirmation = true }
                                         }
                                             .buttonStyle(.bordered).disabled(detail.tournament.settings.bracketMode == "FORTNITE")
                                     } else {
-                                        Button("Reimportar bracket") { Task { await viewModel.reimportStartggBracket() } }
+                                        Button("Reimport bracket") { Task { await viewModel.reimportStartggBracket() } }
                                             .buttonStyle(.bordered)
                                     }
                                     if !detail.tournament.isStartggMirrored && detail.tournament.status == "READY" {
-                                        Button("Iniciar torneo") { Task { await viewModel.startTournament() } }.managementPrimaryButton()
+                                        Button("Start tournament") { Task { await viewModel.startTournament() } }.managementPrimaryButton()
                                     }
                                 }
                                 .disabled(viewModel.isMutating || detail.tournament.settings.importJob?.state == "RUNNING")
                                 if !detail.tournament.isStartggMirrored {
-                                    DisclosureGroup("Otras acciones") {
+                                    DisclosureGroup("Other actions") {
                                         VStack(alignment: .leading, spacing: 10) {
-                                            Text("Reiniciar borra la bracket y los resultados. Se conservarán los inscritos.").font(.footnote)
-                                            Button("Reiniciar torneo", role: .destructive) {
+                                            Text("Resetting deletes the bracket and results. Registered participants are kept.").font(.footnote)
+                                            Button("Reset tournament", role: .destructive) {
                                                 if detail.tournament.settings.bracketMode == "FORTNITE" { showRegenerateConfirmation = true }
                                                 else { Task { await viewModel.resetTournament() } }
                                             }.buttonStyle(.bordered).disabled(viewModel.isMutating)
@@ -551,16 +551,16 @@ struct TournamentDetailView: View {
                             }
 
                         Color.clear.frame(height: 1).id("SETTINGS")
-                            AccordionCard(title: "Ajustes del torneo", isExpanded: $showSettings) {
+                            AccordionCard(title: "Tournament settings", isExpanded: $showSettings) {
                                 TournamentSettingsEditor(detail: detail)
                             }
 
                             if !detail.tournament.isStartggMirrored {
                         Color.clear.frame(height: 1).id("PARTICIPANTS")
-                                AccordionCard(title: (detail.tournament.settings.teamSize ?? 1) > 1 ? "Equipos y seeds" : "Participantes", isExpanded: $showParticipants) {
+                                AccordionCard(title: (detail.tournament.settings.teamSize ?? 1) > 1 ? "Teams and seeds" : "Participants", isExpanded: $showParticipants) {
                                     VStack(alignment: .leading, spacing: 12) {
                                         HStack(alignment: .top, spacing: 10) {
-                                            EditOutlinedField(title: (detail.tournament.settings.teamSize ?? 1) > 1 ? "Nombre del equipo" : "Nombre") {
+                                            EditOutlinedField(title: (detail.tournament.settings.teamSize ?? 1) > 1 ? "Team name" : "Name") {
                                                 TextField("", text: $participantDraft)
                                             }
 
@@ -570,7 +570,7 @@ struct TournamentDetailView: View {
                                             }
                                             .frame(width: 110)
 
-                                            Button("Anadir") {
+                                            Button("Add") {
                                                 Task {
                                                     await viewModel.addParticipant(
                                                         displayName: participantDraft.trimmingCharacters(in: .whitespacesAndNewlines),
@@ -589,7 +589,7 @@ struct TournamentDetailView: View {
                                             .disabled(!isValidParticipantSeed(participantSeed) || viewModel.isMutating || !canChangeLocalEntrants(detail) || participantDraft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || ((detail.tournament.settings.teamSize ?? 1) > 1 && !detail.matches.isEmpty))
                                         }
 
-                                        Text(canChangeLocalEntrants(detail) ? "Cambiar inscritos o seeds requiere generar de nuevo la bracket preparada." : "Los inscritos y seeds están cerrados. Reinicia el torneo para cambiarlos.")
+                                        Text(canChangeLocalEntrants(detail) ? "Changing entrants or seeds requires regenerating the prepared bracket." : "Entrants and seeds are locked. Reset the tournament to change them.")
                                             .font(.footnote).foregroundStyle(.secondary)
                                         ForEach(detail.participants) { participant in
                                             ParticipantRow(participant: participant)
@@ -600,7 +600,7 @@ struct TournamentDetailView: View {
                             }
 
                         Color.clear.frame(height: 1).id("BRACKET")
-                            AccordionCard(title: detail.tournament.settings.bracketMode == "FORTNITE" ? "Fortnite: grupos en su panel de gestión" : "Bracket del torneo", isExpanded: $showBracket) {
+                            AccordionCard(title: detail.tournament.settings.bracketMode == "FORTNITE" ? "Fortnite: groups in its management panel" : "Tournament bracket", isExpanded: $showBracket) {
                                 BracketRenderModeSelector(mode: $detailBracketRenderMode)
                                 TournamentBracketPanel(
                                     detail: detail,
@@ -609,16 +609,16 @@ struct TournamentDetailView: View {
                                 )
                             }
 
-                            AccordionCard(title: "Setups del torneo", isExpanded: $showSetups) {
+                            AccordionCard(title: "Tournament setups", isExpanded: $showSetups) {
                                 let setups = buildTournamentSetups(detail: detail)
                                 let occupied = setups.filter { $0.occupyingMatchLabel != nil }
                                 let free = setups.filter { $0.occupyingMatchLabel == nil }
 
                                 VStack(alignment: .leading, spacing: 12) {
-                                    Text("Setups en uso")
+                                    Text("Occupied setups")
                                         .font(.headline)
                                     if occupied.isEmpty {
-                                        Text("No hay setups ocupadas ahora mismo.")
+                                        Text("No setups are currently occupied.")
                                             .foregroundStyle(.secondary)
                                     } else {
                                         ForEach(occupied) { setup in
@@ -633,11 +633,11 @@ struct TournamentDetailView: View {
                                         }
                                     }
 
-                                    Text("Setups libres")
+                                    Text("Available setups")
                                         .font(.headline)
                                         .padding(.top, 4)
                                     if free.isEmpty {
-                                        Text("Todas las setups estan en uso.")
+                                        Text("All setups are occupied.")
                                             .foregroundStyle(.secondary)
                                     } else {
                                         ForEach(free) { setup in
@@ -652,7 +652,7 @@ struct TournamentDetailView: View {
 
                             if BackendConfig.supportsLadder {
                         Color.clear.frame(height: 1).id("LADDER")
-                                AccordionCard(title: "Ladder interna", isExpanded: $showLadder) {
+                                AccordionCard(title: "Internal ladder", isExpanded: $showLadder) {
                                     LadderSection(detail: detail)
                                 }
                             }
@@ -660,7 +660,7 @@ struct TournamentDetailView: View {
                             Button(role: .destructive) {
                                 Task { await viewModel.deleteSelectedTournament() }
                             } label: {
-                                Text("Eliminar torneo")
+                                Text("Delete tournament")
                                     .frame(maxWidth: .infinity)
                             }
                             .buttonStyle(.bordered)
@@ -670,19 +670,19 @@ struct TournamentDetailView: View {
                 }
                 } // ScrollViewReader
                 .background(ManagementPalette.screenBackground.ignoresSafeArea())
-                .navigationTitle(focusOperations ? "Operativa" : detail.tournament.title)
-                .alert(detail.tournament.settings.bracketMode == "FORTNITE" ? "Reiniciar Fortnite" : "Regenerar bracket", isPresented: $showRegenerateConfirmation) {
-                    Button("Cancelar", role: .cancel) {}
-                    Button("Confirmar", role: .destructive) { Task {
+                .navigationTitle(focusOperations ? "Match operations" : detail.tournament.title)
+                .alert(detail.tournament.settings.bracketMode == "FORTNITE" ? "Reset Fortnite" : "Regenerate bracket", isPresented: $showRegenerateConfirmation) {
+                    Button("Cancel", role: .cancel) {}
+                    Button("Confirm", role: .destructive) { Task {
                         if detail.tournament.settings.bracketMode == "FORTNITE" { await viewModel.resetTournament() }
                         else { await viewModel.resetAndGenerateBracket() }
                     } }
                 } message: {
-                    Text(detail.tournament.settings.bracketMode == "FORTNITE" ? "Se borrarán grupos, actas y puntos. Se conservan los inscritos para sortear nuevos grupos." : "Se reiniciara el torneo y se volvera a generar la bracket. Esta accion borra el progreso actual.")
+                    Text(detail.tournament.settings.bracketMode == "FORTNITE" ? "Groups, score sheets and points will be deleted. Entrants are kept for a new group draw." : "The tournament will reset and the bracket will be regenerated. This deletes current progress.")
                 }
                 }
             } else {
-                ContentUnavailableView("Sin torneo", systemImage: "square.stack.3d.up.slash")
+                ContentUnavailableView("No tournament", systemImage: "square.stack.3d.up.slash")
             }
         }
     }
@@ -693,13 +693,13 @@ private struct TournamentArchiveAction: View {
     @EnvironmentObject private var viewModel: TournamentManagerViewModel
     @State private var confirming = false
     var body: some View {
-        Button(archived ? "Desarchivar torneo" : "Archivar torneo") { confirming = true }
+        Button(archived ? "Unarchive tournament" : "Archive tournament") { confirming = true }
             .buttonStyle(.bordered).disabled(viewModel.isMutating)
-            .alert(archived ? "Desarchivar torneo" : "Archivar torneo", isPresented: $confirming) {
-                Button("Cancelar", role: .cancel) {}
-                Button(archived ? "Desarchivar" : "Archivar") { Task { await viewModel.setArchived(!archived) } }
+            .alert(archived ? "Unarchive tournament" : "Archive tournament", isPresented: $confirming) {
+                Button("Cancel", role: .cancel) {}
+                Button(archived ? "Unarchive" : "Archive") { Task { await viewModel.setArchived(!archived) } }
             } message: {
-                Text(archived ? "Volverá a Finalizado y podrás editarlo. El display seguirá desactivado hasta que lo habilites." : "Se moverá a Archivados, dejará de aparecer en el display y quedará en solo lectura. Podrás desarchivarlo después.")
+                Text(archived ? "It will return to Completed and become editable. The display remains disabled until you enable it." : "It will move to Archived, disappear from the display and become read-only. You can unarchive it later.")
             }
     }
 }
@@ -712,13 +712,13 @@ private struct TournamentOverviewCard: View {
             VStack(alignment: .leading, spacing: 8) {
                 Text(detail.tournament.gameTitle)
                     .font(.headline)
-                Text(detail.tournament.settings.bracketMode == "FORTNITE" ? "Fortnite · \(detail.tournament.settings.fortniteLobbySize ?? 20) puestos · \(detail.tournament.settings.fortniteGamesPerRound ?? 3) partidas por ronda" : "\(detail.tournament.settings.format.replacingOccurrences(of: "_", with: " ").capitalized) - Bo\(detail.tournament.settings.winnersBestOf ?? detail.tournament.settings.bestOf)")
+                Text(detail.tournament.settings.bracketMode == "FORTNITE" ? "Fortnite · \(detail.tournament.settings.fortniteLobbySize ?? 20) seats · \(detail.tournament.settings.fortniteGamesPerRound ?? 3) games per round" : "\(detail.tournament.settings.format.replacingOccurrences(of: "_", with: " ").capitalized) - Bo\(detail.tournament.settings.winnersBestOf ?? detail.tournament.settings.bestOf)")
                     .foregroundStyle(.secondary)
                 Text(detail.tournament.platform)
                     .foregroundStyle(.secondary)
                 MainStatusBadge(label: detail.tournament.statusLabel, state: detail.tournament.status)
                 if let hint = detail.tournament.nextStepHint { Divider(); Text(hint).font(.callout) }
-                Text("\((detail.tournament.settings.teamSize ?? 1) > 1 ? "Equipos inscritos" : "Jugadores inscritos"): \(detail.participants.count)")
+                Text("\((detail.tournament.settings.teamSize ?? 1) > 1 ? "Registered teams" : "Registered players"): \(detail.participants.count)")
                     .foregroundStyle(.secondary)
                 Text("Aforo: \(detail.tournament.maxParticipants)")
                     .foregroundStyle(.secondary)
@@ -796,32 +796,32 @@ private struct TournamentOperationsPanel: View {
         let hasCompletedPools = sortedCompletedPoolLabels.count > 1
 
         return VStack(alignment: .leading, spacing: 16) {
-            SectionCard(title: "Estado del torneo") {
+            SectionCard(title: "Tournament status") {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(detail.tournament.statusLabel)
                     Text(detail.tournament.settings.format)
-                    Text("\(filteredActiveMatches.count) activos · \(completedMatches.count) completados")
+                    Text("\(filteredActiveMatches.count) active · \(completedMatches.count) completed")
                         .foregroundStyle(.secondary)
                 }
             }
 
             if detail.matches.isEmpty {
-                SectionCard(title: "Sin matches") {
-                    Text("Genera la bracket primero desde la pestaña Torneos.")
+                SectionCard(title: "No matches") {
+                    Text("Generate the bracket from the Tournaments tab first.")
                         .foregroundStyle(.secondary)
                 }
             } else {
-                SectionCard(title: "Buscar jugador en operativa") {
-                    TextField("Buscar jugador", text: $operationsSearchQuery)
+                SectionCard(title: "Find player in match operations") {
+                    TextField("Find player", text: $operationsSearchQuery)
                         .textFieldStyle(.roundedBorder)
                 }
 
                 BracketRenderModeSelector(mode: $renderMode)
 
                 if renderMode == .modern {
-                    SectionCard(title: "Bracket operativa") {
+                    SectionCard(title: "Match operations bracket") {
                         if allMatches.isEmpty {
-                            Text("No hay matches operables que coincidan con esa búsqueda.")
+                            Text("No actionable matches match this search.")
                                 .foregroundStyle(.secondary)
                         } else {
                             TournamentBracketPanel(
@@ -847,20 +847,20 @@ private struct TournamentOperationsPanel: View {
                             .navigationBarTitleDisplayMode(.inline)
                             .toolbar {
                                 ToolbarItem(placement: .topBarTrailing) {
-                                    Button("Cerrar") { selectedModernMatchId = nil }
+                                    Button("Close") { selectedModernMatchId = nil }
                                 }
                             }
                         }
                     }
                 } else {
                     if !completedMatches.isEmpty {
-                        DisclosureGroup("Partidas completadas (\(completedMatches.count))", isExpanded: $showCompletedMatches) {
+                        DisclosureGroup("Completed matches (\(completedMatches.count))", isExpanded: $showCompletedMatches) {
                             VStack(alignment: .leading, spacing: 12) {
-                                TextField("Buscar partida completada", text: $completedSearchQuery)
+                                TextField("Find completed match", text: $completedSearchQuery)
                                     .textFieldStyle(.roundedBorder)
 
                                 if filteredCompletedMatches.isEmpty {
-                                    Text("No hay partidas completadas que coincidan con esa búsqueda.")
+                                    Text("No completed matches match this search.")
                                         .foregroundStyle(.secondary)
                                 } else if hasCompletedPools {
                                     ForEach(sortedCompletedPoolLabels, id: \.self) { poolLabel in
@@ -907,9 +907,9 @@ private struct TournamentOperationsPanel: View {
                         .background(RoundedRectangle(cornerRadius: 20).fill(ManagementPalette.secondarySurfaceBackground))
                     }
 
-                    SectionCard(title: "Partidas activas y pendientes") {
+                    SectionCard(title: "Active and pending matches") {
                         if filteredActiveMatches.isEmpty {
-                            Text("No hay matches pendientes que coincidan con esa búsqueda.")
+                            Text("No pending matches match this search.")
                                 .foregroundStyle(.secondary)
                         } else if hasConcurrentPools {
                             VStack(alignment: .leading, spacing: 12) {
@@ -992,9 +992,9 @@ private struct AdaptiveTournamentOperationsPanel: View {
                                 selectedId = $0.id
                             }
                     } else {
-                        TextField("Buscar jugador, equipo o match", text: $query).textFieldStyle(.roundedBorder)
-                        Toggle("Mostrar completadas", isOn: $completed)
-                        if rows.isEmpty { Text("No hay matches que coincidan con esta búsqueda.").foregroundStyle(.secondary) }
+                        TextField("Find player, team or match", text: $query).textFieldStyle(.roundedBorder)
+                        Toggle("Show completed", isOn: $completed)
+                        if rows.isEmpty { Text("No matches match this search.").foregroundStyle(.secondary) }
                         ForEach(rows) { match in
                             Button { selectedId = match.id } label: {
                                 VStack(alignment: .leading, spacing: 8) {
@@ -1007,7 +1007,7 @@ private struct AdaptiveTournamentOperationsPanel: View {
                                     }
                                     MainStatusBadge(label: mainMatchStatusLabel(match.status), state: match.status)
                                     if let station = match.stationLabel { Text(station).font(.caption) }
-                                    Label(selectedId == match.id ? "Acciones abiertas" : "Ver acciones", systemImage: "chevron.right").font(.caption)
+                                    Label(selectedId == match.id ? "Open actions" : "View actions", systemImage: "chevron.right").font(.caption)
                                 }.padding(14).frame(maxWidth: .infinity, alignment: .leading)
                                     .background(ManagementPalette.surfaceBackground, in: RoundedRectangle(cornerRadius: 16))
                                     .overlay(RoundedRectangle(cornerRadius: 16).stroke(selectedId == match.id ? Color.accentColor : Color.secondary.opacity(0.3), lineWidth: selectedId == match.id ? 2 : 1))
@@ -1041,12 +1041,12 @@ private struct AdaptiveMatchActions: View {
     }
     var body: some View {
         VStack(spacing: 10) {
-            HStack { Text(match.poolAwareLabel).font(.headline); Spacer(); Button("Cerrar", action: dismiss).frame(minHeight: 44) }.padding(.horizontal)
+            HStack { Text(match.poolAwareLabel).font(.headline); Spacer(); Button("Close", action: dismiss).frame(minHeight: 44) }.padding(.horizontal)
             Divider()
             ScrollView { MatchOperationCard(detail: detail, match: match, reportRequest: reportRequest).padding(16) }
             if match.participants.count == 2 && match.advancersRequired <= 1 && detail.tournament.settings.bracketMode != "MKART" {
                 Divider()
-                Button(match.isCompletedLike ? "Corregir resultado" : "Anotar resultado") { reportRequest += 1 }
+                Button(match.isCompletedLike ? "Correct result" : "Report result") { reportRequest += 1 }
                     .managementPrimaryButton().disabled(!canReport).padding(.horizontal).padding(.bottom, 8)
             }
         }.padding(.top, 12).background(ManagementPalette.surfaceBackground, in: RoundedRectangle(cornerRadius: 16))
@@ -1063,7 +1063,7 @@ private struct TournamentBracketPanel: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             if matches.isEmpty {
-                Text(detail.tournament.isStartggMirrored ? "Todavia no hay bracket importada." : "Genera la bracket para verla aqui.")
+                Text(detail.tournament.isStartggMirrored ? "No bracket has been imported yet." : "Generate the bracket to view it here.")
                     .foregroundStyle(.secondary)
             } else if renderMode == .modern {
                 ModernBracketPanel(
@@ -1120,7 +1120,7 @@ private struct ModernBracketPanel: View {
             HStack {
                 Spacer()
                 Button { browser.capture { fullscreen = true } } label: {
-                    Label("Pantalla completa", systemImage: "arrow.up.left.and.arrow.down.right")
+                    Label("Fullscreen", systemImage: "arrow.up.left.and.arrow.down.right")
                 }
                 .buttonStyle(.bordered)
             }
@@ -1171,9 +1171,9 @@ private struct ModernBracketFullscreenView: View {
 
         VStack(spacing: 0) {
             HStack {
-                Text("Bracket moderna").font(.headline)
+                Text("Modern bracket").font(.headline)
                 Spacer()
-                Button("Salir de pantalla completa", action: onClose)
+                Button("Exit fullscreen", action: onClose)
                     .keyboardShortcut(.cancelAction)
             }
             .padding(12)
@@ -1205,7 +1205,7 @@ private struct ModernBracketFullscreenView: View {
                     .navigationBarTitleDisplayMode(.inline)
                     .toolbar {
                         ToolbarItem(placement: .topBarTrailing) {
-                            Button("Cerrar") { selectedMatchId = nil }
+                            Button("Close") { selectedMatchId = nil }
                         }
                     }
             }
@@ -1447,7 +1447,7 @@ private struct BracketStageSection: View {
                                 HStack(alignment: .top, spacing: 18) {
                                     ForEach(Array(groupedRounds.enumerated()), id: \.offset) { index, round in
                                         VStack(alignment: .leading, spacing: 12) {
-                                            Text("Ronda \(round.0)")
+                                            Text("Round \(round.0)")
                                                 .font(.subheadline.weight(.semibold))
                                                 .foregroundStyle(.secondary)
 
@@ -1487,7 +1487,7 @@ private struct BracketStageSection: View {
                     HStack(alignment: .top, spacing: 18) {
                         ForEach(Array(rounds.enumerated()), id: \.offset) { index, round in
                             VStack(alignment: .leading, spacing: 12) {
-                                Text("Ronda \(round.0)")
+                                Text("Round \(round.0)")
                                     .font(.subheadline.weight(.semibold))
                                     .foregroundStyle(.secondary)
 
@@ -1670,7 +1670,7 @@ private struct ModernBracketMatchCard: View {
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(ManagementPalette.warning)
                 } else if let elapsed = playingElapsedSeconds(match: match, referenceDate: context.date) {
-                    Text("Jugando: \(formatMatchTimer(elapsed))")
+                    Text("Playing: \(formatMatchTimer(elapsed))")
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(ManagementPalette.success)
                 }
@@ -1787,20 +1787,20 @@ private struct TournamentSettingsEditor: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
             if !detail.tournament.isStartggMirrored {
-                EditOutlinedField(title: "Nombre del torneo") {
+                EditOutlinedField(title: "Tournament name") {
                     TextField("", text: $title)
                         .textFieldStyle(.plain)
                 }
 
-                EditOutlinedField(title: "Videojuego") {
+                EditOutlinedField(title: "Game") {
                     TextField("", text: $gameTitle)
                         .textFieldStyle(.plain)
                 }
 
-                EditOutlinedField(title: "Descripcion", minHeight: 180) {
+                EditOutlinedField(title: "Description", minHeight: 180) {
                     ZStack(alignment: .topLeading) {
                         if description.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                            Text("Descripcion")
+                            Text("Description")
                                 .font(.system(.body))
                                 .foregroundStyle(.secondary)
                                 .padding(.top, 8)
@@ -1812,34 +1812,34 @@ private struct TournamentSettingsEditor: View {
                     }
                 }
 
-                EditOutlinedField(title: "Plataforma") {
+                EditOutlinedField(title: "Platform") {
                     TextField("", text: $platform)
                         .textFieldStyle(.plain)
                 }
 
-                EditOutlinedField(title: (detail.tournament.settings.teamSize ?? 1) > 1 ? "Máximo de equipos" : "Maximo de participantes") {
+                EditOutlinedField(title: (detail.tournament.settings.teamSize ?? 1) > 1 ? "Maximum teams" : "Maximum participants") {
                     TextField("", text: $maxParticipants)
                         .textFieldStyle(.plain)
                         .keyboardType(.numberPad)
                 }
 
                 EditSegmentedChoiceRow(
-                    title: "Modo de bracket",
-                    options: (detail.tournament.settings.teamSize ?? 1) > 1 ? [("STANDARD", "Estándar por equipos")] : [
-                        ("STANDARD", "Estandar"),
+                    title: "Bracket mode",
+                    options: (detail.tournament.settings.teamSize ?? 1) > 1 ? [("STANDARD", "Standard teams")] : [
+                        ("STANDARD", "Standard"),
                         ("MKART", "MKART"), ("FORTNITE", "Fortnite")
                     ],
                     selected: $bracketMode
                 )
 
                 if bracketMode == "FORTNITE" {
-                    Stepper("Participantes por grupo (+ VIP): \(fortniteLobbySize)", value: $fortniteLobbySize, in: 5...100, step: 5)
-                    Stepper("Partidas por ronda: \(fortniteGamesPerRound)", value: $fortniteGamesPerRound, in: 1...20)
-                    Text("Los puestos y las partidas se pueden cambiar antes de sortear los grupos.").font(.footnote)
+                    Stepper("Participants per group (+ VIP): \(fortniteLobbySize)", value: $fortniteLobbySize, in: 5...100, step: 5)
+                    Stepper("Games per round: \(fortniteGamesPerRound)", value: $fortniteGamesPerRound, in: 1...20)
+                    Text("Seats and games can be changed before drawing groups.").font(.footnote)
                 }
                 if bracketMode != "FORTNITE" {
                 EditSegmentedChoiceRow(
-                    title: "Formato",
+                    title: "Format",
                     options: [
                         ("SINGLE_ELIMINATION", "Elim. simple"),
                         ("DOUBLE_ELIMINATION", "Doble elim.")
@@ -1848,25 +1848,25 @@ private struct TournamentSettingsEditor: View {
                 )
 
                 if bracketMode == "MKART" {
-                    EditSegmentedChoiceRow(title: "Bracket principal", options: [("1", "MKART pasa 1"), ("2", "MKART pasa 2")], selected: $mkartAdvanceCount)
+                    EditSegmentedChoiceRow(title: "Main bracket", options: [("1", "MKART pasa 1"), ("2", "MKART pasa 2")], selected: $mkartAdvanceCount)
                     if format == "DOUBLE_ELIMINATION" {
-                        EditSegmentedChoiceRow(title: "Bracket de repesca", options: [("1", "MKART pasa 1"), ("2", "MKART pasa 2")], selected: $mkartLosersAdvanceCount)
+                        EditSegmentedChoiceRow(title: "Losers bracket", options: [("1", "MKART pasa 1"), ("2", "MKART pasa 2")], selected: $mkartLosersAdvanceCount)
                     }
                 } else if format == "DOUBLE_ELIMINATION" {
                     EditSegmentedChoiceRow(
-                        title: "Serie winners",
+                        title: "Winners series",
                         options: [("1", "Bo1"), ("3", "Bo3"), ("5", "Bo5")],
                         selected: $winnersBestOf
                     )
 
                     EditSegmentedChoiceRow(
-                        title: "Serie losers",
+                        title: "Losers series",
                         options: [("1", "Bo1"), ("3", "Bo3"), ("5", "Bo5")],
                         selected: $losersBestOf
                     )
                 } else {
                     EditSegmentedChoiceRow(
-                        title: "Serie",
+                        title: "Series",
                         options: [("1", "Bo1"), ("3", "Bo3"), ("5", "Bo5")],
                         selected: $winnersBestOf
                     )
@@ -1876,20 +1876,20 @@ private struct TournamentSettingsEditor: View {
                     title: "Seeding",
                     options: [
                         ("MANUAL", "Manual"),
-                        ("RANDOM", "Aleatorio")
+                        ("RANDOM", "Random")
                     ],
                     selected: $seedingMethod
                 )
                 }
             }
 
-            EditOutlinedField(title: "Minutos para llamada") {
+            EditOutlinedField(title: "Call timeout in minutes") {
                 TextField("", text: $callTimeout)
                     .textFieldStyle(.plain)
                     .keyboardType(.numberPad)
             }
 
-            EditOutlinedField(title: "Numero de setups") {
+            EditOutlinedField(title: "Setup count") {
                 TextField("", text: $setupCount)
                     .textFieldStyle(.plain)
                     .keyboardType(.numberPad)
@@ -1897,13 +1897,13 @@ private struct TournamentSettingsEditor: View {
 
             StreamCountPicker(selection: $streamCount)
 
-            Button("Guardar setups y stream") {
+            Button("Save setups and streams") {
                 Task { await viewModel.updateSetups(Int(setupCount) ?? detail.tournament.setupCount, streamCount: streamCount) }
             }.disabled(viewModel.isMutating)
 
             if !detail.tournament.isStartggMirrored {
-                EditOutlinedField(title: "Zona de juego (opcional)") {
-                    TextField("Ej. Sala principal", text: $playAreaName)
+                EditOutlinedField(title: "Play area (optional)") {
+                    TextField("e.g. Main hall", text: $playAreaName)
                         .textFieldStyle(.plain)
                         .onChange(of: playAreaName) { _, value in
                             if value.count > 80 { playAreaName = String(value.prefix(80)) }
@@ -1912,11 +1912,11 @@ private struct TournamentSettingsEditor: View {
             }
 
             if detail.tournament.isStartggMirrored || BackendConfig.supportsLadder {
-                Toggle("Jugadores pueden reportar", isOn: $playerReporting)
+                Toggle("Players can report", isOn: $playerReporting)
                     .tint(ManagementPalette.primaryAction)
             }
 
-            Button("Guardar opciones") {
+            Button("Save options") {
                 let winnersValue = Int(winnersBestOf) ?? detail.tournament.settings.winnersBestOf ?? detail.tournament.settings.bestOf
                 let losersValue = Int(losersBestOf) ?? detail.tournament.settings.losersBestOf ?? detail.tournament.settings.bestOf
                 let bestOfValue = format == "DOUBLE_ELIMINATION"
@@ -2075,7 +2075,7 @@ private struct AccordionCard<Content: View>: View {
                         .font(.headline)
                         .foregroundStyle(.primary)
                     Spacer()
-                    Text(isExpanded ? "Ocultar" : "Mostrar")
+                    Text(isExpanded ? "Hide" : "Show")
                         .foregroundStyle(.secondary)
                 }
                 .padding(18)
@@ -2132,7 +2132,7 @@ private struct ParticipantRow: View {
             }
 
             HStack(alignment: .top, spacing: 10) {
-                EditOutlinedField(title: "Nombre") {
+                EditOutlinedField(title: "Name") {
                     TextField("", text: $editName)
                 }
 
@@ -2143,7 +2143,7 @@ private struct ParticipantRow: View {
                 }
                 .frame(width: 110)
 
-                Button("Guardar") {
+                Button("Save") {
                     Task {
                         await viewModel.updateParticipant(
                             participant,
@@ -2240,7 +2240,7 @@ private struct MatchOperationCard: View {
                 Text(sync.message).font(.caption).foregroundStyle(sync.state == "FAILED" ? ManagementPalette.danger : Color.secondary)
                 if let error = sync.error { Text(error).font(.caption) }
                 if sync.canRetry == true {
-                    Button("Reintentar sincronización") { Task { await viewModel.retrySync(match) } }
+                    Button("Retry synchronization") { Task { await viewModel.retrySync(match) } }
                         .buttonStyle(.bordered).disabled(viewModel.isMutating)
                 }
             }
@@ -2250,13 +2250,13 @@ private struct MatchOperationCard: View {
                 }
             }
             if let station = match.stationLabel {
-                Text("Estacion: \(station)").foregroundStyle(.secondary)
+                Text("Station: \(station)").foregroundStyle(.secondary)
             }
             MainStatusBadge(label: mainMatchStatusLabel(match.status), state: match.status)
             if !isMarioKart {
                 Text(match.reportedBestOf == nil
                     ? "Modalidad: Bo\(match.bestOf)"
-                    : "Modalidad: Bo\(match.effectiveBestOf) (torneo: Bo\(match.bestOf))")
+                    : "Format: Bo\(match.effectiveBestOf) (tournament: Bo\(match.bestOf))")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -2264,10 +2264,10 @@ private struct MatchOperationCard: View {
             if match.status == "CALLED" && !hasStarted {
                 TimelineView(.periodic(from: .now, by: 1)) { _ in
                     if let seconds = calledCountdownSeconds(match: match, callTimeoutMinutes: detail.tournament.callTimeoutMinutes) {
-                        Text("Tiempo de llamada: \(formatMatchTimer(seconds))")
+                        Text("Call time: \(formatMatchTimer(seconds))")
                             .foregroundStyle(seconds == 0 ? ManagementPalette.danger : Color.secondary)
                         if seconds == 0 && !detail.tournament.isStartggMirrored && match.participants.count == 2 {
-                            Button("Ninguno se ha presentado") { Task { await viewModel.resolveAbsence(match, outcome: "NONE_PRESENT") } }
+                            Button("Neither player arrived") { Task { await viewModel.resolveAbsence(match, outcome: "NONE_PRESENT") } }
                                 .buttonStyle(.bordered).disabled(!canOperate)
                         }
                     }
@@ -2276,25 +2276,25 @@ private struct MatchOperationCard: View {
 
             FlowActions {
                 if match.status == "PENDING" {
-                    Button("Llamar") {
+                    Button("Call") {
                         showCallDialog = true
                     }
                     .managementPrimaryButton()
                 }
                 if match.status == "CALLED" && !hasStarted {
-                    Button("Iniciar partida") { Task { await viewModel.startMatch(match) } }
+                    Button("Start match") { Task { await viewModel.startMatch(match) } }
                         .managementPrimaryButton()
-                    Button("Cancelar") { Task { await viewModel.cancelCall(match) } }
+                    Button("Cancel") { Task { await viewModel.cancelCall(match) } }
                         .buttonStyle(.bordered)
                 }
                 if supportsCharacterReporting {
-                    Button("Personajes") {
+                    Button("Characters") {
                         chooseCharacters()
                     }
                     .buttonStyle(.bordered)
                 }
                 if match.participants.count == 2 && !isMarioKart {
-                    Button(match.isCompletedLike ? "Corregir resultado" : "Anotacion rapida") {
+                    Button(match.isCompletedLike ? "Correct result" : "Quick report") {
                         detailedReportError = nil
                         detailedReportBestOfOverride = match.reportedBestOf
                         showDetailedReportBestOfDialog = true
@@ -2305,13 +2305,13 @@ private struct MatchOperationCard: View {
                     ForEach(match.participants.sorted { $0.slot < $1.slot }) { participant in
                         if isMarioKart {
                             let advanced = (match.advancingParticipantIds ?? []).contains(participant.participantId)
-                            Button("\(advanced ? "Clasificado" : "Clasificar") \(participant.displayName)") {
+                            Button("\(advanced ? "Qualified" : "Qualify") \(participant.displayName)") {
                                 Task { await viewModel.selectMarioKartAdvancer(match, participantId: participant.participantId) }
                             }
                             .buttonStyle(.bordered)
                             .disabled(advanced || (match.advancingParticipantIds?.count ?? 0) >= match.advancersRequired)
                         } else {
-                            Button("+1 partida \(participant.displayName)") {
+                            Button("+1 game \(participant.displayName)") {
                                 if supportsCharacterReporting { chooseCharacters(gameWinner: participant.participantId) }
                                 else { Task { await viewModel.recordGameWin(match, participantId: participant.participantId) } }
                             }
@@ -2321,7 +2321,7 @@ private struct MatchOperationCard: View {
                 }
                 if match.isCompletedLike && !detail.tournament.isStartggMirrored && !isMarioKart && match.participants.count == 2 {
                     ForEach(match.participants.sorted { $0.slot < $1.slot }) { participant in
-                        Button("Gana \(participant.displayName)") {
+                        Button("Wins \(participant.displayName)") {
                             let scores = match.participants.map { MatchScoreRequest(participantId: $0.participantId, score: $0.participantId == participant.participantId ? (match.effectiveBestOf / 2) + 1 : 0) }
                             Task { await viewModel.reportResult(match, winnerParticipantId: participant.participantId, scores: scores) }
                         }.buttonStyle(.bordered)
@@ -2330,7 +2330,7 @@ private struct MatchOperationCard: View {
             }
             .disabled(!canOperate)
             Divider()
-            Text("Incidencias y correcciones").font(.subheadline.weight(.semibold)).foregroundStyle(ManagementPalette.secondaryText)
+            Text("Issues and corrections").font(.subheadline.weight(.semibold)).foregroundStyle(ManagementPalette.secondaryText)
             FlowActions {
                 if match.participants.count == 2 {
                     ForEach(match.participants.sorted { $0.slot < $1.slot }) { participant in
@@ -2342,7 +2342,7 @@ private struct MatchOperationCard: View {
                     }
                 }
                 if !detail.tournament.isStartggMirrored || match.isCompletedLike || hasStarted || match.participants.contains(where: { $0.score > 0 }) {
-                    Button("Reiniciar", role: .destructive) { Task { await viewModel.resetMatch(match) } }
+                    Button("Reset", role: .destructive) { Task { await viewModel.resetMatch(match) } }
                         .buttonStyle(.bordered)
                 }
             }
@@ -2351,19 +2351,19 @@ private struct MatchOperationCard: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(14)
         .background(RoundedRectangle(cornerRadius: 18).fill(ManagementPalette.surfaceBackground))
-        .confirmationDialog("Asignar setup", isPresented: $showCallDialog) {
+        .confirmationDialog("Assign setup", isPresented: $showCallDialog) {
             if availableSetupLabels.isEmpty {
-                Button("Cerrar", role: .cancel) {}
+                Button("Close", role: .cancel) {}
             } else {
                 ForEach(availableSetupLabels, id: \.self) { setup in
                     Button(setup) {
                         Task { await viewModel.callMatch(match, stationLabel: setup) }
                     }
                 }
-                Button("Cancelar", role: .cancel) {}
+                Button("Cancel", role: .cancel) {}
             }
         } message: {
-            Text(availableSetupLabels.isEmpty ? "No hay setups ni streams libres ahora mismo." : "Selecciona un setup o stream libre para este match.")
+            Text(availableSetupLabels.isEmpty ? "No setups or streams are currently available." : "Select an available setup or stream for this match.")
         }
         .onChange(of: reportRequest) { _, _ in
             guard canOperate && !isMarioKart && match.participants.count == 2 else { return }
@@ -2371,8 +2371,8 @@ private struct MatchOperationCard: View {
             detailedReportBestOfOverride = match.reportedBestOf
             showDetailedReportBestOfDialog = true
         }
-        .confirmationDialog("Modalidad del set", isPresented: $showDetailedReportBestOfDialog) {
-            Button("Por defecto del torneo (Bo\(match.bestOf))") {
+        .confirmationDialog("Set format", isPresented: $showDetailedReportBestOfDialog) {
+            Button("Tournament default (Bo\(match.bestOf))") {
                 detailedReportBestOfOverride = nil
                 showDetailedReportSheet = true
             }
@@ -2388,26 +2388,26 @@ private struct MatchOperationCard: View {
                 detailedReportBestOfOverride = 5
                 showDetailedReportSheet = true
             }
-            Button("Cancelar", role: .cancel) {}
+            Button("Cancel", role: .cancel) {}
         } message: {
-            Text("Indica si este match se ha jugado con la modalidad por defecto del torneo o con otra distinta.")
+            Text("Select whether this match used the default tournament format or a different one.")
         }
         .sheet(isPresented: $showCharactersSheet) {
             NavigationStack {
                 Form {
                     if match.participantNames.count >= 2 {
-                        Button("\(match.participantNames[0]): \(characterOne.isEmpty ? "Elegir personajes" : characterOne)") { characterPicker = .baseFirst }
-                        Button("\(match.participantNames[1]): \(characterTwo.isEmpty ? "Elegir personajes" : characterTwo)") { characterPicker = .baseSecond }
+                        Button("\(match.participantNames[0]): \(characterOne.isEmpty ? "Choose characters" : characterOne)") { characterPicker = .baseFirst }
+                        Button("\(match.participantNames[1]): \(characterTwo.isEmpty ? "Choose characters" : characterTwo)") { characterPicker = .baseSecond }
                     }
                     if let charactersError { Text(charactersError).foregroundStyle(ManagementPalette.danger) }
                 }
-                .navigationTitle("Personajes")
+                .navigationTitle("Characters")
                 .toolbar {
                     ToolbarItem(placement: .topBarLeading) {
-                        Button("Cerrar") { showCharactersSheet = false }.disabled(viewModel.isMutating)
+                        Button("Close") { showCharactersSheet = false }.disabled(viewModel.isMutating)
                     }
                     ToolbarItem(placement: .topBarTrailing) {
-                        Button("Guardar") {
+                        Button("Save") {
                             let selections = [
                                 UpdateMatchCharacterSelectionRequest(participantId: match.participantIds[safe: 0] ?? "", characterName: characterOne),
                                 UpdateMatchCharacterSelectionRequest(participantId: match.participantIds[safe: 1] ?? "", characterName: characterTwo)
@@ -2417,7 +2417,7 @@ private struct MatchOperationCard: View {
                                 if await viewModel.saveCharacters(match, selections: selections, gameWinnerParticipantId: pendingGameWinner) {
                                     showCharactersSheet = false
                                 } else {
-                                    charactersError = viewModel.error ?? "No se pudieron guardar los personajes."
+                                    charactersError = viewModel.error ?? "Could not save characters."
                                 }
                             }
                         }
@@ -2453,7 +2453,7 @@ private struct MatchOperationCard: View {
                     if await viewModel.reportDetailedResult(match, bestOfOverride: detailedReportBestOfOverride, games: games) {
                         showDetailedReportSheet = false
                     } else {
-                        detailedReportError = viewModel.error ?? "No se pudo guardar el resultado."
+                        detailedReportError = viewModel.error ?? "Could not save the result."
                     }
                 }
             }
@@ -2473,7 +2473,7 @@ private struct MatchParticipantRow: View {
         let walkoverLoser = isWalkoverLoser(match, participantId: participantId, isAdvanced: isAdvanced)
         let lastCharacter = latestCharacterForParticipant(match, participantId: participantId)
         let isMarioKart = detail.tournament.settings.bracketMode == "MKART" || match.participants.count > 2 || match.advancersRequired > 1
-        let scoreLabel = walkoverLoser ? "DQ" : isMarioKart ? (isAdvanced ? "Clasificado" : "Pendiente") : "\(participant.score)"
+        let scoreLabel = walkoverLoser ? "DQ" : isMarioKart ? (isAdvanced ? "Qualified" : "Pending") : "\(participant.score)"
 
         HStack(spacing: 10) {
             CharacterIconView(characterName: lastCharacter ?? "", gameTitle: detail.tournament.gameTitle, size: 28)
@@ -2539,14 +2539,14 @@ private struct DetailedReportSheet: View {
         VStack(spacing: 0) {
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
-                    Text("Anotacion rapida")
+                    Text("Quick report")
                         .font(.system(.title, weight: .regular))
 
-                    Text("Selecciona el resultado final y revisa los juegos antes de anotarlos de una sola vez.")
+                    Text("Select the final result and review games before submitting them together.")
                         .font(.system(.body))
                         .foregroundStyle(.secondary)
 
-                    Text("Modalidad del set: Bo\(effectiveBestOf)")
+                    Text("Set format: Bo\(effectiveBestOf)")
                         .font(.system(.callout))
                         .foregroundStyle(.secondary)
 
@@ -2565,7 +2565,7 @@ private struct DetailedReportSheet: View {
                         )
                     }
 
-                    Text("Resultado final")
+                    Text("Final result")
                         .font(.system(.body, weight: .semibold))
 
                     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
@@ -2598,7 +2598,7 @@ private struct DetailedReportSheet: View {
                     }
 
                     if !games.isEmpty {
-                        Text("Resumen de juegos")
+                        Text("Game summary")
                             .font(.system(.body, weight: .semibold))
 
                         VStack(spacing: 14) {
@@ -2606,8 +2606,8 @@ private struct DetailedReportSheet: View {
                                 QuickReportGameCard(
                                     gameIndex: index,
                                     gameTitle: gameTitle,
-                                    firstParticipantName: match.participantNames[safe: 0] ?? "Jugador 1",
-                                    secondParticipantName: match.participantNames[safe: 1] ?? "Jugador 2",
+                                    firstParticipantName: match.participantNames[safe: 0] ?? "Player 1",
+                                    secondParticipantName: match.participantNames[safe: 1] ?? "Player 2",
                                     firstParticipantId: match.participantIds[safe: 0] ?? "",
                                     secondParticipantId: match.participantIds[safe: 1] ?? "",
                                     requiresCharacters: requiresCharacters,
@@ -2631,14 +2631,14 @@ private struct DetailedReportSheet: View {
                 Text(errorMessage).foregroundStyle(ManagementPalette.danger).padding(.horizontal, 24)
             }
             HStack {
-                Button("Cancelar") { dismiss() }.disabled(isSaving)
+                Button("Cancel") { dismiss() }.disabled(isSaving)
                     .buttonStyle(.plain)
                     .font(.system(.body, weight: .medium))
                     .foregroundStyle(ManagementPalette.accent)
 
                 Spacer()
 
-                Button(isSaving ? "Guardando..." : "Anotar") {
+                Button(isSaving ? "Guardando..." : "Report") {
                     onSave(games.map { game in
                         let selections: [DetailedReportSelectionRequest]? = requiresCharacters ? [
                             DetailedReportSelectionRequest(
@@ -2747,7 +2747,7 @@ private struct QuickReportCharacterField: View {
             Button(action: onTap) {
                 HStack(spacing: 12) {
                     CharacterIconView(characterName: selectedCharacter, gameTitle: gameTitle, size: 28)
-                    Text(selectedCharacter.isEmpty ? "Seleccionar personaje" : selectedCharacter)
+                    Text(selectedCharacter.isEmpty ? "Select character" : selectedCharacter)
                         .font(.headline.weight(.semibold))
                         .foregroundStyle(.white)
                     Spacer()
@@ -2776,7 +2776,7 @@ private struct QuickReportGameCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text("Juego \(gameIndex + 1)")
+            Text("Game \(gameIndex + 1)")
                 .font(.system(.body, weight: .semibold))
 
             HStack(spacing: 12) {
@@ -2863,9 +2863,9 @@ private struct CharacterPickerSheet: View {
         NavigationStack {
             List {
                 if characterCount > 1 {
-                    Picker("Jugador del equipo", selection: $activeMember) {
+                    Picker("Team player", selection: $activeMember) {
                         ForEach(0..<characterCount, id: \.self) { index in
-                            Text("Jugador \(index + 1): \(picks[safe: index] ?? "")").tag(index)
+                            Text("Player \(index + 1): \(picks[safe: index] ?? "")").tag(index)
                         }
                     }
                 }
@@ -2894,8 +2894,8 @@ private struct CharacterPickerSheet: View {
                     .buttonStyle(.plain)
                 }
             }
-            .searchable(text: $query, prompt: "Buscar personaje")
-            .navigationTitle("Elegir personaje")
+            .searchable(text: $query, prompt: "Find character")
+            .navigationTitle("Choose character")
             .onAppear {
                 picks = selectedCharacter.components(separatedBy: " / ")
                 while picks.count < characterCount { picks.append("") }
@@ -2903,14 +2903,14 @@ private struct CharacterPickerSheet: View {
             .toolbar {
                 if characterCount > 1 {
                     ToolbarItem(placement: .topBarTrailing) {
-                        Button("Guardar equipo") {
+                        Button("Save team") {
                             onSelect(picks.joined(separator: " / "))
                             dismiss()
                         }.disabled(picks.count != characterCount || picks.contains(where: { $0.isEmpty }))
                     }
                 }
                 ToolbarItem(placement: .topBarLeading) {
-                    Button("Cerrar") { dismiss() }
+                    Button("Close") { dismiss() }
                 }
             }
         }
@@ -3040,7 +3040,7 @@ private func buildQuickReportGames(
 
 private func winnerNameForOption(match: Match, option: QuickReportScoreOption) -> String {
     let winnerIndex = match.participantIds.firstIndex(of: option.winnerParticipantId) ?? 0
-    return match.participantNames[safe: winnerIndex] ?? "Ganador"
+    return match.participantNames[safe: winnerIndex] ?? "Winner"
 }
 
 private func currentQuickReportGames(match: Match) -> [QuickReportGameDraft] {
@@ -3111,12 +3111,12 @@ private func buildModernBracketHTML(
         buildModernSectionHTML(section: section, detail: detail, selectableMatchIds: selectableMatchIds)
     }.joined(separator: "\n")
     let emptyState = sections.isEmpty
-        ? #"<div class="empty-state">No hay suficiente estructura para renderizar la bracket moderna.</div>"#
+        ? #"<div class="empty-state">There is not enough structure to render the modern bracket.</div>"#
         : ""
 
     return """
     <!doctype html>
-    <html lang="es">
+    <html lang="en">
     <head>
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, user-scalable=yes">
@@ -3755,20 +3755,20 @@ private func buildModernBracketHTML(
                 : 0;
               if (role === 'called') {
                 if (!Number.isFinite(initialTimerSeconds)) {
-                  node.textContent = 'Llamado';
+                  node.textContent = 'Called';
                   return;
                 }
                 const remainingSeconds = Math.max(0, initialTimerSeconds - elapsedSinceRender);
                 node.textContent = remainingSeconds > 0
                   ? `Tiempo restante: ${formatDuration(remainingSeconds)}`
-                  : 'Tiempo agotado';
+                  : 'Time expired';
               } else if (role === 'playing') {
                 if (!Number.isFinite(initialTimerSeconds)) {
-                  node.textContent = 'En juego';
+                  node.textContent = 'Playing';
                   return;
                 }
                 const elapsedSeconds = Math.max(0, initialTimerSeconds + elapsedSinceRender);
-                node.textContent = `Jugando: ${formatDuration(elapsedSeconds)}`;
+                node.textContent = `Playing: ${formatDuration(elapsedSeconds)}`;
               } else {
                 node.textContent = '';
               }
@@ -4005,11 +4005,11 @@ private func buildIOSModernSections(matches: [Match]) -> [IOSModernSection] {
 }
 
 private func modernSectionSortOrder(_ label: String) -> Int {
-    if label.starts(with: "Pool") || label.starts(with: "Grupo") { return 0 }
+    if label.starts(with: "Pool") || label.starts(with: "Group") { return 0 }
     if label.caseInsensitiveCompare("Pools") == .orderedSame { return 1 }
     if label.caseInsensitiveCompare("Winners bracket") == .orderedSame { return 2 }
     if label.caseInsensitiveCompare("Losers bracket") == .orderedSame { return 3 }
-    if label.caseInsensitiveCompare("Bracket final") == .orderedSame { return 4 }
+    if label.caseInsensitiveCompare("Final bracket") == .orderedSame { return 4 }
     return 5
 }
 
@@ -4138,7 +4138,7 @@ private func modernTournamentBracketLabel(match: Match) -> String {
     if !phaseName.isEmpty, phaseName.caseInsensitiveCompare(match.bracketStage) != .orderedSame, phaseName.caseInsensitiveCompare("bracket") != .orderedSame {
         return phaseName
     }
-    return "Bracket final"
+    return "Final bracket"
 }
 
 private func modernRoundTitle(stage: String, round: Int, totalRounds: Int) -> String {
@@ -4148,7 +4148,7 @@ private func modernRoundTitle(stage: String, round: Int, totalRounds: Int) -> St
     case "WINNERS": prefix = "Winners"
     case "LOSERS": prefix = "Losers"
     case "FINALS": prefix = "Grand Final"
-    default: prefix = "Ronda"
+    default: prefix = "Round"
     }
     if stage == "FINALS" {
         return round > 1 ? "Grand Final Reset" : prefix
@@ -4439,39 +4439,39 @@ private struct LadderSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Button("Iniciar ladder") { Task { await viewModel.startLadder() } }.disabled(detail.ladder?.session?.status == "ACTIVE" || viewModel.isMutating)
+                Button("Start ladder") { Task { await viewModel.startLadder() } }.disabled(detail.ladder?.session?.status == "ACTIVE" || viewModel.isMutating)
                     .managementPrimaryButton()
-                Button("Cerrar inscripciones") { Task { await viewModel.finalizeLadder() } }.disabled(detail.ladder?.session?.status != "ACTIVE" || viewModel.isMutating)
+                Button("Close registration") { Task { await viewModel.finalizeLadder() } }.disabled(detail.ladder?.session?.status != "ACTIVE" || viewModel.isMutating)
                     .buttonStyle(.bordered)
             }
 
-            Button("Control, ajustes y resultados") { showControl = true }
+            Button("Control, settings and results") { showControl = true }
                 .managementPrimaryButton()
                 .sheet(isPresented: $showControl) { LadderControlView(tournamentId: detail.tournament.id, participants: detail.participants) }
             if let ladder = detail.ladder {
                 if let session = ladder.session {
-                    Text(session.options?.closing == true ? "Inscripciones cerradas · terminando sets" : session.options?.paused == true ? "Ladder pausada" : "Estado: \(session.status)")
+                    Text(session.options?.closing == true ? "Registration closed · finishing sets" : session.options?.paused == true ? "Ladder paused" : "Status: \(session.status)")
                 }
                 if !ladder.queue.isEmpty {
-                    Text("Cola").font(.headline)
+                    Text("Queue").font(.headline)
                     ForEach(ladder.queue) { entry in
                         Text(entry.displayName)
                     }
                 }
                 if !ladder.activeMatches.isEmpty {
-                    Text("Matches activos").font(.headline)
+                    Text("Active matches").font(.headline)
                     ForEach(ladder.activeMatches) { match in
-                        Text("\(match.label): \(match.participantsLabel) · \(ladderControlStatus(match.status)) · \(match.stationLabel ?? "Sin setup")")
+                        Text("\(match.label): \(match.participantsLabel) · \(ladderControlStatus(match.status)) · \(match.stationLabel ?? "No setup")")
                     }
                 }
                 if !ladder.standings.isEmpty {
-                    Text("Clasificacion").font(.headline)
+                    Text("Standings").font(.headline)
                     ForEach(ladder.standings) { standing in
                         Text("\(standing.displayName) · \(standing.wins)-\(standing.losses)")
                     }
                 }
             } else {
-                Text("La ladder no esta activa en este torneo.")
+                Text("The ladder is not active in this tournament.")
                     .foregroundStyle(.secondary)
             }
         }
@@ -4498,12 +4498,12 @@ private extension Array {
 
 private func mainMatchStatusLabel(_ status: String) -> String {
     switch status {
-    case "PENDING": return "Pendiente"
-    case "CALLED": return "Llamado"
-    case "PLAYING": return "En juego"
-    case "COMPLETED": return "Finalizado"
-    case "WALKOVER": return "Resuelto por ausencia"
-    case "CANCELLED": return "Cancelado"
+    case "PENDING": return "Pending"
+    case "CALLED": return "Called"
+    case "PLAYING": return "Playing"
+    case "COMPLETED": return "Finished"
+    case "WALKOVER": return "Resolved due to absence"
+    case "CANCELLED": return "Cancelled"
     default: return status
     }
 }
@@ -4526,17 +4526,17 @@ function installModernBracketSearch(activateSection, layoutSections) {
   bar.className = 'bracket-search';
   bar.setAttribute('role', 'search');
   const input = document.createElement('input');
-  input.type = 'search'; input.placeholder = 'Buscar jugador o equipo';
-  input.setAttribute('aria-label', 'Buscar jugador o equipo en todas las fases');
+  input.type = 'search'; input.placeholder = 'Find player or team';
+  input.setAttribute('aria-label', 'Find player or team in all phases');
   input.autocomplete = 'off'; input.maxLength = 120;
   const button = (label, action) => {
     const node = document.createElement('button'); node.type = 'button'; node.textContent = label;
     node.addEventListener('click', action); return node;
   };
   let hits = [], currentId = null, focusRevision = 0;
-  const previous = button('Anterior', () => step(-1));
-  const next = button('Siguiente', () => step(1));
-  const clear = button('Limpiar', () => { input.value = ''; update(false); input.focus(); });
+  const previous = button('Previous', () => step(-1));
+  const next = button('Next', () => step(1));
+  const clear = button('Clear', () => { input.value = ''; update(false); input.focus(); });
   const output = document.createElement('output');
   output.setAttribute('aria-live', 'polite'); output.setAttribute('aria-atomic', 'true');
   bar.append(input, previous, next, clear, output); root.prepend(bar);
@@ -4555,8 +4555,8 @@ function installModernBracketSearch(activateSection, layoutSections) {
     const current = hits[index];
     const phase = current?.closest('.bracket-section')?.querySelector('.section-title')?.textContent || '';
     const matchLabel = current?.querySelector('.match-header span')?.textContent || '';
-    output.textContent = !query ? 'Busca en todas las fases. Enter: siguiente; Mayús + Enter: anterior.' :
-      current ? (index + 1) + ' de ' + hits.length + ' · ' + phase + ' · ' + matchLabel : 'Sin coincidencias';
+    output.textContent = !query ? 'Search all phases. Enter: next; Shift + Enter: previous.' :
+      current ? (index + 1) + ' of ' + hits.length + ' · ' + phase + ' · ' + matchLabel : 'No matches found';
     previous.disabled = next.disabled = hits.length < 2; clear.disabled = !input.value;
     if (center && current) centerCard(current);
   }

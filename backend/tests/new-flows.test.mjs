@@ -11,7 +11,7 @@ test('Fortnite VIP is external: 100 participants plus VIP, full kill cap, no VIP
   const f=await fortniteFixture(t,{count:100,size:100,games:1});let v=await f.action({action:'GENERATE'});
   const g=v.state.rounds[0].groups[0],input=report(g);input.vipName='Invitado';input.rows[0].kills=100;input.rows[0].vipKill=true;
   v=await f.action(input);assert.equal(v.participants.length,100);assert.equal(v.summary.rounds[0].groups[0].standings.length,100);assert.equal(v.summary.rounds[0].groups[0].standings[0].points,115);
-  const invalid={...input,revision:v.state.rounds[0].groups[0].games[0].revision,rows:input.rows.map(r=>({...r,vipKill:false}))};await assert.rejects(f.action(invalid),/kills/);
+  const invalid={...input,revision:v.state.rounds[0].groups[0].games[0].revision,rows:input.rows.map(r=>({...r,vipKill:false}))};await assert.rejects(f.action(invalid),/[Kk]ills/);
   v=await f.action({action:'ADVANCE',revision:v.state.revision});assert.equal(v.tournament.status,'COMPLETED');
 });
 test('Fortnite respects check-in/DQ, tracks DNS and allows audited annul and reopen only before next round starts',async t=>{
@@ -21,11 +21,11 @@ test('Fortnite respects check-in/DQ, tracks DNS and allows audited annul and reo
   for(const group of v.state.rounds[0].groups){const input=report(group);input.rows.at(-1).absent=true;v=await f.action(input);}
   assert.equal(v.summary.rounds[0].groups[0].standings.at(-1).excluded,'DNS');
   v=await f.action({action:'ADVANCE',revision:v.state.revision,acceptTies:true});assert.equal(v.state.rounds.length,2);
-  v=await f.action({action:'REOPEN',revision:v.state.revision,reason:'Corregir resultado'});assert.equal(v.state.rounds.length,1);assert.equal(v.state.rounds[0].closed,false);
+  v=await f.action({action:'REOPEN',revision:v.state.revision,reason:'Correct result'});assert.equal(v.state.rounds.length,1);assert.equal(v.state.rounds[0].closed,false);
   let g=v.state.rounds[0].groups[0];v=await f.action({action:'ANNUL',revision:g.games[0].revision,groupId:g.id,gameNumber:1,reason:'Repetir por caída'});assert(v.summary.rounds[0].groups[0].standings.every(r=>r.points===0));
   g=v.state.rounds[0].groups[0];v=await f.action(report(g));v=await f.action({action:'ADVANCE',revision:v.state.revision,acceptTies:true});g=v.state.rounds[1].groups[0];
   v=await f.action({action:'START',revision:g.games[0].revision,groupId:g.id,gameNumber:1,vipName:'Invitado'});
-  await assert.rejects(f.action({action:'REOPEN',revision:v.state.revision,reason:'Ya empezó'}),/antes de empezar/);
+  await assert.rejects(f.action({action:'REOPEN',revision:v.state.revision,reason:'Ya empezó'}),/before starting/);
   assert((await f.repo.listActivity(f.tournament.id)).some(a=>a.action==='fortniteANNUL'&&a.before.state&&a.after.reason));
 });
 test('Fortnite withdrawals/DQ do not qualify and cut ties require explicit acknowledgement',async t=>{
@@ -46,7 +46,7 @@ test('Fortnite exact tie at the qualifying boundary cannot be closed without ack
     v=await f.action(input);
   }
   assert(v.summary.rounds[0].groups.some(g=>g.standings.some(r=>r.cutTie)));
-  await assert.rejects(f.action({action:'ADVANCE',revision:v.state.revision}),/empate/);
+  await assert.rejects(f.action({action:'ADVANCE',revision:v.state.revision}),/tie/);
   v=await f.action({action:'ADVANCE',revision:v.state.revision,acceptTies:true});assert.equal(v.state.rounds.length,2);
 });
 
@@ -109,16 +109,16 @@ test('Registration waiting list, cancellation and promotion are persistent and e
   await f.registration.confirm(a.token);await f.registration.confirm(b.token);assert.equal((await f.registration.confirm(c.token)).waiting,true);
   assert.equal((await f.repo.listParticipants(id)).length,2);assert.equal((await f.registration.status(c.token)).waiting,true);
   await f.registration.cancel(a.token);assert.equal((await f.registration.status(a.token)).cancelled,true);
-  await f.registration.maintenance();assert.equal((await f.registration.status(c.token)).waiting,false);assert.equal((await f.repo.listParticipants(id)).length,2);assert(f.messages.some(m=>m.notice?.includes('Ya tienes plaza')));
+  await f.registration.maintenance();assert.equal((await f.registration.status(c.token)).waiting,false);assert.equal((await f.repo.listParticipants(id)).length,2);assert(f.messages.some(m=>m.notice?.includes('You already have a place')));
   await f.registration.maintenance();assert.equal((await f.repo.listParticipants(id)).length,2);
 });
 test('Registration recovery works after closing without disclosing emails; deadlines close admissions even before worker runs',async t=>{
   const f=await registrationFixture(t),a=await f.signup('First');await f.registration.confirm(a.token);
   const record=await f.repo.registrationByEmail(f.tournament.id,a.email);await f.repo.saveRegistration({...record,sentAt:new Date(Date.now()-120000).toISOString()});
   await f.registration.updateOptions(f.tournament.id,{registrationClosesAt:new Date(Date.now()-1000).toISOString()});
-  assert.equal((await f.registration.publicInfo(f.tournament.id)).open,false);await assert.rejects(f.signup('Late'),/cerradas/);
+  assert.equal((await f.registration.publicInfo(f.tournament.id)).open,false);await assert.rejects(f.signup('Late'),/closed/);
   await f.registration.recover(f.tournament.id,a.email,'127.0.0.1');await f.registration.maintenance();
-  const token=new URLSearchParams(new URL(f.messages.at(-1).url).hash.slice(1)).get('token');assert.equal((await f.registration.status(token)).confirmed,true);await assert.rejects(f.registration.status(a.token),/caducado/);
+  const token=new URLSearchParams(new URL(f.messages.at(-1).url).hash.slice(1)).get('token');assert.equal((await f.registration.status(token)).confirmed,true);await assert.rejects(f.registration.status(a.token),/expired/);
   assert.equal((await f.repo.getTournament(f.tournament.id)).settings.registrationEnabled,false);
   assert(!JSON.stringify(await f.registration.publicInfo(f.tournament.id)).includes(a.email));
 });
@@ -141,7 +141,7 @@ test('Teams: captain/code rotation, substitution after bracket, metadata and ass
   await f.repo.saveTournament({...await f.repo.getTournament(id),status:'IN_PROGRESS'});
   team=(await f.teams.overview(id)).teams[0];const starter=team.members.find(m=>m.role==='PLAYER'),reserve=team.members.find(m=>m.role==='RESERVE');
   const input={action:'SUBSTITUTE',starterId:starter.id,reserveId:reserve.id,starterRevision:starter.revision,reserveRevision:reserve.revision};
-  roster=await f.teams.action(id,input);assert.equal(roster.teams[0].members.find(m=>m.id===reserve.id).role,'PLAYER');await assert.rejects(f.teams.action(id,input),/cambió/);
+  roster=await f.teams.action(id,input);assert.equal(roster.teams[0].members.find(m=>m.id===reserve.id).role,'PLAYER');await assert.rejects(f.teams.action(id,input),/changed/);
   assert.equal(roster.teams[0].members.filter(m=>m.role==='PLAYER').length,2);
 });
 

@@ -29,7 +29,7 @@ test('future opponent placeholders never become playable matches', () => {
 });
 test('players receive local dependency labels instead of opaque placeholder ids', () => {
  const [source, target] = withBracketLabels([{ ...match, externalRef: undefined }, { ...match, id: 'n', roundNumber: 4, externalRef: undefined, participants: [{ ...match.participants[0], participantId: 'loser_of_m' }] }]);
- assert.equal(player.mapPlayerBracketMatchView(tournament, target).participants[0].displayName, 'Perdedor de ' + source.displayIdentifier);
+ assert.equal(player.mapPlayerBracketMatchView(tournament, target).participants[0].displayName, 'Loser of ' + source.displayIdentifier);
 });
 test('player schemas preserve Bo1 overrides and a character for every team member', () => {
  const body = { bestOfOverride: 1, games: [{ winnerParticipantId: 'a', selections }] };
@@ -63,8 +63,8 @@ test('ladder rejects a report from an unrelated player inside its transaction', 
 });
 test('ladder rejects incomplete teams and games after a deciding win', async () => {
  const { service } = ladderFixture();
- await assert.rejects(service.reportDetailedResult('t','m', [{ winnerParticipantId: 'a', selections: [{ participantId: 'a', characterName: 'Mario' }, selections[1]] }], { bestOfOverride: 1 }), /todos los miembros/);
- await assert.rejects(service.reportDetailedResult('t','m', [{ winnerParticipantId: 'a', selections }, { winnerParticipantId: 'b', selections }], { bestOfOverride: 1 }), /después de cerrar/);
+ await assert.rejects(service.reportDetailedResult('t','m', [{ winnerParticipantId: 'a', selections: [{ participantId: 'a', characterName: 'Mario' }, selections[1]] }], { bestOfOverride: 1 }), /all team members/);
+ await assert.rejects(service.reportDetailedResult('t','m', [{ winnerParticipantId: 'a', selections }, { winnerParticipantId: 'b', selections }], { bestOfOverride: 1 }), /after the set is closed/);
 });
 
 test('Players excludes archived tournaments from lists, direct access and binding refresh',async()=>{

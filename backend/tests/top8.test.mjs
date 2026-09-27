@@ -5,7 +5,7 @@ import { buildTop8Data, localTop8, top8Catalog } from '../dist/modules/top8/top8
 import { createTop8Routers } from '../dist/modules/top8/top8.routes.js';
 import { StartggClient } from '../dist/modules/tournaments/startgg.client.js';
 
-const tournament = { id:'top8-test', title:'Torneo Tournament Platform', gameTitle:'Super Smash Bros. Ultimate', startsAt:'2026-09-22T18:00:00Z', status:'COMPLETED', settings:{ format:'DOUBLE_ELIMINATION' } };
+const tournament = { id:'top8-test', title:'Tournament Tournament Platform', gameTitle:'Super Smash Bros. Ultimate', startsAt:'2026-09-22T18:00:00Z', status:'COMPLETED', settings:{ format:'DOUBLE_ELIMINATION' } };
 const participants=Array.from({length:8},(_,i)=>({id:'p'+(i+1),displayName:'Player '+(i+1),externalRef:{entrantId:String(i+1)}}));
 const match=(stage,round,ids,winner,extra={})=>({id:stage+round+ids.join(''),bracketStage:stage,roundNumber:round,matchNumber:1,status:'COMPLETED',winnerParticipantId:'p'+winner,participants:ids.map(n=>({participantId:'p'+n,slot:n,displayName:'Player '+n})),...extra});
 const se=[match('WINNERS',1,[1,8],1),match('WINNERS',1,[4,5],4),match('WINNERS',1,[2,7],2),match('WINNERS',1,[3,6],3),match('WINNERS',2,[1,4],1),match('WINNERS',2,[2,3],2),match('WINNERS',3,[1,2],1)];

@@ -14,8 +14,8 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-enum class MainThemeMode(val label: String) { System("Sistema"), Light("Claro"), Dark("Oscuro") }
-enum class MainTextSize(val label: String, val scale: Float) { Regular("Normal", 1f), Large("Grande", 1.15f), ExtraLarge("Muy grande", 1.3f) }
+enum class MainThemeMode(val label: String) { System("System"), Light("Light"), Dark("Dark") }
+enum class MainTextSize(val label: String, val scale: Float) { Regular("Normal", 1f), Large("Large", 1.15f), ExtraLarge("Extra large", 1.3f) }
 
 data class MainAppearance(
     val theme: MainThemeMode = MainThemeMode.System,
@@ -112,25 +112,25 @@ fun MainTheme(appearance: MainAppearance, content: @Composable () -> Unit) {
 fun AppearanceControls() {
     val appearance = LocalMainAppearance.current
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        Text("Apariencia", style = MaterialTheme.typography.titleMedium)
+        Text("Appearance", style = MaterialTheme.typography.titleMedium)
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             MainThemeMode.entries.forEach { mode ->
                 FilterChip(selected = appearance.theme == mode, onClick = { appearance.onTheme(mode) }, label = { Text(mode.label) }, modifier = Modifier.heightIn(min = 48.dp))
             }
         }
-        Text("Tamaño del texto", style = MaterialTheme.typography.titleMedium)
+        Text("Text size", style = MaterialTheme.typography.titleMedium)
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             MainTextSize.entries.forEach { size ->
                 FilterChip(selected = appearance.textSize == size, onClick = { appearance.onTextSize(size) }, label = { Text(size.label) }, modifier = Modifier.heightIn(min = 48.dp))
             }
         }
-        Text("Se combina con el tamaño de texto de tu dispositivo.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Text("Jugador · Resultado 2–1", style = MaterialTheme.typography.bodyLarge)
+        Text("Combines with your device text size.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text("Player · Result 2–1", style = MaterialTheme.typography.bodyLarge)
         if (!forceClassicPresentation && appearance.onAdaptiveLayout != null) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Column(Modifier.weight(1f)) {
-                    Text("Interfaz adaptada", style = MaterialTheme.typography.titleMedium)
-                    Text("Lista compacta y acciones junto a la bracket en pantallas amplias. Desactívala para volver a la presentación anterior.", style = MaterialTheme.typography.bodySmall)
+                    Text("Adaptive layout", style = MaterialTheme.typography.titleMedium)
+                    Text("Compact list with actions beside the bracket on wide screens. Disable it to restore the previous layout.", style = MaterialTheme.typography.bodySmall)
                 }
                 Switch(checked = appearance.adaptiveLayout, onCheckedChange = appearance.onAdaptiveLayout)
             }

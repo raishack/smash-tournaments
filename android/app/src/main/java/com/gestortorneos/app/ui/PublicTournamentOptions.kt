@@ -21,27 +21,27 @@ fun PublicTournamentOptions(detail: TournamentDetail, enabled: Boolean, adminKey
     val canOpen = detail.matches.isEmpty() && detail.status in listOf("DRAFT", "PUBLISHED", "CHECK_IN")
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Text(if (detail.isStartggMirrored) "Display web" else "Display e inscripción online", style = MaterialTheme.typography.titleMedium)
-            MainSwitchRow("Mostrar en el display", if (detail.displayEnabled) "Visible en las pantallas del torneo" else "Oculto en las pantallas del torneo",
+            Text(if (detail.isStartggMirrored) "Display web" else "Display and online registration", style = MaterialTheme.typography.titleMedium)
+            MainSwitchRow("Show on display", if (detail.displayEnabled) "Visible on tournament displays" else "Hidden from tournament displays",
                 detail.displayEnabled, enabled) { onUpdate(mapOf("displayEnabled" to it)) }
             if (!detail.isStartggMirrored) {
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-            MainStatusBadge(if (detail.registrationEnabled && canOpen) "Inscripción abierta" else "Inscripción cerrada",
+            MainStatusBadge(if (detail.registrationEnabled && canOpen) "Registration open" else "Registration closed",
                 if (detail.registrationEnabled && canOpen) "OPEN" else "CLOSED")
-            if (!canOpen) Text("Con la bracket generada las inscripciones permanecen cerradas.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            if (!canOpen) Text("Registration remains closed once the bracket is generated.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Button(onClick = { onUpdate(mapOf("registrationEnabled" to !detail.registrationEnabled)) },
                 enabled = enabled && (detail.registrationEnabled || canOpen)) {
-                Text(if (detail.registrationEnabled) "Cerrar inscripción" else "Abrir inscripción online")
+                Text(if (detail.registrationEnabled) "Close registration" else "Open online registration")
             }
             RegistrationAdminButton(detail.id, if (enabled) adminKey else "")
-            Text("El jugador indica nick y correo y se añade después de verificarlo. La inscripción se cierra al generar la bracket.", style = MaterialTheme.typography.bodySmall)
-            if (!enabled) Text("Para cambiar estas opciones, inicia sesión y espera a que termine cualquier operación.", style = MaterialTheme.typography.bodySmall)
+            Text("Players enter their nickname and email and are added after verification. Registration closes when the bracket is generated.", style = MaterialTheme.typography.bodySmall)
+            if (!enabled) Text("Sign in and wait for any current operation to finish before changing these settings.", style = MaterialTheme.typography.bodySmall)
             detail.registrationUrl?.let { url ->
                 SelectionContainer { Text(url, style = MaterialTheme.typography.bodySmall) }
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    TextButton(onClick = { clipboard.setText(AnnotatedString(url)) }) { Text("Copiar enlace") }
-                    TextButton(onClick = { uriHandler.openUri(url) }) { Text("Abrir ↗") }
-                    TextButton(onClick = { context.startActivity(android.content.Intent.createChooser(android.content.Intent(android.content.Intent.ACTION_SEND).apply { type = "text/plain"; putExtra(android.content.Intent.EXTRA_TEXT, url) }, "Compartir inscripción")) }) { Text("Compartir") }
+                    TextButton(onClick = { clipboard.setText(AnnotatedString(url)) }) { Text("Copy link") }
+                    TextButton(onClick = { uriHandler.openUri(url) }) { Text("Open ↗") }
+                    TextButton(onClick = { context.startActivity(android.content.Intent.createChooser(android.content.Intent(android.content.Intent.ACTION_SEND).apply { type = "text/plain"; putExtra(android.content.Intent.EXTRA_TEXT, url) }, "Share registration")) }) { Text("Share") }
                 }
             }
             }

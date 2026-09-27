@@ -38,7 +38,7 @@ export class LadderService {
     if (!match.participants.some(p => p.participantId === participantId)) throw new Error("This match does not belong to the current player");
   }
   private checkRevision(expected: string | undefined, actual?: string): void {
-    if (expected && expected !== actual) throw new Error("La ladder ha cambiado. Actualiza antes de guardar");
+    if (expected && expected !== actual) throw new Error("The ladder has changed. Refresh before saving");
   }
   async getOverview(tournamentId: string): Promise<LadderOverview> {
     await this.requireEligibleTournament(tournamentId);
@@ -47,7 +47,7 @@ export class LadderService {
   async startLadder(tournamentId: string, actor: string): Promise<LadderOverview> {
     await this.transaction(tournamentId, async client => {
       const tournament = await this.requireEligibleTournament(tournamentId);
-      if (tournament.status === "CANCELLED") throw new Error("El torneo está cancelado");
+      if (tournament.status === "CANCELLED") throw new Error("The tournament is cancelled");
       if (await this.repository.getActiveSessionForTournament(tournamentId, client, true)) return;
       const now = nowIso();
       const session: LadderSession = { id: createId("lad"), tournamentId, status: "ACTIVE", createdAt: now, startedAt: now,
@@ -72,23 +72,23 @@ export class LadderService {
         case "RESUME": session.options.paused = false; break;
         case "CLOSE": session.options.paused = false; session.options.closing = true; session.completedByUserId = input.actor; await this.repository.clearQueue(session.id, client); break;
         case "SETTINGS":
-          if (!input.settings) throw new Error("Faltan los ajustes de ladder");
-          if (input.settings.setupNumbers.some(n => n > (tournament.settings.setupCount ?? 0))) throw new Error("Hay setups que no existen en este torneo");
+          if (!input.settings) throw new Error("Ladder settings missing");
+          if (input.settings.setupNumbers.some(n => n > (tournament.settings.setupCount ?? 0))) throw new Error("Some setups do not exist in this tournament");
           session.options.settings = input.settings; break;
         case "ADD_PLAYER": case "REMOVE_PLAYER": {
           const participant = (await this.tournamentsRepository.listParticipants(tournamentId)).find(p => p.id === input.participantId);
-          if (!participant) throw new Error("Participante no encontrado");
+          if (!participant) throw new Error("Participant not found");
           const excluded = new Set(session.options.excludedParticipantIds ?? []);
           if (input.action === "REMOVE_PLAYER") {
             excluded.add(participant.id);
             await this.repository.deleteQueueEntryByParticipant(session.id, participant.id, client);
             const match = await this.repository.getOpenMatchForParticipant(session.id, participant.id, client, true);
             if (match) {
-              await this.cancelMatch(session, match, client, "Retirado por organización", input.actor);
+              await this.cancelMatch(session, match, client, "Removed by staff", input.actor);
               for (const other of match.participants.filter(p => p.participantId !== participant.id)) await this.enqueueParticipant(session, other, client, match.details?.queueEnteredAt?.[other.participantId]);
             }
           } else {
-            if (session.options.closing) throw new Error("Las inscripciones están cerradas");
+            if (session.options.closing) throw new Error("Registration is closed");
             excluded.delete(participant.id);
             session.options.excludedParticipantIds = [...excluded];
             await this.enqueueParticipant(session, { ...participant, participantId: participant.id, score: 0, slot: 1 }, client);
@@ -97,33 +97,33 @@ export class LadderService {
         }
         case "CANCEL_MATCH": case "RESOLVE_RESULT": case "REOPEN_MATCH": {
           const match = input.matchId ? await this.repository.getMatchById(input.matchId, client, true) : undefined;
-          if (!match || match.ladderSessionId !== session.id) throw new Error("Match de ladder no encontrado");
+          if (!match || match.ladderSessionId !== session.id) throw new Error("Ladder match not found");
           this.checkRevision(input.expectedRevision, match.details?.revision);
-          if (!input.reason?.trim()) throw new Error("Indica el motivo del cambio");
+          if (!input.reason?.trim()) throw new Error("Enter the reason for this change");
           if (input.action === "CANCEL_MATCH") {
-            if (!openLadderStatuses.includes(match.status)) throw new Error("El set ya está cerrado");
+            if (!openLadderStatuses.includes(match.status)) throw new Error("The set is already closed");
             await this.cancelMatch(session, match, client, input.reason, input.actor);
             for (const p of match.participants) await this.enqueueParticipant(session, p, client, match.details?.queueEnteredAt?.[p.participantId]);
           } else if (input.action === "REOPEN_MATCH") {
-            if (!["COMPLETED", "DISPUTED", "AWAITING_CONFIRMATION"].includes(match.status)) throw new Error("No se puede reabrir este set");
+            if (!["COMPLETED", "DISPUTED", "AWAITING_CONFIRMATION"].includes(match.status)) throw new Error("This set cannot be reopened");
             for (const p of match.participants) {
               const other = await this.repository.getOpenMatchForParticipant(session.id, p.participantId, client, true);
-              if (other && other.id !== match.id) throw new Error("Un jugador tiene otro set abierto");
+              if (other && other.id !== match.id) throw new Error("A player has another open set");
               await this.repository.deleteQueueEntryByParticipant(session.id, p.participantId, client);
             }
             const reopened: LadderMatch = { ...match, status: "SUSPENDED", winnerParticipantId: undefined, completedAt: undefined, gameResults: undefined,
               startedAt: undefined, readyDeadlineAt: undefined, participantOneReadyAt: undefined, participantTwoReadyAt: undefined,
               characterSelections: undefined, gameCharacterSelections: undefined, participants: match.participants.map(p => ({ ...p, score: 0 })),
-              details: { ...match.details, stationNumber: undefined, reportedAt: undefined, reportedByParticipantId: undefined, confirmedByParticipantId: undefined, disputeReason: undefined, suspensionReason: "Reabierto por organización" }, updatedAt: nowIso() };
+              details: { ...match.details, stationNumber: undefined, reportedAt: undefined, reportedByParticipantId: undefined, confirmedByParticipantId: undefined, disputeReason: undefined, suspensionReason: "Reopened by staff" }, updatedAt: nowIso() };
             await this.repository.saveMatch(reopened, client);
             await this.audit(session, client, input.actor, input.action, match, reopened, match.id, input.reason);
           } else {
-            if (!["PLAYING", "SUSPENDED", "COMPLETED", "DISPUTED", "AWAITING_CONFIRMATION"].includes(match.status)) throw new Error("Este set no admite resultados");
+            if (!["PLAYING", "SUSPENDED", "COMPLETED", "DISPUTED", "AWAITING_CONFIRMATION"].includes(match.status)) throw new Error("This set does not accept results");
             const scores = input.scores;
             const needed = Math.floor(match.bestOf / 2) + 1;
-            if (!scores || new Set(scores.map(s => s.participantId)).size !== 2 || scores.some(s => !match.participants.some(p => p.participantId === s.participantId))) throw new Error("Revisa los participantes del resultado");
+            if (!scores || new Set(scores.map(s => s.participantId)).size !== 2 || scores.some(s => !match.participants.some(p => p.participantId === s.participantId))) throw new Error("Review result participants");
             const winner = scores.find(s => s.participantId === input.winnerParticipantId);
-            if (!winner || winner.score !== needed || scores.some(s => s !== winner && s.score >= needed)) throw new Error("El resultado debe cerrar el set sin empate");
+            if (!winner || winner.score !== needed || scores.some(s => s !== winner && s.score >= needed)) throw new Error("The result must finish the set without a tie");
             const completed: LadderMatch = { ...match, status: "COMPLETED", winnerParticipantId: winner.participantId, participants: match.participants.map(p => ({ ...p, score: scores.find(s => s.participantId === p.participantId)!.score })),
               gameResults: undefined, characterSelections: undefined, gameCharacterSelections: undefined, completedAt: match.completedAt ?? nowIso(), updatedAt: nowIso(), details: { ...match.details, stationNumber: undefined, disputeReason: undefined } };
             await this.repository.saveMatch(completed, client);
@@ -144,9 +144,9 @@ export class LadderService {
       await this.requireEligibleTournament(tournamentId);
       const session = await this.requireActiveSession(tournamentId, client);
       const settings = this.settings(session);
-      if (session.options?.closing || (settings.closesAt && Date.parse(settings.closesAt) <= Date.now())) throw new Error("Las inscripciones están cerradas");
-      if (session.options?.excludedParticipantIds?.includes(participant.id)) throw new Error("Organización te ha retirado de esta ladder");
-      if (!(await this.tournamentsRepository.listParticipants(tournamentId)).some(p => p.id === participant.id)) throw new Error("Participante no encontrado");
+      if (session.options?.closing || (settings.closesAt && Date.parse(settings.closesAt) <= Date.now())) throw new Error("Registration is closed");
+      if (session.options?.excludedParticipantIds?.includes(participant.id)) throw new Error("Staff removed you from this ladder");
+      if (!(await this.tournamentsRepository.listParticipants(tournamentId)).some(p => p.id === participant.id)) throw new Error("Participant not found");
       await this.enqueueParticipant(session, { ...participant, participantId: participant.id, slot: 1, score: 0 }, client);
       return this.refreshTournamentSession(tournamentId, client, session);
     });
@@ -165,9 +165,9 @@ export class LadderService {
       const session = await this.requireActiveSession(tournamentId, client);
       const match = await this.requireEditableMatch(session.id, matchId, client, "READY_CHECK");
       this.assertMember(match, participantId);
-      if (Date.parse(match.readyDeadlineAt ?? "") <= Date.now()) throw new Error("Ha terminado el plazo para confirmar");
+      if (Date.parse(match.readyDeadlineAt ?? "") <= Date.now()) throw new Error("Confirmation time expired");
       const busy = await this.bracketOccupancy(tournamentId);
-      if (match.participants.some(p => busy.players.has(p.participantId)) || (match.details?.stationNumber && busy.stations.has(match.details.stationNumber))) throw new Error("La bracket principal tiene prioridad. Actualiza la ladder");
+      if (match.participants.some(p => busy.players.has(p.participantId)) || (match.details?.stationNumber && busy.stations.has(match.details.stationNumber))) throw new Error("The main bracket takes priority. Refresh the ladder");
       if (match.participants[0]?.participantId === participantId) match.participantOneReadyAt ??= nowIso();
       if (match.participants[1]?.participantId === participantId) match.participantTwoReadyAt ??= nowIso();
       if (match.participantOneReadyAt && match.participantTwoReadyAt) { match.status = "PLAYING"; match.startedAt ??= nowIso(); }
@@ -181,7 +181,7 @@ export class LadderService {
       const session = await this.requireActiveSession(tournamentId, client);
       const match = await this.requireEditableMatch(session.id, matchId, client, "READY_CHECK");
       this.assertMember(match, participantId);
-      await this.cancelMatch(session, match, client, "Cancelado por participante", participantId);
+      await this.cancelMatch(session, match, client, "Cancelled by participant", participantId);
       for (const p of match.participants.filter(p => p.participantId !== participantId)) await this.enqueueParticipant(session, p, client, match.details?.queueEnteredAt?.[p.participantId]);
       return this.refreshTournamentSession(tournamentId, client, session);
     });
@@ -196,27 +196,27 @@ export class LadderService {
       if (options.reporterParticipantId) this.assertMember(match, options.reporterParticipantId);
       const supportsCharacters = this.supportsCharacterReporting(tournament);
       const bestOf = options.bestOfOverride ?? match.bestOf;
-      if (![1,3,5].includes(bestOf)) throw new Error("Formato de set no válido");
+      if (![1,3,5].includes(bestOf)) throw new Error("Invalid set format");
       const needed = Math.floor(bestOf / 2) + 1;
       const scores = new Map<string, number>();
       const gameResults: string[] = [];
       const gameCharacterSelections: MatchGameCharacterSelections[] = [];
       for (const [index, game] of games.entries()) {
-        if ([...scores.values()].some(score => score >= needed)) throw new Error("No se pueden anotar juegos después de cerrar el set");
-        if (!match.participants.some(p => p.participantId === game.winnerParticipantId)) throw new Error("El ganador del juego no pertenece al match de ladder");
+        if ([...scores.values()].some(score => score >= needed)) throw new Error("Games cannot be reported after the set is closed");
+        if (!match.participants.some(p => p.participantId === game.winnerParticipantId)) throw new Error("The game winner is not part of this ladder match");
         gameResults.push(game.winnerParticipantId);
         scores.set(game.winnerParticipantId, (scores.get(game.winnerParticipantId) ?? 0) + 1);
         if (supportsCharacters) gameCharacterSelections.push({ gameNum: index+1, selections: this.normalizeSelections(match, game.selections, tournament) });
       }
       const winner = [...scores].find(([,score]) => score === needed)?.[0];
-      if (!winner) throw new Error("El resultado detallado debe cerrar el set completo");
+      if (!winner) throw new Error("The detailed result must finish the full set");
       const pending = this.settings(session).requireConfirmation && !!options.reporterParticipantId;
       const completed: LadderMatch = { ...match, bestOf, status: pending ? "AWAITING_CONFIRMATION" : "COMPLETED", winnerParticipantId: winner,
         participants: match.participants.map(p => ({ ...p, score: scores.get(p.participantId) ?? 0 })), gameResults,
         characterSelections: gameCharacterSelections.at(-1)?.selections, gameCharacterSelections: supportsCharacters ? gameCharacterSelections : undefined,
         completedAt: pending ? undefined : nowIso(), updatedAt: nowIso(), details: { ...match.details, stationNumber: undefined, reportedByParticipantId: options.reporterParticipantId, reportedAt: nowIso() } };
       await this.repository.saveMatch(completed, client);
-      await this.audit(session, client, options.reporterParticipantId ?? "organización", "REPORT", match, completed, match.id);
+      await this.audit(session, client, options.reporterParticipantId ?? "staff", "REPORT", match, completed, match.id);
       return this.refreshTournamentSession(tournamentId, client, session);
     });
     await this.notifyLadderMatchesFound(tournament, notifications);
@@ -228,8 +228,8 @@ export class LadderService {
       const match = await this.requireEditableMatch(session.id, matchId, client, "AWAITING_CONFIRMATION");
       this.assertMember(match, participantId);
       this.checkRevision(input.expectedRevision, match.details?.revision);
-      if (match.details?.reportedByParticipantId === participantId) throw new Error("El rival debe revisar tu resultado");
-      if (input.action === "DISPUTE" && !input.reason?.trim()) throw new Error("Indica el motivo de la disputa");
+      if (match.details?.reportedByParticipantId === participantId) throw new Error("The opponent must review your result");
+      if (input.action === "DISPUTE" && !input.reason?.trim()) throw new Error("Enter the dispute reason");
       const updated: LadderMatch = { ...match, status: input.action === "CONFIRM" ? "COMPLETED" : "DISPUTED", updatedAt: nowIso(), completedAt: input.action === "CONFIRM" ? nowIso() : undefined,
         details: { ...match.details, confirmedByParticipantId: input.action === "CONFIRM" ? participantId : undefined, disputeReason: input.reason } };
       await this.repository.saveMatch(updated, client);
@@ -253,7 +253,7 @@ export class LadderService {
   }
   private async suspend(session: LadderSession, match: LadderMatch, client: PoolClient): Promise<void> {
     const updated: LadderMatch = { ...match, status: "SUSPENDED", readyDeadlineAt: undefined, participantOneReadyAt: undefined, participantTwoReadyAt: undefined, updatedAt: nowIso(),
-      details: { ...match.details, stationNumber: undefined, previousStatus: match.status === "PLAYING" ? "PLAYING" : "READY_CHECK", suspensionReason: "Esperando disponibilidad de jugadores y setups de la bracket principal" } };
+      details: { ...match.details, stationNumber: undefined, previousStatus: match.status === "PLAYING" ? "PLAYING" : "READY_CHECK", suspensionReason: "Waiting for available players and setups from the main bracket" } };
     await this.repository.saveMatch(updated, client);
     await this.audit(session, client, "sistema", "SUSPEND", match.status, updated.status, match.id, updated.details?.suspensionReason);
   }
@@ -284,7 +284,7 @@ export class LadderService {
     }
     for (const match of await this.repository.listMatches(session.id, client, true)) {
       if (openLadderStatuses.includes(match.status) && (tournament?.status === "CANCELLED" || match.participants.some(p => !registered.has(p.participantId)))) {
-        await this.cancelMatch(session, match, client, tournament?.status === "CANCELLED" ? "Torneo cancelado" : "Participante retirado del torneo", "sistema");
+        await this.cancelMatch(session, match, client, tournament?.status === "CANCELLED" ? "Tournament cancelled" : "Participant withdrawn from tournament", "sistema");
         for (const participant of match.participants.filter(p => registered.has(p.participantId))) await this.enqueueParticipant(session, participant, client, match.details?.queueEnteredAt?.[participant.participantId]);
         continue;
       }
@@ -389,25 +389,25 @@ export class LadderService {
     const tournament = await this.tournamentsRepository.getTournament(tournamentId);
     const free = !settings.setupNumbers.length || settings.setupNumbers.some(n => n <= (tournament?.settings.setupCount ?? 0) && !occupied.has(n));
     return { session: { ...session, options: { ...session.options, settings } },
-      queue: queue.map(q => ({ ...q, waitingReason: busy.players.has(q.participantId) ? "Jugando en la bracket principal" : session.options?.paused ? "Ladder pausada" : settings.opensAt && Date.parse(settings.opensAt)>Date.now() ? "Esperando hora de apertura" : !free ? "Esperando setup libre" : "Esperando rival compatible" })),
+      queue: queue.map(q => ({ ...q, waitingReason: busy.players.has(q.participantId) ? "Playing in the main bracket" : session.options?.paused ? "Ladder paused" : settings.opensAt && Date.parse(settings.opensAt)>Date.now() ? "Waiting for opening time" : !free ? "Waiting for an available setup" : "Waiting for a compatible opponent" })),
       activeMatches: matches.filter(m => openLadderStatuses.includes(m.status)), completedMatches: matches.filter(m => !openLadderStatuses.includes(m.status)),
       standings: ladderStandings(matches, settings), activity: await this.repository.listActivity(session.id, client), serverTime: nowIso() };
   }
   private async requireEligibleTournament(id: string): Promise<Tournament> {
     const tournament = await this.tournamentsRepository.getTournament(id);
     if (!tournament) throw new Error("Tournament not found");
-    if (tournament.importSource?.provider !== "START_GG") throw new Error("La ladder solo esta disponible para torneos importados de start.gg");
+    if (tournament.importSource?.provider !== "START_GG") throw new Error("The ladder is only available for tournaments imported from start.gg");
     return tournament;
   }
   private async requireActiveSession(id: string, client: PoolClient): Promise<LadderSession> {
     const session = await this.repository.getActiveSessionForTournament(id, client, true);
-    if (!session) throw new Error("La ladder no esta activa en este torneo");
+    if (!session) throw new Error("The ladder is not active in this tournament");
     return session;
   }
   private async requireEditableMatch(sessionId: string, id: string, client: PoolClient, status: LadderMatch["status"]): Promise<LadderMatch> {
     const match = await this.repository.getMatchById(id, client, true);
-    if (!match || match.ladderSessionId !== sessionId) throw new Error("Match de ladder no encontrado");
-    if (match.status !== status) throw new Error("El match de ladder ya no esta en un estado editable");
+    if (!match || match.ladderSessionId !== sessionId) throw new Error("Ladder match not found");
+    if (match.status !== status) throw new Error("The ladder match is no longer editable");
     return match;
   }
   private async notifyLadderMatchesFound(tournament: Tournament, matches: LadderMatch[]): Promise<void> {
@@ -426,23 +426,23 @@ export class LadderService {
     tournament: Tournament,
   ): MatchCharacterSelection[] {
     if (!selections?.length) {
-      throw new Error("Cada juego de ladder necesita los personajes de ambos jugadores");
+      throw new Error("Each ladder game requires characters for both players");
     }
     const allowedIds = new Set(match.participants.map((participant) => participant.participantId));
     const seen = new Set<string>();
     const size = Math.max(1, tournament.importSource?.entrantSize ?? 1);
     const normalizedSelections = selections.flatMap(selection => {
-      if (!allowedIds.has(selection.participantId) || seen.has(selection.participantId)) throw new Error("Cada equipo debe incluirse exactamente una vez");
+      if (!allowedIds.has(selection.participantId) || seen.has(selection.participantId)) throw new Error("Each team must be included exactly once");
       seen.add(selection.participantId);
       const names = selection.characterName.split("/").map(name => name.trim());
-      if (names.length !== size || names.some(name => !name)) throw new Error("Selecciona los personajes de todos los miembros del equipo");
+      if (names.length !== size || names.some(name => !name)) throw new Error("Select characters for all team members");
       return names.map(name => {
         const character = /rivals|roa/i.test(tournament.gameTitle) ? resolveRoa2Character(name) : resolveSmashUltimateCharacter(name);
         if (!character) throw new Error("Personaje desconocido: " + name);
         return { participantId: selection.participantId, characterId: character.id, characterName: character.name };
       });
     });
-    if (seen.size !== allowedIds.size) throw new Error("Cada juego debe incluir ambos equipos");
+    if (seen.size !== allowedIds.size) throw new Error("Each game must include both teams");
     return normalizedSelections;
   }
 

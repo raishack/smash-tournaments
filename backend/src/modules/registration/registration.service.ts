@@ -39,7 +39,7 @@ export class RegistrationService {
   }
 
   private local(tournament: Tournament | undefined): Tournament {
-    if (!tournament || tournament.importSource || tournament.settings.importJob) throw new RegistrationError("Torneo no disponible", 404);
+    if (!tournament || tournament.importSource || tournament.settings.importJob) throw new RegistrationError("Tournament unavailable", 404);
     return tournament;
   }
   private ready(): boolean { return Boolean(this.base && this.mailer.configured); }
@@ -49,23 +49,23 @@ export class RegistrationService {
       && !await this.repository.getFortniteState(tournament.id);
   }
   private async requireOpen(tournament: Tournament): Promise<void> {
-    if (!tournament.settings.registrationEnabled || (tournament.settings.registrationClosesAt&&Date.parse(tournament.settings.registrationClosesAt)<=Date.now()) || !await this.accepting(tournament)) throw new RegistrationError("Las inscripciones están cerradas", 409);
-    if (!tournament.settings.registrationWaitlist && (tournament.settings.teamSize ?? 1) === 1 && (await this.repository.listParticipants(tournament.id)).length >= tournament.maxParticipants) throw new RegistrationError("No quedan plazas disponibles", 409);
+    if (!tournament.settings.registrationEnabled || (tournament.settings.registrationClosesAt&&Date.parse(tournament.settings.registrationClosesAt)<=Date.now()) || !await this.accepting(tournament)) throw new RegistrationError("Registration is closed", 409);
+    if (!tournament.settings.registrationWaitlist && (tournament.settings.teamSize ?? 1) === 1 && (await this.repository.listParticipants(tournament.id)).length >= tournament.maxParticipants) throw new RegistrationError("No places remain", 409);
   }
 
   async updateOptions(tournamentId: string, input: z.infer<typeof publicOptionsSchema>): Promise<Tournament> {
     input = publicOptionsSchema.parse(input);
     return this.repository.withTournamentTransaction(tournamentId, async () => {
       const found = await this.repository.getTournament(tournamentId);
-      if (!found) throw new RegistrationError("Torneo no disponible", 404);
+      if (!found) throw new RegistrationError("Tournament unavailable", 404);
       assertTournamentWritable(found);
       const visibilityOnly = Object.keys(input).every(key => key === 'displayEnabled');
       const tournament = visibilityOnly ? found : this.local(found);
       if (input.registrationEnabled) {
         const deadline=input.registrationClosesAt===undefined?tournament.settings.registrationClosesAt:input.registrationClosesAt;
-        if(deadline&&Date.parse(deadline)<=Date.now())throw new RegistrationError('Cambia o elimina la fecha de cierre pasada antes de abrir inscripciones',409);
-        if (!this.ready()) throw new RegistrationError("Falta configurar el correo de inscripciones y la URL pública del servidor", 503);
-        if (!await this.accepting(tournament)) throw new RegistrationError("Solo se puede abrir la inscripción antes de generar la bracket", 409);
+        if(deadline&&Date.parse(deadline)<=Date.now())throw new RegistrationError('Change or remove the past closing date before opening registration',409);
+        if (!this.ready()) throw new RegistrationError("Configure registration email and the public server URL first", 503);
+        if (!await this.accepting(tournament)) throw new RegistrationError("Registration can only open before generating the bracket", 409);
       }
       const updated = { ...tournament, settings: { ...tournament.settings, ...input,
         registrationUrl: !tournament.importSource && this.base ? `${this.base}/register/?tournamentId=${encodeURIComponent(tournament.id)}` : undefined },
@@ -90,9 +90,9 @@ export class RegistrationService {
 
   async request(tournamentId: string, input: z.infer<typeof registrationSchema>, ip: string): Promise<void> {
     const parsed = registrationSchema.safeParse(input);
-    if (!parsed.success) throw new RegistrationError("Escribe un nick de 2 a 80 caracteres y un correo válido");
-    if (!this.ready()) throw new RegistrationError("El registro online no está disponible en este momento", 503);
-    if (this.sending >= 6) throw new RegistrationError("Hay muchas solicitudes. Inténtalo de nuevo en unos segundos", 429);
+    if (!parsed.success) throw new RegistrationError("Enter a nickname of 2 to 80 characters and a valid email");
+    if (!this.ready()) throw new RegistrationError("Online registration is currently unavailable", 503);
+    if (this.sending >= 6) throw new RegistrationError("Too many requests. Try again in a few seconds", 429);
     this.sending++;
     try {
       const token = randomBytes(32).toString("hex");
@@ -103,7 +103,7 @@ export class RegistrationService {
         // Persistent quotas are shared by all workers. Keys contain hashes, not email/IP.
         for (const [key, seconds, max] of [["global", 600, 500], ["ip:" + ip, 600, 120], ["email:" + parsed.data.email, 3600, 5]] as const) {
           const window = Math.floor(now / (seconds * 1000)) * seconds;
-          if (await this.repository.consumeRegistrationLimit(hash(key), window) > max) throw new RegistrationError("Demasiadas solicitudes. Inténtalo más tarde", 429);
+          if (await this.repository.consumeRegistrationLimit(hash(key), window) > max) throw new RegistrationError("Too many requests. Try again later", 429);
         }
         const existing = await this.repository.registrationByEmail(tournamentId, parsed.data.email);
         const participants = await this.repository.listParticipants(tournamentId);
@@ -114,8 +114,8 @@ export class RegistrationService {
         let teamData;
         if ((tournament.settings.teamSize ?? 1) > 1) teamData = await this.teams.resolveRegistration(tournamentId,parsed.data.nickname,parsed.data,Boolean(tournament.settings.registrationWaitlist));
         else {
-          if (parsed.data.mode || parsed.data.teamName || parsed.data.teamCode || parsed.data.role) throw new RegistrationError('Este torneo es individual');
-          if (participants.some(p => normalizedNick(p.displayName) === normalizedNick(parsed.data.nickname))) throw new RegistrationError("Ese nick ya está inscrito en el torneo. Utiliza otro", 409);
+          if (parsed.data.mode || parsed.data.teamName || parsed.data.teamCode || parsed.data.role) throw new RegistrationError('This is an individual tournament');
+          if (participants.some(p => normalizedNick(p.displayName) === normalizedNick(parsed.data.nickname))) throw new RegistrationError("That nickname is already registered for this tournament. Use another", 409);
         }
         await this.repository.saveRegistration({ tournamentId, email: parsed.data.email, nickname: parsed.data.nickname,
           tokenHash: hash(token), expiresAt: new Date(now + 86400000).toISOString(), sentAt: new Date(now).toISOString(), teamData,meta:{gameId:parsed.data.gameId,preferredRole:parsed.data.preferredRole} });
@@ -127,7 +127,7 @@ export class RegistrationService {
           `${this.base}/register/?tournamentId=${encodeURIComponent(tournamentId)}#token=${token}`);
       } catch {
         await this.repository.expireFailedRegistration(hash(token));
-        throw new RegistrationError("No se ha podido enviar el correo. Tu plaza aún no está confirmada; vuelve a intentarlo", 503);
+        throw new RegistrationError("Could not send the email. Your place is not confirmed yet; try again", 503);
       }
     } finally { this.sending--; }
   }
@@ -140,30 +140,30 @@ export class RegistrationService {
   }
 
   async confirm(token: string) {
-    if (!/^[a-f0-9]{64}$/.test(token)) throw new RegistrationError("El enlace de verificación no es válido");
+    if (!/^[a-f0-9]{64}$/.test(token)) throw new RegistrationError("Invalid verification link");
     const initial = await this.repository.registrationByToken(hash(token));
-    if (!initial) throw new RegistrationError("El enlace ha caducado o no es válido. Solicita otro desde el registro", 410);
+    if (!initial) throw new RegistrationError("The link has expired or is invalid. Request another on the registration page", 410);
     return this.repository.withTournamentTransaction(initial.tournamentId, async () => {
       const record = await this.repository.registrationByToken(hash(token));
       const tournament = this.local(await this.repository.getTournament(initial.tournamentId));
-      if (!record || Date.parse(record.expiresAt) <= Date.now()) throw new RegistrationError("El enlace ha caducado. Solicita otro desde el registro", 410);
+      if (!record || Date.parse(record.expiresAt) <= Date.now()) throw new RegistrationError("The link has expired. Request another on the registration page", 410);
       const participants = await this.repository.listParticipants(tournament.id);
       if(record.meta?.cancelledAt)return {nickname:record.nickname,title:tournament.title,cancelled:true};
       if(record.meta?.waitingAt)return {nickname:record.nickname,title:tournament.title,waiting:true};
       if (record.confirmedAt) {
         if (record.memberId) {
           const member = (await this.repository.listTeamMembers(tournament.id)).find(m => m.id === record.memberId);
-          if (!member) throw new RegistrationError('La organización ha retirado esta inscripción',409);
+          if (!member) throw new RegistrationError('Staff removed this registration',409);
           return this.teamConfirmation(tournament,record,member);
         }
         const participant = participants.find(p => p.id === record.participantId);
-        if (!participant) throw new RegistrationError("La organización ha retirado esta inscripción", 409);
+        if (!participant) throw new RegistrationError("Staff removed this registration", 409);
         return { nickname: participant.displayName, title: tournament.title };
       }
       await this.requireOpen(tournament);
       await this.promoteWaiting(tournament);
       if(!await this.hasCapacity(tournament,record)) {
-        if(!tournament.settings.registrationWaitlist)throw new RegistrationError('No quedan plazas disponibles',409);
+        if(!tournament.settings.registrationWaitlist)throw new RegistrationError('No places remain',409);
         await this.repository.saveRegistration({...record,confirmedAt:new Date().toISOString(),meta:{...record.meta,waitingAt:new Date().toISOString()}});
         return {nickname:record.nickname,title:tournament.title,waiting:true};
       }
@@ -186,16 +186,16 @@ export class RegistrationService {
       await this.repository.saveRegistration(confirmed);
       return this.teamConfirmation(tournament,confirmed,member);
     }
-    if((tournament.settings.teamSize??1)>1)throw new RegistrationError('El torneo ha cambiado a equipos. Solicita un nuevo enlace',409);
+    if((tournament.settings.teamSize??1)>1)throw new RegistrationError('The tournament has changed to teams. Request a new link',409);
     const participants=await this.repository.listParticipants(tournament.id);
-    if(participants.some(p=>normalizedNick(p.displayName)===normalizedNick(record.nickname)))throw new RegistrationError('Ese nick ya está inscrito. Solicita un nuevo enlace con otro nick',409);
+    if(participants.some(p=>normalizedNick(p.displayName)===normalizedNick(record.nickname)))throw new RegistrationError('That nickname is already registered. Request a new link using another nickname',409);
     const participant=await this.tournaments.addParticipant(tournament.id,{displayName:record.nickname});
     await this.repository.saveRegistration({...record,meta,participantId:participant.id,confirmedAt:new Date().toISOString()});
     return {nickname:record.nickname,title:tournament.title};
   }
   private async verified(token:string) {
     const record=/^[a-f0-9]{64}$/.test(token)?await this.repository.registrationByToken(hash(token)):undefined;
-    if(!record||Date.parse(record.expiresAt)<=Date.now())throw new RegistrationError('El enlace ha caducado. Recupera tu inscripción con tu correo',410);
+    if(!record||Date.parse(record.expiresAt)<=Date.now())throw new RegistrationError('The link has expired. Recover your registration using your email',410);
     return record;
   }
   async status(token:string) {
@@ -217,19 +217,19 @@ export class RegistrationService {
     });
   }
   async recover(id:string,email:unknown,ip:string):Promise<void> {
-    const parsed=z.string().trim().email().max(254).safeParse(email);if(!parsed.success)throw new RegistrationError('Introduce un correo válido');
-    if(!this.ready())throw new RegistrationError('El correo no está configurado',503);
+    const parsed=z.string().trim().email().max(254).safeParse(email);if(!parsed.success)throw new RegistrationError('Enter a valid email');
+    if(!this.ready())throw new RegistrationError('Email is not configured',503);
     const now=Date.now(),token=randomBytes(32).toString('hex');
     await this.repository.withTournamentTransaction(id,async()=>{
       const t=this.local(await this.repository.getTournament(id));
       assertTournamentWritable(t);
       for(const [key,seconds,max] of [['global',600,500],['ip:'+ip,600,120],['email:'+parsed.data.toLowerCase(),3600,5]] as const){
-        if(await this.repository.consumeRegistrationLimit(hash(key),Math.floor(now/(seconds*1000))*seconds)>max)throw new RegistrationError('Demasiadas solicitudes. Inténtalo más tarde',429);
+        if(await this.repository.consumeRegistrationLimit(hash(key),Math.floor(now/(seconds*1000))*seconds)>max)throw new RegistrationError('Too many requests. Try again later',429);
       }
       const record=await this.repository.registrationByEmail(id,parsed.data.toLowerCase());
       if(!record||now-Date.parse(record.sentAt)<60000)return;
       await this.repository.saveRegistration({...record,tokenHash:hash(token),sentAt:new Date(now).toISOString(),expiresAt:new Date(now+86400000).toISOString()});
-      await this.repository.enqueueRegistrationMail(id,'recover:'+hash(token),record.email,t.title,`${this.base}/register/?tournamentId=${encodeURIComponent(id)}#token=${token}`,'Consulta tu inscripción y tu equipo o cancela antes de que empiece el torneo. Si aún no confirmaste el correo, podrás hacerlo desde este enlace. El enlace dura 24 horas.');
+      await this.repository.enqueueRegistrationMail(id,'recover:'+hash(token),record.email,t.title,`${this.base}/register/?tournamentId=${encodeURIComponent(id)}#token=${token}`,'View your registration and team or withdraw before the tournament starts. If you have not verified your email, you can do so using this link. The link expires in 24 hours.');
     });
   }
   async cancel(token:string) {
@@ -237,8 +237,8 @@ export class RegistrationService {
     await this.repository.withTournamentTransaction(initial.tournamentId,async()=>{
       const r=await this.verified(token),t=this.local(await this.repository.getTournament(r.tournamentId));
       if(r.meta?.cancelledAt)return;
-      if(!await this.accepting(t))throw new RegistrationError('El torneo ya está generado. Contacta con la organización para tramitar tu baja',409);
-      if(!r.confirmedAt)throw new RegistrationError('Esta inscripción todavía no está confirmada',409);
+      if(!await this.accepting(t))throw new RegistrationError('The bracket has already been generated. Contact the organizers to withdraw',409);
+      if(!r.confirmedAt)throw new RegistrationError('This registration is not confirmed yet',409);
       if(r.memberId){
         const members=await this.repository.listTeamMembers(t.id),member=members.find(m=>m.id===r.memberId);
         if(member){await this.repository.deleteTeamMember(t.id,member.id);
@@ -264,7 +264,7 @@ export class RegistrationService {
             if(r.teamData?.mode==='SOLO'&&!t.settings.allowSoloRegistration)continue;
             if(r.teamData&&(await this.repository.listTeamMembers(t.id)).some(m=>normalizedNick(m.nickname)===normalizedNick(r.nickname)))continue;
             await this.admit(t,r);
-            await this.repository.enqueueRegistrationMail(t.id,'admitted:'+t.id+':'+hash(r.email)+':'+r.meta!.waitingAt,r.email,t.title,`${this.base}/register/?tournamentId=${encodeURIComponent(t.id)}`,'Ya tienes plaza. Recupera tu inscripción con tu correo desde el enlace para consultar los detalles.');
+            await this.repository.enqueueRegistrationMail(t.id,'admitted:'+t.id+':'+hash(r.email)+':'+r.meta!.waitingAt,r.email,t.title,`${this.base}/register/?tournamentId=${encodeURIComponent(t.id)}`,'You already have a place. Recover your registration using your email to view details.');
           }
   }
   private maintenanceRunning=false;
@@ -282,7 +282,7 @@ export class RegistrationService {
           }
           if(!t.settings.registrationEnabled||!await this.accepting(t))return;
           await this.promoteWaiting(t);
-        }); } catch { console.error('[registration] No se pudo procesar la espera de un torneo; se reintentará'); }
+        }); } catch { console.error('[registration] Could not process a tournament waitlist; retrying later'); }
       }
       await this.repository.deliverRegistrationMail(p=>this.mailer.send(p.email,p.title,p.url,p.notice));
     } finally {this.maintenanceRunning=false;}

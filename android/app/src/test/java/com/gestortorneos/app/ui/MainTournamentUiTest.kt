@@ -42,11 +42,11 @@ class MainTournamentUiTest {
 
         }
 
-        compose.onNodeWithText("Configuracion local").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("Local configuration").performScrollTo().assertIsDisplayed()
 
         compose.onNodeWithText("WhatsApp", useUnmergedTree = true).performScrollTo().assertIsDisplayed()
 
-        compose.onNodeWithText("Perfil").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("Profile").performScrollTo().assertIsDisplayed()
 
     }
 
@@ -58,9 +58,9 @@ class MainTournamentUiTest {
                 }
             }
         }
-        compose.onNode(hasSetTextAction() and hasText("Usuario")).performScrollTo().performTextInput("gestor")
-        compose.onNode(hasSetTextAction() and hasText("Contraseña")).performScrollTo().performTextInput("test-password")
-        compose.onNodeWithText("Entrar").performScrollTo().assertIsDisplayed().assertIsEnabled()
+        compose.onNode(hasSetTextAction() and hasText("Username")).performScrollTo().performTextInput("gestor")
+        compose.onNode(hasSetTextAction() and hasText("Password")).performScrollTo().performTextInput("test-password")
+        compose.onNode(hasText("Sign in") and hasClickAction()).performScrollTo().assertIsDisplayed().assertIsEnabled()
     }
 
     @Test fun teamsAndFortniteAreExplicitAndHaveReachableConfiguration() {
@@ -81,35 +81,35 @@ class MainTournamentUiTest {
 
         }
 
-        reveal("Por equipos · LoL / Valorant")
+        reveal("Teams · LoL / Valorant")
 
-        compose.onNodeWithText("Por equipos · LoL / Valorant").performClick()
+        compose.onNodeWithText("Teams · LoL / Valorant").performClick()
 
-        for (label in listOf("5 titulares", "Hasta 0 reservas", "Admitir jugadores sin equipo", "Máximo de equipos")) {
+        for (label in listOf("5 starters", "Up to 0 reserves", "Allow solo players", "Maximum teams")) {
             reveal(label)
 
             compose.onNodeWithText(label).assertIsDisplayed()
 
         }
-        reveal("5 titulares")
+        reveal("5 starters")
         reveal("Fortnite")
 
         compose.onNodeWithText("Fortnite").performClick()
 
-        reveal("Participantes por grupo (+ VIP): 20")
+        reveal("Participants per group (+ VIP): 20")
 
-        compose.onNodeWithText("Participantes por grupo (+ VIP): 20").performClick()
+        compose.onNodeWithText("Participants per group (+ VIP): 20").performClick()
 
         compose.onNodeWithText("100", useUnmergedTree = true).performScrollTo().performClick()
 
-        compose.onNodeWithText("Participantes por grupo (+ VIP): 100").assertIsDisplayed()
+        compose.onNodeWithText("Participants per group (+ VIP): 100").assertIsDisplayed()
 
-        reveal("Partidas por ronda (puntos acumulados): 3")
+        reveal("Games per round (accumulated points): 3")
 
-        compose.onNodeWithText("Partidas por ronda (puntos acumulados): 3").assertIsDisplayed()
-        reveal("Maximo de participantes")
+        compose.onNodeWithText("Games per round (accumulated points): 3").assertIsDisplayed()
+        reveal("Maximum participants")
 
-        compose.onNodeWithText("Maximo de participantes").assertIsDisplayed()
+        compose.onNodeWithText("Maximum participants").assertIsDisplayed()
 
     }
 
@@ -133,11 +133,11 @@ class MainTournamentUiTest {
                 }
             }
         }
-        compose.onNodeWithText("Mostrar en el display").assertIsOn().performClick()
-        compose.onNodeWithText("Mostrar en el display").assertIsOff().assertIsDisplayed()
+        compose.onNodeWithText("Show on display").assertIsOn().performClick()
+        compose.onNodeWithText("Show on display").assertIsOff().assertIsDisplayed()
         org.junit.Assert.assertEquals(mapOf("displayEnabled" to false), update)
-        compose.onNodeWithText("Abrir inscripción online").assertDoesNotExist()
-        compose.onNodeWithText("Mostrar en el display").performClick()
+        compose.onNodeWithText("Open online registration").assertDoesNotExist()
+        compose.onNodeWithText("Show on display").performClick()
         org.junit.Assert.assertEquals(mapOf("displayEnabled" to true), update)
     }
 

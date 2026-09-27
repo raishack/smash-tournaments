@@ -30,18 +30,18 @@ internal fun ModernBracketSearchControls(search: ModernBracketSearch, hits: List
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             OutlinedTextField(search.query, { search.query = it.take(120) },
-                label = { Text("Buscar jugador o equipo") }, singleLine = true,
+                label = { Text("Find player or team") }, singleLine = true,
                 modifier = Modifier.widthIn(max = 400.dp).fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                 keyboardActions = KeyboardActions(onSearch = { step(1) }))
-            OutlinedButton(onClick = { step(-1) }, enabled = hits.size > 1, modifier = Modifier.heightIn(min = 48.dp)) { Text("Anterior") }
-            OutlinedButton(onClick = { step(1) }, enabled = hits.size > 1, modifier = Modifier.heightIn(min = 48.dp)) { Text("Siguiente") }
-            TextButton(onClick = { search.query = "" }, enabled = search.query.isNotEmpty(), modifier = Modifier.heightIn(min = 48.dp)) { Text("Limpiar") }
+            OutlinedButton(onClick = { step(-1) }, enabled = hits.size > 1, modifier = Modifier.heightIn(min = 48.dp)) { Text("Previous") }
+            OutlinedButton(onClick = { step(1) }, enabled = hits.size > 1, modifier = Modifier.heightIn(min = 48.dp)) { Text("Next") }
+            TextButton(onClick = { search.query = "" }, enabled = search.query.isNotEmpty(), modifier = Modifier.heightIn(min = 48.dp)) { Text("Clear") }
         }
         Text(when {
-            search.query.isBlank() -> "Busca en todas las fases de la bracket."
-            hits.isEmpty() -> "Sin coincidencias"
-            else -> "${index.coerceAtLeast(0) + 1} de ${hits.size} · ${hits.getOrNull(index)?.displayIdentifier.orEmpty()}"
+            search.query.isBlank() -> "Search all bracket phases."
+            hits.isEmpty() -> "No matches found"
+            else -> "${index.coerceAtLeast(0) + 1} of ${hits.size} · ${hits.getOrNull(index)?.displayIdentifier.orEmpty()}"
         }, style = MaterialTheme.typography.bodySmall)
     }
 }

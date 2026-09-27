@@ -95,7 +95,7 @@ fun ModernBracketBoard(
     }
     Column {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-            TextButton(enabled = !fullscreen, onClick = { fullscreen = true }) { Text("Pantalla completa") }
+            TextButton(enabled = !fullscreen, onClick = { fullscreen = true }) { Text("Fullscreen") }
         }
         if (fullscreen) {
             Spacer(Modifier.fillMaxWidth().height(620.dp))
@@ -120,7 +120,7 @@ fun ModernBracketBoard(
             Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
                 Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing)) {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                        TextButton(onClick = { fullscreen = false }) { Text("Salir de pantalla completa") }
+                        TextButton(onClick = { fullscreen = false }) { Text("Exit fullscreen") }
                     }
                     errorMessage?.let { Text(it, color = MaterialTheme.colorScheme.error) }
                     BracketWebViewHost(webView, html, viewportController, Modifier.fillMaxWidth().weight(1f))
@@ -337,14 +337,14 @@ private fun buildExperimentalBracketHtml(
     }
 
     val emptyState = if (sections.isEmpty()) {
-        """<div class="empty-state">No hay suficiente estructura para renderizar la bracket experimental.</div>"""
+        """<div class="empty-state">There is not enough structure to render the experimental bracket.</div>"""
     } else {
         ""
     }
 
     return """
         <!DOCTYPE html>
-        <html lang="es">
+        <html lang="en">
         <head>
           <meta charset="utf-8" />
           <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
@@ -930,21 +930,21 @@ const tabs = Array.from(document.querySelectorAll('.section-tab'));
                   if (role === 'called') {
                     const calledMs = Date.parse(calledAt || '');
                     if (!Number.isFinite(calledMs) || timeoutSeconds <= 0) {
-                      node.textContent = 'Llamado';
+                      node.textContent = 'Called';
                       return;
                     }
                     const remainingSeconds = Math.max(0, Math.floor((calledMs + timeoutSeconds * 1000 - Date.now()) / 1000));
                     node.textContent = remainingSeconds > 0
                       ? `Tiempo restante: ${'$'}{formatDuration(remainingSeconds)}`
-                      : 'Tiempo agotado';
+                      : 'Time expired';
                   } else if (role === 'playing') {
                     const startedMs = Date.parse(startedAt || '');
                     if (!Number.isFinite(startedMs)) {
-                      node.textContent = 'En juego';
+                      node.textContent = 'Playing';
                       return;
                     }
                     const elapsedSeconds = Math.max(0, Math.floor((Date.now() - startedMs) / 1000));
-                    node.textContent = `Jugando: ${'$'}{formatDuration(elapsedSeconds)}`;
+                    node.textContent = `Playing: ${'$'}{formatDuration(elapsedSeconds)}`;
                   } else {
                     node.textContent = '';
                   }
@@ -1011,7 +1011,7 @@ private fun buildExperimentalSections(matches: List<MatchSummary>): List<Experim
             section.label.equals("Pools", ignoreCase = true) -> 1
             section.label.equals("Winners bracket", ignoreCase = true) -> 2
             section.label.equals("Losers bracket", ignoreCase = true) -> 3
-            section.label.equals("Bracket final", ignoreCase = true) -> 4
+            section.label.equals("Final bracket", ignoreCase = true) -> 4
             else -> 5
         }.toString() + ":" + section.label
     }
@@ -1210,7 +1210,7 @@ private fun experimentalClusterFromStageGroups(
             .toSortedMap()
             .map { (_, roundMatches) ->
                 ExperimentalBracketRound(
-                    title = roundMatches.firstOrNull()?.roundDisplayTitle ?: "Ronda",
+                    title = roundMatches.firstOrNull()?.roundDisplayTitle ?: "Round",
                     matches = roundMatches.sortedBy { it.matchNumber }
                 )
             }
@@ -1232,7 +1232,7 @@ private fun experimentalClusterFromMatches(
         .toSortedMap()
         .map { (_, roundMatches) ->
             ExperimentalBracketRound(
-                title = roundMatches.firstOrNull()?.roundDisplayTitle ?: "Ronda",
+                title = roundMatches.firstOrNull()?.roundDisplayTitle ?: "Round",
                 matches = roundMatches.sortedBy { it.matchNumber }
             )
         }
@@ -1256,7 +1256,7 @@ private fun experimentalSectionLabel(match: MatchSummary): String {
     return when (match.bracketStage) {
         "WINNERS" -> customPhaseName ?: "Winners bracket"
         "LOSERS" -> customPhaseName ?: "Losers bracket"
-        "FINALS" -> customPhaseName ?: "Bracket final"
+        "FINALS" -> customPhaseName ?: "Final bracket"
         "POOLS" -> customPhaseName ?: "Pools"
         else -> customPhaseName ?: match.bracketStage
     }
@@ -1268,7 +1268,7 @@ private fun experimentalTournamentBracketLabel(match: MatchSummary): String {
             !it.equals(match.bracketStage, ignoreCase = true) &&
             !it.equals("bracket", ignoreCase = true)
     }
-    return customPhaseName ?: "Bracket final"
+    return customPhaseName ?: "Final bracket"
 }
 
 private fun buildExperimentalMatchCardHtml(
@@ -1524,17 +1524,17 @@ function installModernBracketSearch(activateSection, layoutSections) {
   bar.className = 'bracket-search';
   bar.setAttribute('role', 'search');
   const input = document.createElement('input');
-  input.type = 'search'; input.placeholder = 'Buscar jugador o equipo';
-  input.setAttribute('aria-label', 'Buscar jugador o equipo en todas las fases');
+  input.type = 'search'; input.placeholder = 'Find player or team';
+  input.setAttribute('aria-label', 'Find player or team in all phases');
   input.autocomplete = 'off'; input.maxLength = 120;
   const button = (label, action) => {
     const node = document.createElement('button'); node.type = 'button'; node.textContent = label;
     node.addEventListener('click', action); return node;
   };
   let hits = [], currentId = null, focusRevision = 0;
-  const previous = button('Anterior', () => step(-1));
-  const next = button('Siguiente', () => step(1));
-  const clear = button('Limpiar', () => { input.value = ''; update(false); input.focus(); });
+  const previous = button('Previous', () => step(-1));
+  const next = button('Next', () => step(1));
+  const clear = button('Clear', () => { input.value = ''; update(false); input.focus(); });
   const output = document.createElement('output');
   output.setAttribute('aria-live', 'polite'); output.setAttribute('aria-atomic', 'true');
   bar.append(input, previous, next, clear, output); root.prepend(bar);
@@ -1553,8 +1553,8 @@ function installModernBracketSearch(activateSection, layoutSections) {
     const current = hits[index];
     const phase = current?.closest('.bracket-section')?.querySelector('.section-title')?.textContent || '';
     const matchLabel = current?.querySelector('.match-header span')?.textContent || '';
-    output.textContent = !query ? 'Busca en todas las fases. Enter: siguiente; Mayús + Enter: anterior.' :
-      current ? (index + 1) + ' de ' + hits.length + ' · ' + phase + ' · ' + matchLabel : 'Sin coincidencias';
+    output.textContent = !query ? 'Search all phases. Enter: next; Shift + Enter: previous.' :
+      current ? (index + 1) + ' of ' + hits.length + ' · ' + phase + ' · ' + matchLabel : 'No matches found';
     previous.disabled = next.disabled = hits.length < 2; clear.disabled = !input.value;
     if (center && current) centerCard(current);
   }

@@ -44,18 +44,18 @@ class ManagementUsabilityTest {
             MainTheme(MainAppearance(theme = if (dark) MainThemeMode.Dark else MainThemeMode.Light, textSize = MainTextSize.ExtraLarge)) {
                 Surface { Box(Modifier.fillMaxSize().padding(12.dp)) {
                     MainMatchActionPanel("m1", "Losers semifinal · B12", {}) {
-                        PublishMatchPrimaryAction("Anotar resultado", !busy) { clicks++ }
+                        PublishMatchPrimaryAction("Report result", !busy) { clicks++ }
                         CompactMatchRow("B12", listOf("Equipo con nombre muy largo de María y Alejandro", "Northern Lights"), listOf(2, 1), "PLAYING", "Stream 1", true) {}
                         repeat(30) { Text("Opción adicional $it") }
                     }
                 } }
             }
         }
-        compose.onNodeWithText("Anotar resultado").assertIsDisplayed().performClick()
+        compose.onNodeWithText("Report result").assertIsDisplayed().performClick()
         assertEquals(1, clicks)
         capture("actions-dark-large")
         compose.runOnIdle { busy = true; dark = false }
-        compose.onNodeWithText("Anotar resultado").assertIsDisplayed().assertIsNotEnabled()
+        compose.onNodeWithText("Report result").assertIsDisplayed().assertIsNotEnabled()
         capture("actions-light-large")
     }
     @Test @Config(qualifiers = "w1200dp-h900dp-mdpi")
@@ -83,18 +83,18 @@ class ManagementUsabilityTest {
         compose.setContent { MainTheme(MainAppearance()) {
             TournamentReviewButton("t", load = {
                 loads++
-                TournamentReviewData("Antes de empezar", "PREPARATION", "2026-09-27", listOf(
-                    TournamentReviewItem("attendance", "Asistencia", "Una inscripción", "WARNING", "PARTICIPANTS", "Revisar asistencia"),
-                    TournamentReviewItem("draw", "Sorteo", "Pendiente", "BLOCKED", "COMPETITION", "Preparar competición")
+                TournamentReviewData("Before you start", "PREPARATION", "2026-09-27", listOf(
+                    TournamentReviewItem("attendance", "Attendance", "Una inscripción", "WARNING", "PARTICIPANTS", "Review attendance"),
+                    TournamentReviewItem("draw", "Sorteo", "Pending", "BLOCKED", "COMPETITION", "Prepare competition")
                 ), emptyList(), "", true, listOf(TournamentReviewParticipant("p1", "Álex", checked, "ACTIVE")))
             }, onAttendance = { participant, value -> assertEquals("p1", participant.id); checked = value }, onNavigate = { destination = it })
         } }
-        compose.onNodeWithText("Revisar preparación y cierre").performClick()
-        compose.onNodeWithText("Revisar asistencia").performScrollTo().performClick()
-        compose.onNodeWithText("Confirmar asistencia").performScrollTo().performClick()
+        compose.onNodeWithText("Review preparation and completion").performClick()
+        compose.onNodeWithText("Review attendance").performScrollTo().performClick()
+        compose.onNodeWithText("Confirm attendance").performScrollTo().performClick()
         compose.waitForIdle(); assertTrue(checked); assertEquals(2, loads)
-        compose.onNodeWithText("Quitar asistencia").performScrollTo().assertIsDisplayed()
-        compose.onNodeWithText("Preparar competición").performScrollTo().performClick()
+        compose.onNodeWithText("Clear attendance").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("Prepare competition").performScrollTo().performClick()
         assertEquals("COMPETITION", destination)
     }
     @Test fun searchIgnoresAccentsCaseAndEmptyQueries() {

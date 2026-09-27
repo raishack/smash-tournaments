@@ -98,10 +98,10 @@ import kotlinx.coroutines.sync.withLock
 private const val PLAYER_REDIRECT_URI = "tournamentplayer://auth/callback"
 
 private enum class PlayerSection(val label: String) {
-    Dashboard("Inicio"),
-    Tournaments("Torneos"),
+    Dashboard("Home"),
+    Tournaments("Tournaments"),
     Bracket("Bracket"),
-    Profile("Perfil")
+    Profile("Profile")
 }
 
 private typealias PlayerThemeMode = MainThemeMode
@@ -319,7 +319,7 @@ fun PlayerApp() {
             )
         }.onFailure { throwable ->
             if (throwable is CancellationException) throw throwable
-            if (session?.sessionToken == activeSession.sessionToken) error = throwable.message ?: "No se pudo actualizar el estado del jugador"
+            if (session?.sessionToken == activeSession.sessionToken) error = throwable.message ?: "Could not update player status"
         }
         loading = false
     }
@@ -335,7 +335,7 @@ fun PlayerApp() {
                     reloadTournaments(activeSession, allowBackgroundArm = false)
                 }.onFailure { throwable ->
                     if (throwable is CancellationException) throw throwable
-                    if (session?.sessionToken == activeSession.sessionToken) error = throwable.message ?: "No se pudo actualizar el estado del jugador"
+                    if (session?.sessionToken == activeSession.sessionToken) error = throwable.message ?: "Could not update player status"
                 }
             }
             if (!backgroundSyncArmed) {
@@ -385,13 +385,13 @@ fun PlayerApp() {
                         message = message,
                         error = error,
                         onSaveCharacters = { tournamentId, matchId, selections ->
-                            launchSerializedMutation("No se pudieron guardar los personajes") { activeSession ->
+                            launchSerializedMutation("Could not save characters") { activeSession ->
                                 repository.updateCharacters(activeSession.sessionToken, tournamentId, matchId, selections)
                                 reloadTournaments(activeSession, allowBackgroundArm = false)
                             }
                         },
                         onRecordGameWin = { tournamentId, match, participantId, selections ->
-                            launchSerializedMutation("No se pudo reportar el juego") { activeSession ->
+                            launchSerializedMutation("Could not report the game") { activeSession ->
                                 if (match.canReportCharacters && selections.isNotEmpty()) {
                                     repository.updateCharacters(activeSession.sessionToken, tournamentId, match.id, selections)
                                 }
@@ -400,37 +400,37 @@ fun PlayerApp() {
                             }
                         },
                         onReportDetailedResult = { tournamentId, matchId, bestOfOverride, games ->
-                            launchSerializedMutation("No se pudo anotar el set") { activeSession ->
+                            launchSerializedMutation("Could not report the set") { activeSession ->
                                 repository.reportDetailedResult(activeSession.sessionToken, tournamentId, matchId, bestOfOverride, games)
                                 reloadTournaments(activeSession, allowBackgroundArm = false)
                             }
                         },
                         onResetMatch = { tournamentId, matchId ->
-                            launchSerializedMutation("No se pudo resetear el set") { activeSession ->
+                            launchSerializedMutation("Could not reset the set") { activeSession ->
                                 repository.resetMatch(activeSession.sessionToken, tournamentId, matchId)
                                 reloadTournaments(activeSession, allowBackgroundArm = false)
                             }
                         },
                         onReadyLadderMatch = { tournamentId, matchId ->
-                            launchSerializedMutation("No se pudo confirmar que estas listo") { activeSession ->
+                            launchSerializedMutation("Could not confirm you are ready") { activeSession ->
                                 repository.readyLadderMatch(activeSession.sessionToken, tournamentId, matchId)
                                 reloadTournaments(activeSession, allowBackgroundArm = false)
                             }
                         },
                         onReviewLadder = { tournamentId, matchId, revision, action, reason ->
-                            launchSerializedMutation("No se pudo revisar el resultado") { activeSession ->
+                            launchSerializedMutation("Could not review the result") { activeSession ->
                                 repository.reviewLadder(activeSession.sessionToken,tournamentId,matchId,revision,action,reason)
                                 reloadTournaments(activeSession, allowBackgroundArm = false)
                             }
                         },
                         onCancelLadderMatch = { tournamentId, matchId ->
-                            launchSerializedMutation("No se pudo cancelar el emparejamiento") { activeSession ->
+                            launchSerializedMutation("Could not cancel matchmaking") { activeSession ->
                                 repository.cancelLadderMatch(activeSession.sessionToken, tournamentId, matchId)
                                 reloadTournaments(activeSession, allowBackgroundArm = false)
                             }
                         },
                         onReportLadderDetailedResult = { tournamentId, matchId, bestOfOverride, games ->
-                            launchSerializedMutation("No se pudo anotar la ladder") { activeSession ->
+                            launchSerializedMutation("Could not report the ladder result") { activeSession ->
                                 repository.reportLadderDetailedResult(activeSession.sessionToken, tournamentId, matchId, bestOfOverride, games)
                                 reloadTournaments(activeSession, allowBackgroundArm = false)
                             }
@@ -441,10 +441,10 @@ fun PlayerApp() {
                                     repository.createStartggLogin(PLAYER_REDIRECT_URI)
                                 }.onSuccess { authUrl ->
                                     context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(authUrl)))
-                                    message = "Abriendo login de start.gg"
+                                    message = "Opening start.gg sign-in"
                                     error = null
                                 }.onFailure { throwable ->
-                                    error = throwable.message ?: "No se pudo iniciar el login"
+                                    error = throwable.message ?: "Could not start sign-in"
                                 }
                             }
                         }
@@ -453,13 +453,13 @@ fun PlayerApp() {
                         tournaments = tournaments,
                         session = session,
                         onSaveCharacters = { tournamentId, matchId, selections ->
-                            launchSerializedMutation("No se pudieron guardar los personajes") { activeSession ->
+                            launchSerializedMutation("Could not save characters") { activeSession ->
                                 repository.updateCharacters(activeSession.sessionToken, tournamentId, matchId, selections)
                                 reloadTournaments(activeSession, allowBackgroundArm = false)
                             }
                         },
                         onRecordGameWin = { tournamentId, match, participantId, selections ->
-                            launchSerializedMutation("No se pudo reportar el juego") { activeSession ->
+                            launchSerializedMutation("Could not report the game") { activeSession ->
                                 if (match.canReportCharacters && selections.isNotEmpty()) {
                                     repository.updateCharacters(activeSession.sessionToken, tournamentId, match.id, selections)
                                 }
@@ -468,49 +468,49 @@ fun PlayerApp() {
                             }
                         },
                         onReportDetailedResult = { tournamentId, matchId, bestOfOverride, games ->
-                            launchSerializedMutation("No se pudo anotar el set") { activeSession ->
+                            launchSerializedMutation("Could not report the set") { activeSession ->
                                 repository.reportDetailedResult(activeSession.sessionToken, tournamentId, matchId, bestOfOverride, games)
                                 reloadTournaments(activeSession, allowBackgroundArm = false)
                             }
                         },
                         onResetMatch = { tournamentId, matchId ->
-                            launchSerializedMutation("No se pudo resetear el set") { activeSession ->
+                            launchSerializedMutation("Could not reset the set") { activeSession ->
                                 repository.resetMatch(activeSession.sessionToken, tournamentId, matchId)
                                 reloadTournaments(activeSession, allowBackgroundArm = false)
                             }
                         },
                         onJoinLadderQueue = { tournamentId ->
-                            launchSerializedMutation("No se pudo entrar en cola") { activeSession ->
+                            launchSerializedMutation("Could not join the queue") { activeSession ->
                                 repository.joinLadderQueue(activeSession.sessionToken, tournamentId)
                                 reloadTournaments(activeSession, allowBackgroundArm = false)
                             }
                         },
                         onLeaveLadderQueue = { tournamentId ->
-                            launchSerializedMutation("No se pudo salir de la cola") { activeSession ->
+                            launchSerializedMutation("Could not leave the queue") { activeSession ->
                                 repository.leaveLadderQueue(activeSession.sessionToken, tournamentId)
                                 reloadTournaments(activeSession, allowBackgroundArm = false)
                             }
                         },
                         onReadyLadderMatch = { tournamentId, matchId ->
-                            launchSerializedMutation("No se pudo confirmar que estas listo") { activeSession ->
+                            launchSerializedMutation("Could not confirm you are ready") { activeSession ->
                                 repository.readyLadderMatch(activeSession.sessionToken, tournamentId, matchId)
                                 reloadTournaments(activeSession, allowBackgroundArm = false)
                             }
                         },
                         onReviewLadder = { tournamentId, matchId, revision, action, reason ->
-                            launchSerializedMutation("No se pudo revisar el resultado") { activeSession ->
+                            launchSerializedMutation("Could not review the result") { activeSession ->
                                 repository.reviewLadder(activeSession.sessionToken,tournamentId,matchId,revision,action,reason)
                                 reloadTournaments(activeSession, allowBackgroundArm = false)
                             }
                         },
                         onCancelLadderMatch = { tournamentId, matchId ->
-                            launchSerializedMutation("No se pudo cancelar el emparejamiento") { activeSession ->
+                            launchSerializedMutation("Could not cancel matchmaking") { activeSession ->
                                 repository.cancelLadderMatch(activeSession.sessionToken, tournamentId, matchId)
                                 reloadTournaments(activeSession, allowBackgroundArm = false)
                             }
                         },
                         onReportLadderDetailedResult = { tournamentId, matchId, bestOfOverride, games ->
-                            launchSerializedMutation("No se pudo anotar la ladder") { activeSession ->
+                            launchSerializedMutation("Could not report the ladder result") { activeSession ->
                                 repository.reportLadderDetailedResult(activeSession.sessionToken, tournamentId, matchId, bestOfOverride, games)
                                 reloadTournaments(activeSession, allowBackgroundArm = false)
                             }
@@ -553,7 +553,7 @@ fun PlayerApp() {
                             tournaments = emptyList()
                             loading = false
                             disarmBackgroundSync()
-                            message = "Sesion cerrada"
+                            message = "Signed out"
                             error = null
                             scope.launch {
                                 activeSession?.let {
@@ -609,12 +609,12 @@ private fun DashboardSection(
     ) {
         CardSection {
             Text("Smash Players", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-            Text("Tus partidas, resultados y ladder, en un solo lugar.")
+            Text("Your matches, results and ladder in one place.")
             Spacer(Modifier.height(8.dp))
             if (session == null) {
-                Button(onClick = onLogin) { Text("Entrar con start.gg") }
+                Button(onClick = onLogin) { Text("Sign in with start.gg") }
             } else {
-                MainStatusBadge("Conectado con start.gg", "COMPLETED")
+                MainStatusBadge("Connected to start.gg", "COMPLETED")
                 Text(cleanedPlayerSessionLabel(session), style = MaterialTheme.typography.titleMedium)
             }
             if (message != null) {
@@ -631,10 +631,10 @@ private fun DashboardSection(
             CircularProgressIndicator()
         } else {
             CardSection {
-                Text("En juego o llamados", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                Text("Playing or called", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                 Spacer(Modifier.height(8.dp))
                 if (activeMatches.isEmpty()) {
-                    Text(if (session == null) "Entra con start.gg para ver tus partidas y recibir los avisos de tus torneos." else "No tienes sets activos ahora mismo.")
+                    Text(if (session == null) "Sign in with start.gg to view your matches and receive tournament notifications." else "You have no active sets right now.")
                 } else {
                     activeMatches.forEach { entry ->
                         when {
@@ -663,10 +663,10 @@ private fun DashboardSection(
                 }
             }
             CardSection {
-                Text("Pendientes", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                Text("Pending", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                 Spacer(Modifier.height(8.dp))
                 if (pendingMatches.isEmpty()) {
-                    Text("No hay sets pendientes con rival asignado.")
+                    Text("No pending sets have an assigned opponent.")
                 } else {
                     pendingMatches.forEach { match ->
                         MatchSummaryCard(match)
@@ -706,7 +706,7 @@ private fun activePlayerMatchTimelineAnchor(match: PlayerMatchDto): Long {
 
 private fun cleanedPlayerSessionLabel(session: PlayerSession?): String {
     if (session == null) {
-        return "Sin sesion start.gg"
+        return "No start.gg session"
     }
 
     fun clean(value: String): String {
@@ -746,7 +746,7 @@ private fun playerMatchStageLabel(match: PlayerMatchDto): String? = when (match.
     "WINNERS" -> "Bracket Winners"
     "LOSERS" -> "Bracket Losers"
     "FINALS" -> "Bracket Finals"
-    "LADDER" -> "Ladder interna"
+    "LADDER" -> "Internal ladder"
     else -> null
 }
 
@@ -774,13 +774,13 @@ private fun LadderTournamentSection(
             modifier = Modifier.padding(12.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text("Ladder interna · ${if(ladder.options?.settings?.mode == "COMPETITIVE") "Competitiva" else "Casual"}", fontWeight = FontWeight.Bold)
-            if(ladder.options?.paused == true) Text("Pausada · puedes mantener tu lugar en cola")
-            if(ladder.options?.closing == true) Text("Inscripciones cerradas · terminando sets abiertos")
+            Text("Internal ladder · ${if(ladder.options?.settings?.mode == "COMPETITIVE") "Competitive" else "Casual"}", fontWeight = FontWeight.Bold)
+            if(ladder.options?.paused == true) Text("Paused · you can keep your queue position")
+            if(ladder.options?.closing == true) Text("Registration closed · finishing open sets")
             Text(
                 when (ladder.status) {
-                    "ACTIVE" -> "Activa"
-                    "COMPLETED" -> "Finalizada"
+                    "ACTIVE" -> "Active"
+                    "COMPLETED" -> "Finished"
                     else -> ladder.status
                 },
                 color = mutedColor
@@ -804,21 +804,21 @@ private fun LadderTournamentSection(
                 }
 
                 !ladder.queuedAt.isNullOrBlank() && ladder.status == "ACTIVE" -> {
-                    Text("Posición ${ladder.queuePosition ?: "—"} · ${ladder.waitingReason ?: "Buscando rival"}", color = mutedColor)
+                    Text("Position ${ladder.queuePosition ?: "—"} · ${ladder.waitingReason ?: "Finding opponent"}", color = mutedColor)
                     Button(onClick = onLeaveQueue) {
-                        Text("Salir de cola")
+                        Text("Leave queue")
                     }
                 }
 
                 ladder.status == "ACTIVE" && ladder.canJoin != false -> {
                     Button(onClick = onJoinQueue) {
-                        Text("Buscar partida")
+                        Text("Find match")
                     }
                 }
             }
 
             if (ladder.standings.isNotEmpty()) {
-                Text("Clasificacion", fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
+                Text("Standings", fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
                 ladder.standings.forEachIndexed { index, standing ->
                     Text(
                         "${index + 1}. ${standing.displayName} · ${standing.wins}-${standing.losses} · ${standing.winRate ?: 0}%" + if(ladder.options?.settings?.mode == "COMPETITIVE") " · ${standing.rating ?: 1000}${if(standing.eligible != true) " · provisional" else ""}" else "",
@@ -829,7 +829,7 @@ private fun LadderTournamentSection(
 
             if (ladder.history.isNotEmpty()) {
                 TextButton(onClick = { showHistory = !showHistory }) {
-                    Text(if (showHistory) "Ocultar historico" else "Mostrar historico (${ladder.history.size})")
+                    Text(if (showHistory) "Hide history" else "Show history (${ladder.history.size})")
                 }
                 if (showHistory) {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -871,18 +871,18 @@ private fun LadderReadyCheckCard(
             Text("Match encontrado · Bo${match.effectiveBestOf}", fontWeight = FontWeight.Bold)
             match.stationLabel?.let { Text(it) }
             playerMatchStageLabel(match)?.let { Text(it, color = mutedColor) }
-            Text("${match.myDisplayName} vs ${match.opponentDisplayName ?: "Rival"}")
+            Text("${match.myDisplayName} vs ${match.opponentDisplayName ?: "Opponent"}")
             LadderReadyTimer(match)
             Text(
-                "Tu estado: ${if (amReady) "Listo" else "Pendiente"} · Rival: ${if (opponentReady) "Listo" else "Pendiente"}",
+                "Your status: ${if (amReady) "Ready" else "Pending"} · Opponent: ${if (opponentReady) "Ready" else "Pending"}",
                 color = mutedColor,
             )
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(onClick = onReady, enabled = !amReady) {
-                    Text(if (amReady) "Ya estas listo" else "Estoy listo")
+                    Text(if (amReady) "You are ready" else "I am ready")
                 }
                 TextButton(onClick = onCancel) {
-                    Text("Cancelar")
+                    Text("Cancel")
                 }
             }
         }
@@ -915,10 +915,10 @@ private fun LadderActiveMatchCard(
             Text(com.gestortorneos.ui.ladderStatus(match.status), fontWeight = FontWeight.Bold)
             match.stationLabel?.let { Text(it) }
             match.ladderMessage?.let { Text(it) }
-            if(match.status != "PLAYING") Text("${match.myDisplayName} ${match.myScore} – ${match.opponentScore ?: 0} ${match.opponentDisplayName ?: "Rival"}")
+            if(match.status != "PLAYING") Text("${match.myDisplayName} ${match.myScore} – ${match.opponentScore ?: 0} ${match.opponentDisplayName ?: "Opponent"}")
             if(match.canReviewLadderResult) LadderReviewActions(onReview)
             playerMatchStageLabel(match)?.let { Text(it, color = mutedColor) }
-            Text("${match.myDisplayName} vs ${match.opponentDisplayName ?: "Rival"} · Bo${match.effectiveBestOf}")
+            Text("${match.myDisplayName} vs ${match.opponentDisplayName ?: "Opponent"} · Bo${match.effectiveBestOf}")
             Button(
                 enabled = match.status == "PLAYING" && match.canPlayerReportMatch,
                 onClick = {
@@ -930,7 +930,7 @@ private fun LadderActiveMatchCard(
                     showQuickReportModeDialog = true
                 }
             ) {
-                Text("Anotacion rapida")
+                Text("Quick report")
             }
         }
     }
@@ -1005,12 +1005,12 @@ private fun LadderHistoryCard(match: PlayerMatchDto) {
                 isWinner = match.winnerParticipantId == match.myParticipantId,
             )
             PlayerMatchParticipantRow(
-                displayName = match.opponentDisplayName ?: "Rival",
+                displayName = match.opponentDisplayName ?: "Opponent",
                 scoreLabel = playerMatchScoreLabel(match, match.opponentParticipantId, match.opponentScore ?: 0),
                 characterName = latestCharacterForParticipant(match, match.opponentParticipantId),
                 isWinner = match.winnerParticipantId != null && match.winnerParticipantId == match.opponentParticipantId,
             )
-            Text("Estado: ${match.status}", color = mutedColor)
+            Text("Status: ${match.status}", color = mutedColor)
         }
     }
 }
@@ -1032,7 +1032,7 @@ private fun TournamentSection(
 ) {
     if (session == null) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("Inicia sesion con start.gg para ver tus torneos.")
+            Text("Sign in with start.gg to view your tournaments.")
         }
         return
     }
@@ -1079,7 +1079,7 @@ private fun TournamentSection(
                     Spacer(Modifier.height(12.dp))
                 }
                 if (sortedActiveMatches.isEmpty() && sortedPendingMatches.isEmpty() && sortedCompletedMatches.isEmpty()) {
-                    Text("No hay sets disponibles para este torneo.")
+                    Text("No sets are available for this tournament.")
                 } else {
                     sortedActiveMatches.forEach { match ->
                         PlayerMatchCard(
@@ -1093,7 +1093,7 @@ private fun TournamentSection(
                     }
                     if (sortedPendingMatches.isNotEmpty()) {
                         Spacer(Modifier.height(8.dp))
-                        Text("Pendientes", fontWeight = FontWeight.SemiBold)
+                        Text("Pending", fontWeight = FontWeight.SemiBold)
                         sortedPendingMatches.forEach { match -> MatchSummaryCard(match) }
                     }
                     if (sortedCompletedMatches.isNotEmpty()) {
@@ -1103,9 +1103,9 @@ private fun TournamentSection(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            Text("Completados", fontWeight = FontWeight.SemiBold)
+                            Text("Completed", fontWeight = FontWeight.SemiBold)
                             TextButton(onClick = { showCompletedMatches = !showCompletedMatches }) {
-                                Text(if (showCompletedMatches) "Ocultar" else "Mostrar")
+                                Text(if (showCompletedMatches) "Hide" else "Show")
                             }
                         }
                         if (showCompletedMatches) {
@@ -1142,20 +1142,20 @@ internal fun ProfileSection(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         CardSection {
-            Text("Perfil", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+            Text("Profile", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
             Text(cleanedPlayerSessionLabel(session))
             if (session != null) {
-                MainStatusBadge("Conectado con start.gg", "COMPLETED")
-                Text("Tu acceso de jugador se mantiene al cerrar la app.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                MainStatusBadge("Connected to start.gg", "COMPLETED")
+                Text("Your player session is kept when you close the app.", color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
         CardSection {
             AppearanceControls()
         }
         CardSection {
-            Text("Conexion", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+            Text("Connection", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
             Spacer(Modifier.height(8.dp))
-            Text("Conectado al servidor de tu organización.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text("Connected to your organization server.", color = MaterialTheme.colorScheme.onSurfaceVariant)
             if (message != null) {
                 Spacer(Modifier.height(8.dp))
                 Text(message, color = MainPalette.success)
@@ -1166,15 +1166,15 @@ internal fun ProfileSection(
             }
         }
         CardSection {
-            Text("Avisos en segundo plano", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+            Text("Background notifications", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
             Spacer(Modifier.height(8.dp))
-            Text("Sincronizacion en segundo plano: ${if (backgroundSyncArmed) "Activa" else "Inactiva"}")
-            Text("Permiso de notificaciones: ${if (notificationsGranted) "Concedido" else "No concedido"}")
-            Text("Canal de llamadas: ${if (matchCallNotificationsEnabled) "Activo" else "Silenciado o bloqueado"}")
-            Text("Bateria sin restricciones: ${if (batteryOptimizationIgnored) "Si" else "No"}")
+            Text("Background synchronization: ${if (backgroundSyncArmed) "Active" else "Inactive"}")
+            Text("Notification permission: ${if (notificationsGranted) "Granted" else "Not granted"}")
+            Text("Match call channel: ${if (matchCallNotificationsEnabled) "Active" else "Muted or blocked"}")
+            Text("Unrestricted battery: ${if (batteryOptimizationIgnored) "Yes" else "No"}")
             Spacer(Modifier.height(8.dp))
             Text(
-                "En telefonos modernos como Pixel, si alguno de estos puntos falla, los avisos pueden no llegar con la app en segundo plano.",
+                "On modern phones such as Pixel, notifications may not arrive in the background if any of these checks fails.",
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Spacer(Modifier.height(8.dp))
@@ -1183,21 +1183,21 @@ internal fun ProfileSection(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Button(onClick = onEnableNotifications, modifier = Modifier.fillMaxWidth()) {
-                    Text(if (notificationsGranted) "Abrir notificaciones" else "Activar notificaciones")
+                    Text(if (notificationsGranted) "Open notifications" else "Enable notifications")
                 }
                 OutlinedButton(onClick = onOpenNotificationSettings, modifier = Modifier.fillMaxWidth()) {
-                    Text("Canal de llamadas")
+                    Text("Match call channel")
                 }
                 OutlinedButton(onClick = onOpenBatterySettings, modifier = Modifier.fillMaxWidth()) {
-                    Text("Bateria")
+                    Text("Battery")
                 }
             }
         }
         com.gestortorneos.player.updates.AndroidUpdateSettings()
         if (session != null) {
             CardSection {
-                Text("Sesión de jugador", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                OutlinedButton(onClick = onLogout, modifier = Modifier.fillMaxWidth()) { Text("Cerrar sesión") }
+                Text("Player session", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                OutlinedButton(onClick = onLogout, modifier = Modifier.fillMaxWidth()) { Text("Sign out") }
             }
         }
     }
@@ -1234,13 +1234,13 @@ private fun MatchSummaryCard(match: PlayerMatchDto) {
                 isWinner = match.winnerParticipantId == match.myParticipantId,
             )
             PlayerMatchParticipantRow(
-                displayName = match.opponentDisplayName ?: "Por determinar",
+                displayName = match.opponentDisplayName ?: "To be determined",
                 scoreLabel = playerMatchScoreLabel(match, match.opponentParticipantId, match.opponentScore ?: 0),
                 characterName = latestCharacterForParticipant(match, match.opponentParticipantId),
                 isWinner = match.winnerParticipantId != null && match.winnerParticipantId == match.opponentParticipantId,
             )
             if (!match.stationLabel.isNullOrBlank()) {
-                Text("Estacion: ${match.stationLabel}", color = mutedColor)
+                Text("Station: ${match.stationLabel}", color = mutedColor)
             }
             MatchCallTimer(match)
             LadderReadyTimer(match)
@@ -1309,22 +1309,22 @@ private fun PlayerMatchCard(
                 isWinner = match.winnerParticipantId == match.myParticipantId,
             )
             PlayerMatchParticipantRow(
-                displayName = match.opponentDisplayName ?: "Por determinar",
+                displayName = match.opponentDisplayName ?: "To be determined",
                 scoreLabel = playerMatchScoreLabel(match, match.opponentParticipantId, match.opponentScore ?: 0),
                 characterName = latestCharacterForParticipant(match, match.opponentParticipantId),
                 isWinner = match.winnerParticipantId != null && match.winnerParticipantId == match.opponentParticipantId,
             )
             MainStatusBadge(playerMatchStatusLabel(match.status), match.status)
             if (!match.stationLabel.isNullOrBlank()) {
-                Text("Estacion: ${match.stationLabel}", color = mutedColor)
+                Text("Station: ${match.stationLabel}", color = mutedColor)
             }
             MatchCallTimer(match)
             if (!requiresCharacters) {
-                Text("Este juego no requiere selección de personajes.", color = mutedColor)
+                Text("This game does not require character selection.", color = mutedColor)
             }
             if (!reportingEnabled) {
                 Text(
-                    "El organizador ha deshabilitado el reporte de jugadores para este torneo. Espera a que el staff anote el resultado.",
+                    "The organizer has disabled player reporting for this tournament. Wait for staff to enter the result.",
                     color = MainPalette.warning
                 )
             }
@@ -1339,7 +1339,7 @@ private fun PlayerMatchCard(
                         showQuickReportModeDialog = true
                     }
                 ) {
-                    Text("Anotacion rapida")
+                    Text("Quick report")
                 }
             }
 
@@ -1357,7 +1357,7 @@ private fun PlayerMatchCard(
                             opponentCharacter = ""
                         }
                     }) {
-                        Text("Resetear set")
+                        Text("Reset set")
                     }
                 }
             }
@@ -1469,7 +1469,7 @@ private fun PlayerQuickReportDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Column {
-            Text(if (LocalPlayerBusy.current) "Enviando resultado…" else "Anotación rápida")
+            Text(if (LocalPlayerBusy.current) "Submitting result…" else "Quick report")
             LocalPlayerError.current?.let { Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium) }
         } },
         text = {
@@ -1480,17 +1480,17 @@ private fun PlayerQuickReportDialog(
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 Text(
-                    "Prepara el resultado final, revisa cada juego y anotalo de una sola vez.",
+                    "Prepare the final result, review each game and submit everything together.",
                     color = introTextColor,
                 )
                 Text(
-                    "Modalidad del set: Bo$effectiveBestOf",
+                    "Set format: Bo$effectiveBestOf",
                     color = introTextColor,
                 )
                 if (requiresCharacters) {
                     CharacterPickerField(
                                         teamSize = match.entrantSize, gameTitle = match.gameTitle,
-                        label = "Mi personaje (base)",
+                        label = "My character (base)",
                         selectedName = myBaseCharacter,
                         onSelected = {
                             myBaseCharacter = it
@@ -1499,7 +1499,7 @@ private fun PlayerQuickReportDialog(
                     )
                     CharacterPickerField(
                                         teamSize = match.entrantSize, gameTitle = match.gameTitle,
-                        label = "Personaje rival (base)",
+                        label = "Opponent character (base)",
                         selectedName = opponentBaseCharacter,
                         onSelected = {
                             opponentBaseCharacter = it
@@ -1507,7 +1507,7 @@ private fun PlayerQuickReportDialog(
                         },
                     )
                 }
-                Text("Resultado final", fontWeight = FontWeight.SemiBold)
+                Text("Final result", fontWeight = FontWeight.SemiBold)
                 Row(
                     modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -1529,7 +1529,7 @@ private fun PlayerQuickReportDialog(
                     }
                 }
                 if (games.isNotEmpty()) {
-                    Text("Resumen de juegos", fontWeight = FontWeight.SemiBold)
+                    Text("Game summary", fontWeight = FontWeight.SemiBold)
                     games.forEachIndexed { index, game ->
                         Card(
                             modifier = Modifier.fillMaxWidth(),
@@ -1539,7 +1539,7 @@ private fun PlayerQuickReportDialog(
                                 modifier = Modifier.padding(12.dp),
                                 verticalArrangement = Arrangement.spacedBy(8.dp),
                             ) {
-                                Text("Juego ${index + 1}", fontWeight = FontWeight.SemiBold, color = summaryCardTextColor)
+                                Text("Game ${index + 1}", fontWeight = FontWeight.SemiBold, color = summaryCardTextColor)
                                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                     Button(
                                         onClick = {
@@ -1565,7 +1565,7 @@ private fun PlayerQuickReportDialog(
                                             contentColor = if (game.winnerParticipantId == match.opponentParticipantId) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
                                         ),
                                     ) {
-                                        Text(match.opponentDisplayName ?: "Rival")
+                                        Text(match.opponentDisplayName ?: "Opponent")
                                     }
                                 }
                                 if (requiresCharacters) {
@@ -1582,7 +1582,7 @@ private fun PlayerQuickReportDialog(
                                     )
                                     CharacterPickerField(
                                         teamSize = match.entrantSize, gameTitle = match.gameTitle,
-                                        label = match.opponentDisplayName ?: "Rival",
+                                        label = match.opponentDisplayName ?: "Opponent",
                                         selectedName = game.opponentCharacter,
                                         labelColor = summaryCardLabelColor,
                                         onSelected = { character ->
@@ -1603,12 +1603,12 @@ private fun PlayerQuickReportDialog(
                 onClick = { onSubmit(selectedScoreKey.orEmpty(), myBaseCharacter, opponentBaseCharacter, games) },
                 enabled = canSubmit,
             ) {
-                Text("Anotar")
+                Text("Report")
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancelar")
+                Text("Cancel")
             }
         },
     )
@@ -1626,10 +1626,10 @@ private fun PlayerQuickReportBestOfDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Modalidad del set") },
+        title = { Text("Set format") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("Antes de anotar, indica si este set se jugo al formato por defecto del torneo o a otra modalidad.")
+                Text("Before reporting, select whether this set used the default tournament format or a different one.")
                 options.forEach { option ->
                     val isSelected = localSelection == option
                     Button(
@@ -1642,7 +1642,7 @@ private fun PlayerQuickReportBestOfDialog(
                     ) {
                         Text(
                             when (option) {
-                                null -> "Formato del torneo (Bo$defaultBestOf)"
+                                null -> "Tournament format (Bo$defaultBestOf)"
                                 else -> "Bo$option"
                             },
                         )
@@ -1652,12 +1652,12 @@ private fun PlayerQuickReportBestOfDialog(
         },
         confirmButton = {
             TextButton(onClick = { onConfirm(localSelection) }) {
-                Text("Continuar")
+                Text("Continue")
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancelar")
+                Text("Cancel")
             }
         },
     )
@@ -1711,7 +1711,7 @@ private fun buildPlayerQuickReportGames(
 }
 
 private fun playerQuickReportWinnerName(match: PlayerMatchDto, option: PlayerQuickReportScoreOption): String {
-    return if (option.winnerParticipantId == match.myParticipantId) match.myDisplayName else (match.opponentDisplayName ?: "Rival")
+    return if (option.winnerParticipantId == match.myParticipantId) match.myDisplayName else (match.opponentDisplayName ?: "Opponent")
 }
 
 @Composable
@@ -1785,7 +1785,7 @@ private fun SingleCharacterPickerField(
             )
         ) {
             if (selectedName.isBlank()) {
-                Text("Seleccionar personaje")
+                Text("Select character")
             } else {
                 SmashCharacterInlineLabel(selectedName, textColor = selectedTextColor)
             }
@@ -1831,7 +1831,7 @@ private fun CharacterPickerDialog(
                 OutlinedTextField(
                     value = query,
                     onValueChange = { query = it },
-                    label = { Text("Filtrar personaje") },
+                    label = { Text("Filter characters") },
                     modifier = Modifier.fillMaxWidth()
                 )
                 LazyColumn(
@@ -1863,7 +1863,7 @@ private fun CharacterPickerDialog(
         },
         confirmButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cerrar")
+                Text("Close")
             }
         }
     )
@@ -1914,7 +1914,7 @@ private fun LadderReadyTimer(match: PlayerMatchDto) {
         }
     }
 
-    Text("Tiempo para confirmar: ${formatSeconds(remainingSeconds)}", color = MainPalette.warning)
+    Text("Time to confirm: ${formatSeconds(remainingSeconds)}", color = MainPalette.warning)
 }
 
 @Composable
@@ -2003,7 +2003,7 @@ private fun CharacterPickerField(label: String, selectedName: String, teamSize: 
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         repeat(size) { index ->
             SingleCharacterPickerField(
-                label = if (size == 1) label else "$label · Jugador ${index + 1}",
+                label = if (size == 1) label else "$label · Player ${index + 1}",
                 selectedName = names.getOrElse(index) { "" }, gameTitle = gameTitle, labelColor = labelColor,
                 onSelected = { character ->
                     onSelected(List(size) { if (it == index) character else names.getOrElse(it) { "" } }.joinToString(" / "))
@@ -2017,23 +2017,23 @@ private fun CharacterPickerField(label: String, selectedName: String, teamSize: 
 private fun LadderReviewActions(onReview: (String,String?)->Unit) {
     var reason by rememberSaveable { mutableStateOf("") }
     var showDispute by rememberSaveable { mutableStateOf(false) }
-    Button(onClick={onReview("CONFIRM",null)}) { Text("Confirmar resultado") }
-    TextButton(onClick={showDispute=!showDispute}) { Text("No estoy de acuerdo") }
+    Button(onClick={onReview("CONFIRM",null)}) { Text("Confirm result") }
+    TextButton(onClick={showDispute=!showDispute}) { Text("I disagree") }
     if(showDispute) {
-        OutlinedTextField(reason,{reason=it},label={Text("Motivo de la disputa")},modifier=Modifier.fillMaxWidth())
-        Button(enabled=reason.trim().length in 3..500,onClick={onReview("DISPUTE",reason.trim())}) { Text("Enviar a organización") }
+        OutlinedTextField(reason,{reason=it},label={Text("Dispute reason")},modifier=Modifier.fillMaxWidth())
+        Button(enabled=reason.trim().length in 3..500,onClick={onReview("DISPUTE",reason.trim())}) { Text("Send to staff") }
     }
 }
 
 internal fun playerMatchStatusLabel(status: String): String = when (status) {
-    "PENDING", "CREATED" -> "Pendiente"
-    "CALLED" -> "Llamado a jugar"
-    "PLAYING", "IN_PROGRESS" -> "En juego"
-    "READY_CHECK" -> "Confirma que estás listo"
-    "PENDING_REVIEW", "AWAITING_CONFIRMATION" -> "Resultado por confirmar"
-    "DISPUTED" -> "En revisión"
-    "COMPLETED" -> "Finalizado"
-    "WALKOVER" -> "Victoria por ausencia"
-    "CANCELLED" -> "Cancelado"
+    "PENDING", "CREATED" -> "Pending"
+    "CALLED" -> "Called to play"
+    "PLAYING", "IN_PROGRESS" -> "Playing"
+    "READY_CHECK" -> "Confirm you are ready"
+    "PENDING_REVIEW", "AWAITING_CONFIRMATION" -> "Result awaiting confirmation"
+    "DISPUTED" -> "Under review"
+    "COMPLETED" -> "Finished"
+    "WALKOVER" -> "Win by absence"
+    "CANCELLED" -> "Cancelled"
     else -> status
 }

@@ -146,27 +146,27 @@ fun HomeSection(
 ) {
     Column(modifier = Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         CardSection {
-            Text("Centro de torneos", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-            Text("Controla torneos, participantes y enfrentamientos en tiempo real desde Windows.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text("Tournament hub", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+            Text("Manage tournaments, participants and matches in real time on Windows.", color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(8.dp))
             FlowRow(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Button(onClick = onCreateTournament) { Text("Crear torneo") }
-                OutlinedButton(onClick = onCreateStartggTournament) { Text("Importar de start.gg") }
-                OutlinedButton(onClick = onOpenTournament) { Text("Abrir torneos") }
+                Button(onClick = onCreateTournament) { Text("Create tournament") }
+                OutlinedButton(onClick = onCreateStartggTournament) { Text("Import from start.gg") }
+                OutlinedButton(onClick = onOpenTournament) { Text("Open tournaments") }
             }
         }
         CardSection {
-            Text("Ultimos torneos", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+            Text("Recent tournaments", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
             Spacer(Modifier.height(8.dp))
             if (tournaments.isEmpty()) {
-                Text("Todavia no hay torneos cargados.")
+                Text("No tournaments loaded yet.")
             } else {
                 tournaments.take(5).forEach { tournament ->
                     Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.34f)), border = surfaceCardBorder()) {
                         Column(Modifier.fillMaxWidth().padding(14.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                             Text(tournament.title, fontWeight = FontWeight.SemiBold)
                             Text("${tournament.game} · ${tournament.format}", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            Text("Inscritos ${tournament.registeredParticipants}/${tournament.maxParticipants} · ${mainStatusLabel(tournament.status)}", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text("Registered ${tournament.registeredParticipants}/${tournament.maxParticipants} · ${mainStatusLabel(tournament.status)}", color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
                 }
@@ -206,31 +206,31 @@ fun ProfileSection(
     }
     Column(modifier = Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         CardSection {
-            Text("Perfil", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-            Text("Ajustes del cliente y acceso administrativo.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text("Profile", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+            Text("Client settings and management access.", color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         MainAdaptivePair(first = {
             CardSection {
-                MainSectionHeading("Cuenta de gestión")
+                MainSectionHeading("Management account")
                 ManagementAccountControls(onLogout = onAdminLogout, showLogout = false)
             }
         }, second = { CardSection { AppearanceControls() } })
         if (isAdmin) {
             CardSection {
-                Text("Notificaciones de grupos", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                Text("Activa o desactiva los avisos a Telegram y WhatsApp desde la app de gestion.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("Group notifications", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                Text("Enable or disable Telegram and WhatsApp notifications from the management app.", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 if (adminNotificationSettings == null) {
                     Spacer(Modifier.height(8.dp))
-                    MainBusyLabel(if (adminNotificationSettingsLoading) "Cargando estado…" else "Estado no disponible", adminNotificationSettingsLoading)
+                    MainBusyLabel(if (adminNotificationSettingsLoading) "Loading status…" else "Status unavailable", adminNotificationSettingsLoading)
                 } else {
                     val telegramEnabled = adminNotificationSettings.telegramEnabled
                     val whatsappEnabled = adminNotificationSettings.whatsappEnabled
-                    MainSwitchRow("Telegram", if (telegramEnabled) "Avisos activados" else "Avisos desactivados", telegramEnabled, !adminNotificationSettingsLoading) { onUpdateNotificationSettings(it, whatsappEnabled) }
+                    MainSwitchRow("Telegram", if (telegramEnabled) "Notifications enabled" else "Notifications disabled", telegramEnabled, !adminNotificationSettingsLoading) { onUpdateNotificationSettings(it, whatsappEnabled) }
                     HorizontalDivider()
-                    MainSwitchRow("WhatsApp", if (whatsappEnabled) "Avisos activados" else "Avisos desactivados", whatsappEnabled, !adminNotificationSettingsLoading) { onUpdateNotificationSettings(telegramEnabled, it) }
+                    MainSwitchRow("WhatsApp", if (whatsappEnabled) "Notifications enabled" else "Notifications disabled", whatsappEnabled, !adminNotificationSettingsLoading) { onUpdateNotificationSettings(telegramEnabled, it) }
                 }
                 if (adminNotificationSettingsLoading && adminNotificationSettings != null) {
-                    MainBusyLabel("Guardando…", true)
+                    MainBusyLabel("Saving…", true)
                 }
                 if (adminNotificationSettingsError != null) {
                     Text(adminNotificationSettingsError, color = MaterialTheme.colorScheme.error)
@@ -238,13 +238,13 @@ fun ProfileSection(
             }
         }
         CardSection {
-            Text("Actualizaciones", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+            Text("Updates", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
             Spacer(Modifier.height(8.dp))
             Text("Version actual: $desktopVersion", color = MaterialTheme.colorScheme.onSurfaceVariant)
             Text("Backend: $backendUrl", color = MaterialTheme.colorScheme.onSurfaceVariant)
             if (availableUpdate != null) {
                 Spacer(Modifier.height(8.dp))
-                Text("Nueva version disponible: ${availableUpdate.targetVersion}", color = MainPalette.success, fontWeight = FontWeight.SemiBold)
+                Text("New version available: ${availableUpdate.targetVersion}", color = MainPalette.success, fontWeight = FontWeight.SemiBold)
                 availableUpdate.notes?.takeIf { it.isNotBlank() }?.let {
                     Text(it, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
@@ -256,11 +256,11 @@ fun ProfileSection(
             Spacer(Modifier.height(8.dp))
             FlowRow(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 OutlinedButton(onClick = onCheckForUpdates, enabled = !updateCheckInProgress) {
-                    Text(if (updateCheckInProgress) "Comprobando..." else "Buscar actualizaciones")
+                    Text(if (updateCheckInProgress) "Comprobando..." else "Check for updates")
                 }
                 if (availableUpdate != null) {
                     Button(onClick = { onOpenUpdate(availableUpdate) }) {
-                        Text("Descargar e instalar")
+                        Text("Download and install")
                     }
                 }
             }
@@ -268,9 +268,9 @@ fun ProfileSection(
         CardSection {
             Text("Display web", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
             Spacer(Modifier.height(8.dp))
-            Text("URL del display: $displayWebUrl", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text("Display URL: $displayWebUrl", color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
-        MainDangerButton("Cerrar sesión", onClick = onAdminLogout)
+        MainDangerButton("Sign out", onClick = onAdminLogout)
     }
 }
 
@@ -303,9 +303,9 @@ fun TournamentManagementSection(
     var showSettings by rememberSaveable(tournament.id) { mutableStateOf(false) }
     var showFortniteReset by rememberSaveable(tournament.id) { mutableStateOf(false) }
     if (showFortniteReset) AlertDialog(onDismissRequest = { showFortniteReset = false },
-        title = { Text("Reiniciar Fortnite") }, text = { Text("Se borrarán grupos, actas y puntos. Se conservan los inscritos para sortear nuevos grupos.") },
-        confirmButton = { TextButton(onClick = { showFortniteReset = false; onResetTournament() }) { Text("Reiniciar") } },
-        dismissButton = { TextButton(onClick = { showFortniteReset = false }) { Text("Cancelar") } })
+        title = { Text("Reset Fortnite") }, text = { Text("Groups, score sheets and points will be deleted. Entrants are kept for a new group draw.") },
+        confirmButton = { TextButton(onClick = { showFortniteReset = false; onResetTournament() }) { Text("Reset") } },
+        dismissButton = { TextButton(onClick = { showFortniteReset = false }) { Text("Cancel") } })
     var showParticipants by rememberSaveable(tournament.id) { mutableStateOf(false) }
     val canChangeEntrants = !tournament.isStartggMirrored && tournament.status in listOf("DRAFT", "PUBLISHED", "CHECK IN", "READY") && !(tournament.bracketMode == "FORTNITE" && tournament.status == "READY")
     var showBracket by rememberSaveable(tournament.id) { mutableStateOf(false) }
@@ -368,26 +368,26 @@ fun TournamentManagementSection(
             "${tournament.registeredParticipants}/${tournament.maxParticipants} ${if (tournament.teamSize > 1) "equipos" else "participantes"}", tournamentNextStep(tournament.status, tournament.bracketMode == "FORTNITE"))
         TournamentReviewAnchor("COMPETITION", reviewAnchors)
         CardSection {
-            MainSectionHeading("Competición")
+            MainSectionHeading("Competition")
             tournament.importProgress?.let { Text(it) }
             TournamentActivityButton(tournament.id)
             Spacer(Modifier.height(8.dp))
             FlowRow(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                OutlinedButton(onClick = onRefresh) { Text("Refrescar") }
+                OutlinedButton(onClick = onRefresh) { Text("Refresh") }
                 if (!tournament.isStartggMirrored && tournament.bracketMode != "FORTNITE") {
                     OutlinedButton(onClick = onGenerateBracket, enabled = tournament.registeredParticipants >= 2) {
-                        Text(if (tournament.matches.isEmpty()) "Generar bracket" else "Regenerar bracket")
+                        Text(if (tournament.matches.isEmpty()) "Generate bracket" else "Regenerate bracket")
                     }
                 }
                 if (!tournament.isStartggMirrored && tournament.status == "READY" && tournament.bracketMode != "FORTNITE") {
-                    Button(onClick = onStartTournament, enabled = tournament.matches.isNotEmpty()) { Text("Iniciar torneo") }
+                    Button(onClick = onStartTournament, enabled = tournament.matches.isNotEmpty()) { Text("Start tournament") }
                 }
             }
             MainOtherActions {
-                Text("Estas acciones pueden borrar la bracket, los resultados o el torneo.", style = MaterialTheme.typography.bodySmall)
+                Text("These actions may delete the bracket, results or tournament.", style = MaterialTheme.typography.bodySmall)
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    if (!tournament.isStartggMirrored) MainDangerButton("Reiniciar torneo", onClick = { if (tournament.bracketMode == "FORTNITE") showFortniteReset = true else onResetTournament() })
-                    if (isAdmin) MainDangerButton("Eliminar torneo", onClick = onDeleteTournament)
+                    if (!tournament.isStartggMirrored) MainDangerButton("Reset tournament", onClick = { if (tournament.bracketMode == "FORTNITE") showFortniteReset = true else onResetTournament() })
+                    if (isAdmin) MainDangerButton("Delete tournament", onClick = onDeleteTournament)
                 }
             }
         }
@@ -405,16 +405,16 @@ fun TournamentManagementSection(
         if (tournament.bracketMode == "FORTNITE") FortnitePanelButton(tournament.id)
         CardSection {
             TournamentReviewAnchor("SETTINGS", reviewAnchors)
-            CollapsibleHeader(if (tournament.isStartggMirrored) "Ajustes de start.gg" else "Ajustes del torneo", showSettings) { showSettings = !showSettings }
+            CollapsibleHeader(if (tournament.isStartggMirrored) "start.gg settings" else "Tournament settings", showSettings) { showSettings = !showSettings }
             if (showSettings) {
                 if (tournament.isStartggMirrored) {
                     Spacer(Modifier.height(12.dp))
-                    Text("Este torneo usa la bracket espejo de start.gg. Aqui solo puedes reimportar la bracket, ajustar el tiempo de llamada y definir cuantas setups estan disponibles.", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    FormField(tournament.startggEventUrl.orEmpty(), { _ -> }, "Event importado", 3)
-                    FormField(callTimeoutText, { callTimeoutText = it.filter(Char::isDigit) }, "Minutos para llamada")
-                    FormField(setupCountText, { setupCountText = it.filter(Char::isDigit) }, "Numero de setups")
-                    SegmentedChoiceRow("Stream", listOf("0" to "Sin stream", "1" to "1 stream", "2" to "2 streams"), streamCountText) { streamCountText = it }
-                    Button(onClick = { onSaveSetups(setupCountText.toIntOrNull() ?: tournament.setupCount, streamCountText.toIntOrNull() ?: 0) }) { Text("Guardar setups y stream") }
+                    Text("This tournament uses a start.gg mirror bracket. Here you can reimport the bracket, adjust the call timeout and set the available setup count.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    FormField(tournament.startggEventUrl.orEmpty(), { _ -> }, "Event imported", 3)
+                    FormField(callTimeoutText, { callTimeoutText = it.filter(Char::isDigit) }, "Call timeout in minutes")
+                    FormField(setupCountText, { setupCountText = it.filter(Char::isDigit) }, "Setup count")
+                    SegmentedChoiceRow("Stream", listOf("0" to "No stream", "1" to "1 stream", "2" to "2 streams"), streamCountText) { streamCountText = it }
+                    Button(onClick = { onSaveSetups(setupCountText.toIntOrNull() ?: tournament.setupCount, streamCountText.toIntOrNull() ?: 0) }) { Text("Save setups and streams") }
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                         Button(onClick = {
                             onSaveSettings(
@@ -437,44 +437,44 @@ fun TournamentManagementSection(
                                     streamCount = streamCountText.toIntOrNull() ?: 0
                                 )
                             )
-                        }) { Text("Guardar ajustes") }
+                        }) { Text("Save settings") }
                         Button(
                             onClick = { tournament.startggEventUrl?.let(onImportStartgg) },
                             enabled = !tournament.startggEventUrl.isNullOrBlank()
-                        ) { Text("Reimportar bracket") }
+                        ) { Text("Reimport bracket") }
                     }
                 } else {
                     Spacer(Modifier.height(12.dp))
-                    FormField(title, { title = it }, "Nombre del torneo")
-                    FormField(gameTitle, { gameTitle = it }, "Videojuego")
-                    FormField(description, { description = it }, "Descripcion", 3)
-                    FormField(platform, { platform = it }, "Plataforma")
-                    FormField(maxParticipantsText, { maxParticipantsText = it.filter(Char::isDigit) }, if (tournament.teamSize > 1) "Máximo de equipos" else "Maximo de participantes")
-                    SegmentedChoiceRow("Modo de bracket", if (tournament.teamSize > 1) listOf("STANDARD" to "Estándar por equipos") else listOf("STANDARD" to "Estandar", "MKART" to "MKART", "FORTNITE" to "Fortnite"), bracketMode) { bracketMode = it }
+                    FormField(title, { title = it }, "Tournament name")
+                    FormField(gameTitle, { gameTitle = it }, "Game")
+                    FormField(description, { description = it }, "Description", 3)
+                    FormField(platform, { platform = it }, "Platform")
+                    FormField(maxParticipantsText, { maxParticipantsText = it.filter(Char::isDigit) }, if (tournament.teamSize > 1) "Maximum teams" else "Maximum participants")
+                    SegmentedChoiceRow("Bracket mode", if (tournament.teamSize > 1) listOf("STANDARD" to "Standard teams") else listOf("STANDARD" to "Standard", "MKART" to "MKART", "FORTNITE" to "Fortnite"), bracketMode) { bracketMode = it }
                     if (bracketMode == "FORTNITE") {
                         FortniteConfiguration(fortniteLobbySize, fortniteGamesPerRound) { size, games -> fortniteLobbySize = size; fortniteGamesPerRound = games }
-                        Text("Los puestos y las partidas se pueden cambiar antes de sortear los grupos.")
+                        Text("Seats and games can be changed before drawing groups.")
                     }
                     if (bracketMode != "FORTNITE") {
-                    SegmentedChoiceRow("Formato", listOf("SINGLE_ELIMINATION" to "Elim. simple", "DOUBLE_ELIMINATION" to "Doble elim."), format) { format = it }
+                    SegmentedChoiceRow("Format", listOf("SINGLE_ELIMINATION" to "Elim. simple", "DOUBLE_ELIMINATION" to "Doble elim."), format) { format = it }
                     if (bracketMode == "MKART") {
-                        SegmentedChoiceRow("Bracket principal", listOf("1" to "MKART pasa 1", "2" to "MKART pasa 2"), mkartAdvanceMode) { mkartAdvanceMode = it }
+                        SegmentedChoiceRow("Main bracket", listOf("1" to "MKART pasa 1", "2" to "MKART pasa 2"), mkartAdvanceMode) { mkartAdvanceMode = it }
                         if (format == "DOUBLE_ELIMINATION") {
-                            SegmentedChoiceRow("Bracket de repesca", listOf("1" to "MKART pasa 1", "2" to "MKART pasa 2"), mkartLosersAdvanceMode) { mkartLosersAdvanceMode = it }
+                            SegmentedChoiceRow("Losers bracket", listOf("1" to "MKART pasa 1", "2" to "MKART pasa 2"), mkartLosersAdvanceMode) { mkartLosersAdvanceMode = it }
                         }
                     } else if (format == "DOUBLE_ELIMINATION") {
-                        SegmentedChoiceRow("Serie winners", listOf("1" to "Bo1", "3" to "Bo3", "5" to "Bo5"), winnersBestOfText) { winnersBestOfText = it }
-                        SegmentedChoiceRow("Serie losers", listOf("1" to "Bo1", "3" to "Bo3", "5" to "Bo5"), losersBestOfText) { losersBestOfText = it }
+                        SegmentedChoiceRow("Winners series", listOf("1" to "Bo1", "3" to "Bo3", "5" to "Bo5"), winnersBestOfText) { winnersBestOfText = it }
+                        SegmentedChoiceRow("Losers series", listOf("1" to "Bo1", "3" to "Bo3", "5" to "Bo5"), losersBestOfText) { losersBestOfText = it }
                     } else {
-                        SegmentedChoiceRow("Serie", listOf("1" to "Bo1", "3" to "Bo3", "5" to "Bo5"), winnersBestOfText) { winnersBestOfText = it }
+                        SegmentedChoiceRow("Series", listOf("1" to "Bo1", "3" to "Bo3", "5" to "Bo5"), winnersBestOfText) { winnersBestOfText = it }
                     }
-                    SegmentedChoiceRow("Seeding", listOf("MANUAL" to "Manual", "RANDOM" to "Aleatorio"), seedingMethod) { seedingMethod = it }
+                    SegmentedChoiceRow("Seeding", listOf("MANUAL" to "Manual", "RANDOM" to "Random"), seedingMethod) { seedingMethod = it }
                     }
-                    FormField(callTimeoutText, { callTimeoutText = it.filter(Char::isDigit) }, "Minutos para llamada")
-                    FormField(setupCountText, { setupCountText = it.filter(Char::isDigit) }, "Numero de setups")
-                    SegmentedChoiceRow("Stream", listOf("0" to "Sin stream", "1" to "1 stream", "2" to "2 streams"), streamCountText) { streamCountText = it }
-                    Button(onClick = { onSaveSetups(setupCountText.toIntOrNull() ?: tournament.setupCount, streamCountText.toIntOrNull() ?: 0) }) { Text("Guardar setups y stream") }
-                    FormField(playAreaName, { playAreaName = it.take(80) }, "Zona de juego (opcional)")
+                    FormField(callTimeoutText, { callTimeoutText = it.filter(Char::isDigit) }, "Call timeout in minutes")
+                    FormField(setupCountText, { setupCountText = it.filter(Char::isDigit) }, "Setup count")
+                    SegmentedChoiceRow("Stream", listOf("0" to "No stream", "1" to "1 stream", "2" to "2 streams"), streamCountText) { streamCountText = it }
+                    Button(onClick = { onSaveSetups(setupCountText.toIntOrNull() ?: tournament.setupCount, streamCountText.toIntOrNull() ?: 0) }) { Text("Save setups and streams") }
+                    FormField(playAreaName, { playAreaName = it.take(80) }, "Play area (optional)")
                     Spacer(Modifier.height(8.dp))
                     Button(onClick = {
                         val winners = winnersBestOfText.toIntOrNull() ?: tournament.winnersBestOf
@@ -504,16 +504,16 @@ fun TournamentManagementSection(
                                 playAreaName = playAreaName.trim().takeIf { it.isNotEmpty() }
                             )
                         )
-                    }) { Text("Guardar ajustes") }
+                    }) { Text("Save settings") }
                 }
             }
         }
         if (!tournament.isStartggMirrored) {
             CardSection {
             TournamentReviewAnchor("PARTICIPANTS", reviewAnchors)
-                CollapsibleHeader(if (tournament.teamSize > 1) "Equipos y seeds" else "Jugadores inscritos", showParticipants) { showParticipants = !showParticipants }
+                CollapsibleHeader(if (tournament.teamSize > 1) "Teams and seeds" else "Registered players", showParticipants) { showParticipants = !showParticipants }
                 if (showParticipants) {
-                    Text(if (canChangeEntrants) "Cambiar inscritos o seeds requiere generar de nuevo la bracket preparada." else "Los inscritos y seeds están cerrados. Reinicia el torneo para cambiarlos.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(if (canChangeEntrants) "Changing entrants or seeds requires regenerating the prepared bracket." else "Entrants and seeds are locked. Reset the tournament to change them.", color = MaterialTheme.colorScheme.onSurfaceVariant)
                     val addParticipant: () -> Unit = {
                         val name = newParticipantName.trim()
                         if (canChangeEntrants && name.isNotEmpty() && (tournament.teamSize == 1 || tournament.matches.isEmpty())) {
@@ -526,16 +526,16 @@ fun TournamentManagementSection(
                         OutlinedTextField(
                             value = newParticipantName,
                             onValueChange = { newParticipantName = it },
-                            label = { Text(if (tournament.teamSize > 1) "Nuevo equipo" else "Nuevo jugador") },
+                            label = { Text(if (tournament.teamSize > 1) "New team" else "New player") },
                             singleLine = true,
                             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                             keyboardActions = KeyboardActions(onDone = { addParticipant() }),
                             modifier = Modifier.weight(1f)
                         )
-                        Button(onClick = addParticipant, enabled = canChangeEntrants && newParticipantName.isNotBlank() && (tournament.teamSize == 1 || tournament.matches.isEmpty())) { Text("Anadir") }
+                        Button(onClick = addParticipant, enabled = canChangeEntrants && newParticipantName.isNotBlank() && (tournament.teamSize == 1 || tournament.matches.isEmpty())) { Text("Add") }
                     }
                     Spacer(Modifier.height(12.dp))
-                    if (tournament.participants.isEmpty()) Text("Todavía no hay inscripciones.") else tournament.participants.forEach { participant ->
+                    if (tournament.participants.isEmpty()) Text("No registrations yet.") else tournament.participants.forEach { participant ->
                         EditableParticipantRow(
                             participant = participant,
                             canChangeSeed = canChangeEntrants,
@@ -549,21 +549,21 @@ fun TournamentManagementSection(
         }
         CardSection {
             TournamentReviewAnchor("BRACKET", reviewAnchors)
-            CollapsibleHeader(if (tournament.bracketMode == "FORTNITE") "Fortnite: consulta los grupos en su panel" else "Bracket del torneo", showBracket) { showBracket = !showBracket }
+            CollapsibleHeader(if (tournament.bracketMode == "FORTNITE") "Fortnite: view groups in its panel" else "Tournament bracket", showBracket) { showBracket = !showBracket }
             if (showBracket && tournament.bracketMode != "FORTNITE") {
                 Spacer(Modifier.height(12.dp))
                 if (tournament.matches.isEmpty()) {
                     Text(
                         if (tournament.isStartggMirrored) {
-                            "Todavia no hay bracket importada. Usa Reimportar bracket para volver a cargarla."
+                            "No bracket has been imported yet. Use Reimport bracket to reload it."
                         } else {
-                            "Genera la bracket para ver la relacion entre enfrentamientos."
+                            "Generate the bracket to see match connections."
                         }
                     )
                 } else {
                     SegmentedChoiceRow(
-                        title = "Render de bracket",
-                        options = listOf("CLASSIC" to "Clasica", "MODERN" to "Moderna"),
+                        title = "Bracket rendering",
+                        options = listOf("CLASSIC" to "Classic", "MODERN" to "Modern"),
                         selected = bracketRenderMode,
                         onSelect = { bracketRenderMode = it }
                     )
@@ -584,16 +584,16 @@ fun TournamentManagementSection(
             }
         }
         CardSection {
-            CollapsibleHeader("Setups del torneo", showSetups) { showSetups = !showSetups }
+            CollapsibleHeader("Tournament setups", showSetups) { showSetups = !showSetups }
             if (showSetups) {
                 Spacer(Modifier.height(12.dp))
                 val setups = buildTournamentSetups(tournament)
                 val occupiedSetups = setups.filter { it.occupyingMatchLabel != null }
                 val freeSetups = setups.filter { it.occupyingMatchLabel == null }
-                Text("Setups en uso", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Text("Occupied setups", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                 Spacer(Modifier.height(8.dp))
                 if (occupiedSetups.isEmpty()) {
-                    Text("Ahora mismo no hay ninguna setup ocupada.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("No setups are currently occupied.", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 } else {
                     occupiedSetups.forEach { setup ->
                         Card(
@@ -606,7 +606,7 @@ fun TournamentManagementSection(
                             ) {
                                 Text(setup.label, fontWeight = FontWeight.SemiBold)
                                 Text(
-                                    "Estado: En uso\nMatch: ${setup.occupyingMatchLabel}\nSet: ${setup.occupyingParticipants}",
+                                    "Status: In use\nMatch: ${setup.occupyingMatchLabel}\nSet: ${setup.occupyingParticipants}",
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
@@ -614,10 +614,10 @@ fun TournamentManagementSection(
                     }
                 }
                 Spacer(Modifier.height(12.dp))
-                Text("Setups libres", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Text("Available setups", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                 Spacer(Modifier.height(8.dp))
                 if (freeSetups.isEmpty()) {
-                    Text("Todos los setups y streams están ocupados en este momento.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("All setups and streams are currently occupied.", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 } else {
                     freeSetups.forEach { setup ->
                         Card(
@@ -629,7 +629,7 @@ fun TournamentManagementSection(
                                 verticalArrangement = Arrangement.spacedBy(6.dp)
                             ) {
                                 Text(setup.label, fontWeight = FontWeight.SemiBold)
-                                Text("Estado: Libre", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text("Status: Available", color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                         }
                     }
@@ -639,7 +639,7 @@ fun TournamentManagementSection(
         if (tournament.isStartggMirrored) {
             CardSection {
             TournamentReviewAnchor("LADDER", reviewAnchors)
-                CollapsibleHeader("Ladder interna", showLadder) { showLadder = !showLadder }
+                CollapsibleHeader("Internal ladder", showLadder) { showLadder = !showLadder }
                 if (showLadder) {
                     Spacer(Modifier.height(12.dp))
                     DesktopLadderManagementPanel(
@@ -668,13 +668,13 @@ fun TournamentManagementSection(
 fun ArchivedTournamentSection(tournament: DesktopTournamentDetail, busy: Boolean, onRestore: () -> Unit) {
     Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Text(tournament.title, style = MaterialTheme.typography.headlineMedium)
-        Text("Archivado · solo lectura. Está fuera del display. Desarchívalo para hacer cambios.")
+        Text("Archived · read-only. Hidden from the display. Unarchive to make changes.")
         com.gestortorneos.ui.TournamentArchiveButton(true, busy, onRestore)
         TournamentActivityButton(tournament.id)
         if (tournament.bracketMode == "FORTNITE") FortnitePanelButton(tournament.id)
         else ModernBracketBoard(tournament.matches, hideAutomaticAdvances = !tournament.isStartggMirrored)
         if (tournament.teamSize > 1 && !tournament.isStartggMirrored) TeamRosterPanel(tournament.id) {}
-        Text("Participantes", style = MaterialTheme.typography.titleMedium)
+        Text("Participants", style = MaterialTheme.typography.titleMedium)
         tournament.participants.forEach { Text(it.displayName) }
     }
 }
@@ -692,19 +692,19 @@ private fun DesktopLadderManagementPanel(
     val ladder = tournament.ladder
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         FlowRow(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Button(onClick={showConsole=true}) { Text("Control, ajustes y resultados") }
-            Button(enabled=ladder?.session?.status != "ACTIVE",onClick = onStart) { Text("Iniciar ladder") }
-            OutlinedButton(enabled=ladder?.session?.status == "ACTIVE",onClick = onFinalize) { Text("Cerrar inscripciones") }
+            Button(onClick={showConsole=true}) { Text("Control, settings and results") }
+            Button(enabled=ladder?.session?.status != "ACTIVE",onClick = onStart) { Text("Start ladder") }
+            OutlinedButton(enabled=ladder?.session?.status == "ACTIVE",onClick = onFinalize) { Text("Close registration") }
         }
 
         if (ladder?.session != null) {
-            Text(if(ladder.session.options?.closing == true) "Inscripciones cerradas · terminando sets" else if(ladder.session.options?.paused == true) "Ladder pausada" else "Estado: ${ladder.session.status}", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(if(ladder.session.options?.closing == true) "Registration closed · finishing sets" else if(ladder.session.options?.paused == true) "Ladder paused" else "Status: ${ladder.session.status}", color = MaterialTheme.colorScheme.onSurfaceVariant)
         } else {
-            Text("La ladder no esta activa en este torneo.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text("The ladder is not active in this tournament.", color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
 
         if (!ladder?.queue.isNullOrEmpty()) {
-            Text("Cola", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Text("Queue", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
             ladder!!.queue.forEach { entry ->
                 Card(
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.24f)),
@@ -716,14 +716,14 @@ private fun DesktopLadderManagementPanel(
         }
 
         if (!ladder?.activeMatches.isNullOrEmpty()) {
-            Text("Matches activos", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Text("Active matches", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
             ladder!!.activeMatches.forEach { match ->
                 DesktopLadderManagementMatchCard(match)
             }
         }
 
         if (!ladder?.standings.isNullOrEmpty()) {
-            Text("Clasificacion", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Text("Standings", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
             ladder!!.standings.forEachIndexed { index, standing ->
                 Card(
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.24f)),
@@ -754,7 +754,7 @@ private fun DesktopLadderManagementMatchCard(match: DesktopLadderMatchSummary) {
             verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             Text(match.participantsLabel, fontWeight = FontWeight.SemiBold)
-            Text("Estado: ${com.gestortorneos.ui.ladderStatus(match.status)} · Bo${match.bestOf}", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text("Status: ${com.gestortorneos.ui.ladderStatus(match.status)} · Bo${match.bestOf}", color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }
@@ -782,7 +782,7 @@ fun TournamentOperationsSection(
         Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text("Fortnite · ${tournament.title}", style = MaterialTheme.typography.headlineSmall)
             FortnitePanelButton(tournament.id)
-            OutlinedButton(onClick = onRefresh) { Text("Actualizar") }
+            OutlinedButton(onClick = onRefresh) { Text("Refresh") }
         }
         return
     }
@@ -800,7 +800,7 @@ fun TournamentOperationsSection(
     val filteredActiveMatches = activeMatches.filter { matchMatchesPlayerQuery(it, operationsSearchQuery) }
     val activeSections = buildDesktopMatchSections(filteredActiveMatches, forCompleted = false)
     val hasConcurrentPools = activeSections.size > 1
-    val tournamentStarted = (tournament.isStartggMirrored || isTournamentStarted(tournament.status)) && tournament.status != "IMPORTANDO"
+    val tournamentStarted = (tournament.isStartggMirrored || isTournamentStarted(tournament.status)) && tournament.status != "IMPORTING"
     var completedExpanded by rememberSaveable(tournament.id) { mutableStateOf(false) }
     val expandedPools = remember(tournament.id) { mutableStateMapOf<String, Boolean>() }
     val expandedCompletedSections = remember(tournament.id) { mutableStateMapOf<String, Boolean>() }
@@ -827,19 +827,19 @@ fun TournamentOperationsSection(
     val operationsContent: @Composable () -> Unit = {
     Column(modifier = Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         CardSection {
-            Text("Operativa de ${tournament.title}", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+            Text("Match operations for ${tournament.title}", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
             TournamentActivityButton(tournament.id)
             tournament.importProgress?.let { Text(it) }
-            Text("Llama matches, marca inicio y resuelve resultados sin mezclar torneos.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text("Call matches, mark starts and report results within each tournament.", color = MaterialTheme.colorScheme.onSurfaceVariant)
             if (!tournamentStarted) {
-                Text("Primero inicia el torneo desde la seccion Torneos para habilitar la operativa.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("Start the tournament from Tournaments first to enable match operations.", color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             Spacer(Modifier.height(8.dp))
-            OutlinedButton(onClick = onRefresh) { Text("Refrescar") }
+            OutlinedButton(onClick = onRefresh) { Text("Refresh") }
             Spacer(Modifier.height(8.dp))
             SegmentedChoiceRow(
-                title = "Render de operativa",
-                options = listOf("CLASSIC" to "Clasica", "MODERN" to "Moderna"),
+                title = "Match operations layout",
+                options = listOf("CLASSIC" to "Classic", "MODERN" to "Modern"),
                 selected = renderMode,
                 onSelect = { renderMode = it }
             )
@@ -848,22 +848,22 @@ fun TournamentOperationsSection(
                 OutlinedTextField(
                     value = operationsSearchQuery,
                     onValueChange = { operationsSearchQuery = it },
-                    label = { Text("Buscar jugador en operativa") },
+                    label = { Text("Find player in match operations") },
                     modifier = Modifier.fillMaxWidth()
                 )
             } else {
                 Spacer(Modifier.height(8.dp))
                 Text(
-                    "Toca solo los matches operables para abrir acciones. Los estados CALLED y PLAYING se resaltan con temporizador.",
+                    "Select actionable matches to open actions. CALLED and PLAYING states are highlighted with a timer.",
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
         if (adaptiveManagementPresentation && renderMode == "CLASSIC") {
             CardSection {
-                CollapsibleHeader("Completadas (${completedMatches.size})", completedExpanded) { completedExpanded = !completedExpanded }
+                CollapsibleHeader("Completed (${completedMatches.size})", completedExpanded) { completedExpanded = !completedExpanded }
                 val rows = if (completedExpanded) completedMatches.filter { matchMatchesPlayerQuery(it, operationsSearchQuery) } else filteredActiveMatches
-                if (rows.isEmpty()) Text("No hay matches que coincidan con esta búsqueda.")
+                if (rows.isEmpty()) Text("No matches match this search.")
                 rows.forEach { match -> key(match.id) {
                     CompactMatchRow(match.poolAwareLabel, match.participantNames, match.scores, match.status, match.stationLabel,
                         selectedModernMatchId == match.id) { selectedModernMatchId = match.id }
@@ -871,10 +871,10 @@ fun TournamentOperationsSection(
             }
         } else if (renderMode == "CLASSIC") {
             CardSection {
-                Text("Matches pendientes", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                Text("Pending matches", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                 Spacer(Modifier.height(12.dp))
                 if (filteredActiveMatches.isEmpty()) {
-                    Text("No hay matches pendientes que coincidan con esa busqueda.")
+                    Text("No pending matches match this search.")
                 } else if (hasConcurrentPools) {
                     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                         activeSections.forEach { section ->
@@ -937,18 +937,18 @@ fun TournamentOperationsSection(
             }
             if (completedMatches.isNotEmpty()) {
                 CardSection {
-                    CollapsibleHeader("Partidas completadas (${completedMatches.size})", completedExpanded) { completedExpanded = !completedExpanded }
+                    CollapsibleHeader("Completed matches (${completedMatches.size})", completedExpanded) { completedExpanded = !completedExpanded }
                     if (completedExpanded) {
                         Spacer(Modifier.height(12.dp))
                         OutlinedTextField(
                             value = completedSearchQuery,
                             onValueChange = { completedSearchQuery = it },
-                            label = { Text("Buscar partida completada") },
+                            label = { Text("Find completed match") },
                             modifier = Modifier.fillMaxWidth()
                         )
                         Spacer(Modifier.height(8.dp))
                         if (completedSections.isEmpty()) {
-                            Text("No hay partidas completadas que coincidan con esa busqueda.")
+                            Text("No completed matches match this search.")
                         } else {
                             completedSections.forEach { section ->
                                 val expanded = expandedCompletedSections[section.key] ?: false
@@ -989,10 +989,10 @@ fun TournamentOperationsSection(
             }
         } else {
             CardSection {
-                Text("Bracket operativa", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                Text("Match operations bracket", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                 Spacer(Modifier.height(12.dp))
                 if (tournament.matches.isEmpty()) {
-                    Text("Todavia no hay bracket para este torneo.")
+                    Text("This tournament has no bracket yet.")
                 } else {
                     ModernBracketBoard(
                         matches = tournament.matches,
@@ -1042,12 +1042,12 @@ private fun EditableParticipantRow(participant: DesktopParticipantSummary, canCh
     var seedText by remember(participant.id, participant.seed) { mutableStateOf(participant.seed?.toString().orEmpty()) }
     Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)), border = surfaceCardBorder()) {
         Column(Modifier.fillMaxWidth().padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            FormField(displayName, { displayName = it }, "Jugador")
-            if (canChangeSeed) FormField(seedText, { seedText = it }, "Seed") else Text("Seed: ${participant.seed ?: "Sin asignar"}")
+            FormField(displayName, { displayName = it }, "Player")
+            if (canChangeSeed) FormField(seedText, { seedText = it }, "Seed") else Text("Seed: ${participant.seed ?: "Unassigned"}")
             Text(participant.status, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedButton(onClick = onDelete, enabled = canChangeSeed) { Text("Borrar") }
-                Button(onClick = { onSave(displayName.trim(), if (canChangeSeed) seedText.trim().toIntOrNull() else participant.seed) }, enabled = canRename && displayName.isNotBlank() && (!canChangeSeed || com.gestortorneos.ui.isValidParticipantSeed(seedText))) { Text("Guardar") }
+                OutlinedButton(onClick = onDelete, enabled = canChangeSeed) { Text("Delete") }
+                Button(onClick = { onSave(displayName.trim(), if (canChangeSeed) seedText.trim().toIntOrNull() else participant.seed) }, enabled = canRename && displayName.isNotBlank() && (!canChangeSeed || com.gestortorneos.ui.isValidParticipantSeed(seedText))) { Text("Save") }
             }
         }
     }
@@ -1129,7 +1129,7 @@ private fun MatchRow(
         && enabled
 
     val canPinnedReport = enabled && contendersReady && !isMarioKart && match.status != "CANCELLED"
-    PublishMatchPrimaryAction(if (completed) "Corregir resultado" else "Anotar resultado", canPinnedReport) {
+    PublishMatchPrimaryAction(if (completed) "Correct result" else "Report result", canPinnedReport) {
         if (canPinnedReport) {
                         quickReportPresetCharacterOne = desktopLatestCharacterForParticipant(match, match.participantIds.getOrNull(0).orEmpty()) ?: ""
                         quickReportPresetCharacterTwo = desktopLatestCharacterForParticipant(match, match.participantIds.getOrNull(1).orEmpty()) ?: ""
@@ -1143,16 +1143,16 @@ private fun MatchRow(
         Column(Modifier.fillMaxWidth().padding(14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Text(match.poolAwareLabel, fontWeight = FontWeight.Bold)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) { MainStatusBadge(mainStatusLabel(match.status), match.status); Text("Bo${match.effectiveBestOf}", Modifier.padding(vertical = 6.dp)) }
-            if (match.stationLabel != null) Text("Estacion ${match.stationLabel}", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            if (match.stationLabel != null) Text("Station ${match.stationLabel}", color = MaterialTheme.colorScheme.onSurfaceVariant)
             if (called && !started && !completed) {
-                Text("Timer de llamada: ${formatTimer(remainingSeconds)}", color = if (timerExpired) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary)
+                Text("Call timer: ${formatTimer(remainingSeconds)}", color = if (timerExpired) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary)
             }
             MatchSyncFeedback(match.tournamentId, match.id, match.syncStatus, enabled)
             if (supportsCharacterReporting && contendersReady && match.participantIds.size >= 2) {
                 val firstCharacter = desktopLatestCharacterForParticipant(match, match.participantIds[0])
                 val secondCharacter = desktopLatestCharacterForParticipant(match, match.participantIds[1])
                 Text(
-                    "Personajes: ${match.participantNames[0]} ${firstCharacter ?: "sin elegir"} · ${match.participantNames[1]} ${secondCharacter ?: "sin elegir"}",
+                    "Characters: ${match.participantNames[0]} ${firstCharacter ?: "sin elegir"} · ${match.participantNames[1]} ${secondCharacter ?: "sin elegir"}",
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 OutlinedButton(
@@ -1163,7 +1163,7 @@ private fun MatchRow(
                     },
                     enabled = enabled && contendersReady
                 ) {
-                    Text("Elegir personajes")
+                    Text("Choose characters")
                 }
             }
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -1173,7 +1173,7 @@ private fun MatchRow(
                         enabled = enabled && contendersReady && !called && !completed && availableSetups.isNotEmpty(),
                         modifier = Modifier.widthIn(min = 180.dp)
                     ) {
-                        Text(stationValue.ifBlank { "Seleccionar destino" })
+                        Text(stationValue.ifBlank { "Select destination" })
                     }
                     DropdownMenu(
                         expanded = setupMenuExpanded,
@@ -1190,16 +1190,16 @@ private fun MatchRow(
                         }
                     }
                 }
-                Button(onClick = onCall, enabled = enabled && contendersReady && !called && !completed && stationValue.isNotBlank()) { Text("Llamar") }
-                Button(onClick = onStart, enabled = enabled && contendersReady && called && !started && !completed) { Text("Iniciar partida") }
-                OutlinedButton(onClick = onCancelCall, enabled = enabled && contendersReady && called && !started && !completed) { Text("Cancelar") }
+                Button(onClick = onCall, enabled = enabled && contendersReady && !called && !completed && stationValue.isNotBlank()) { Text("Call") }
+                Button(onClick = onStart, enabled = enabled && contendersReady && called && !started && !completed) { Text("Start match") }
+                OutlinedButton(onClick = onCancelCall, enabled = enabled && contendersReady && called && !started && !completed) { Text("Cancel") }
                 if (canResetMirroredPartialSet || (!isStartggMirrored && (match.status == "COMPLETED" || match.status == "WALKOVER" || match.status == "PLAYING"))) {
-                    MainDangerButton("Reiniciar set", enabled = enabled && contendersReady, onClick = onResetMatch)
+                    MainDangerButton("Reset set", enabled = enabled && contendersReady, onClick = onResetMatch)
                 }
             }
             if (enabled && contendersReady && !called && !completed && availableSetups.isEmpty()) {
                 Text(
-                    "No hay destinos libres. Espera a que termine otro match o añade setups o streams en las opciones del torneo.",
+                    "No destinations are available. Wait for another match to finish or add setups or streams in tournament settings.",
                     color = MainPalette.warning
                 )
             }
@@ -1237,9 +1237,9 @@ private fun MatchRow(
                             Text(
                                 if (isMarioKart) {
                                     when {
-                                        advanced -> "Clasificado"
-                                        eliminated -> "Eliminado"
-                                        else -> "Pendiente"
+                                        advanced -> "Qualified"
+                                        eliminated -> "Eliminated"
+                                        else -> "Pending"
                                     }
                                 } else {
                                     desktopPlayerMatchScoreLabel(isWalkover, eliminated, score)
@@ -1251,7 +1251,7 @@ private fun MatchRow(
                         Spacer(Modifier.width(8.dp))
                         if (isMarioKart) {
                             OutlinedButton(onClick = { onSelectAdvancer(participant.id) }, enabled = enabled && contendersReady && started && !completed) {
-                                Text(if (advanced) "Pasa" else "Clasificar")
+                                Text(if (advanced) "Advances" else "Qualify")
                             }
                         } else {
                             Button(
@@ -1274,14 +1274,14 @@ private fun MatchRow(
                                     }
                                 },
                                 enabled = enabled && contendersReady && started && !completed && match.status != "CANCELLED"
-                            ) { Text("Suma juego") }
+                            ) { Text("Add game win") }
                         }
                     }
                 }
             }
             if (!contendersReady) {
                 Text(
-                    "Pendiente de resolver enfrentamientos anteriores para definir contendientes.",
+                    "Waiting for earlier matches to determine the opponents.",
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
@@ -1289,12 +1289,12 @@ private fun MatchRow(
                 Text(
                     if (timerExpired) {
                         if (isStartggMirrored) {
-                            "El tiempo se agoto. Puedes hacer DQ desde aqui o seguir con el match."
+                            "Time is up. You can disqualify here or continue with the match."
                         } else {
-                            "El tiempo se agoto. Resuelve la ausencia o confirma que el match empezo."
+                            "Time is up. Resolve the absence or confirm that the match started."
                         }
                     } else {
-                        "Primero marca que el match ha comenzado para habilitar el conteo."
+                        "Mark the match as started before recording wins."
                     },
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -1310,7 +1310,7 @@ private fun MatchRow(
                         showQuickReportModeDialog = true
                     }
                 ) {
-                    Text("Anotacion rapida")
+                    Text("Quick report")
                 }
             }
             if (completed && canQuickReport) {
@@ -1324,26 +1324,26 @@ private fun MatchRow(
                         showQuickReportModeDialog = true
                     }
                 ) {
-                    Text("Corregir resultado")
+                    Text("Correct result")
                 }
             }
             if (enabled && contendersReady && called && !started && !completed && !isStartggMirrored && timerExpired && match.participantIds.size == 2) {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedButton(onClick = { onResolveAbsence("NONE_PRESENT") }) { Text("Ninguno") }
+                    OutlinedButton(onClick = { onResolveAbsence("NONE_PRESENT") }) { Text("None") }
                     OutlinedButton(onClick = { onResolveAbsence("SLOT_1_ABSENT") }) { Text("Falta ${match.participantNames[0]}") }
                     OutlinedButton(onClick = { onResolveAbsence("SLOT_2_ABSENT") }) { Text("Falta ${match.participantNames[1]}") }
                 }
             }
             if (canResolveAbsence) {
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                Text("Incidencias", style = MaterialTheme.typography.labelLarge)
+                Text("Issues", style = MaterialTheme.typography.labelLarge)
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     MainDangerButton("DQ ${match.participantNames.getOrElse(0) { "slot 1" }}", onClick = { onResolveAbsence("SLOT_1_ABSENT") })
                     MainDangerButton("DQ ${match.participantNames.getOrElse(1) { "slot 2" }}", onClick = { onResolveAbsence("SLOT_2_ABSENT") })
                 }
             }
             if (enabled && contendersReady && !isMarioKart && completed && match.participantIds.size >= 2 && match.participantNames.size >= 2 && !isStartggMirrored) {
-                Text("Corregir resultado completo", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("Correct full result", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Button(
                         onClick = {
@@ -1364,7 +1364,7 @@ private fun MatchRow(
                                 onReportWinner(match.participantIds[0])
                             }
                         }
-                    ) { Text("Gana ${match.participantNames[0]}") }
+                    ) { Text("Wins ${match.participantNames[0]}") }
                     Button(
                         onClick = {
                             if (supportsCharacterReporting) {
@@ -1384,20 +1384,20 @@ private fun MatchRow(
                                 onReportWinner(match.participantIds[1])
                             }
                         }
-                    ) { Text("Gana ${match.participantNames[1]}") }
+                    ) { Text("Wins ${match.participantNames[1]}") }
                 }
             }
             if (isReportedMirroredSet) {
                 Text(
-                    "Puedes corregir este set desde la app. Si cambias ganador, DQ o resultado, los sets dependientes se reajustaran.",
+                    "You can correct this set in the app. Changing the winner, DQ or result will adjust dependent sets.",
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             if (match.winnerName != null) {
-                Text("Ganador del match: ${match.winnerName}", color = MainPalette.success, fontWeight = FontWeight.Bold)
+                Text("Match winner: ${match.winnerName}", color = MainPalette.success, fontWeight = FontWeight.Bold)
             } else if (match.advancingParticipantIds.isNotEmpty()) {
                 val advancers = match.participants.filter { match.advancingParticipantIds.contains(it.id) }.joinToString { it.name }
-                Text("Clasificados: $advancers", color = MainPalette.success, fontWeight = FontWeight.Bold)
+                Text("Qualifiers: $advancers", color = MainPalette.success, fontWeight = FontWeight.Bold)
             }
         }
     }
@@ -1508,7 +1508,7 @@ private fun CharacterSelectionDialog(
 ) {
     DialogWindow(
         onCloseRequest = onDismiss,
-        title = "Personajes del set",
+        title = "Set characters",
         resizable = true,
         state = rememberDialogState(size = DpSize(720.dp, 680.dp))
     ) {
@@ -1520,9 +1520,9 @@ private fun CharacterSelectionDialog(
                     .widthIn(max = 720.dp).fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Text("Personajes del set", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                Text("Set characters", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                 Text(
-                    "Selecciona el personaje de ${characterGameLabel(gameTitle)} para cada jugador. Puedes filtrar escribiendo.",
+                    "Select the ${characterGameLabel(gameTitle)} character for each player. Type to filter.",
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Column(
@@ -1551,13 +1551,13 @@ private fun CharacterSelectionDialog(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End
                 ) {
-                    OutlinedButton(onClick = onDismiss) { Text("Cancelar") }
+                    OutlinedButton(onClick = onDismiss) { Text("Cancel") }
                     Spacer(Modifier.width(8.dp))
                     Button(
                         onClick = onConfirm,
                         enabled = listOf(firstCharacter, secondCharacter).all { value -> value.split("/").size == characterCount && value.split("/").all { it.isNotBlank() } }
                     ) {
-                        Text("Guardar")
+                        Text("Save")
                     }
                 }
             }
@@ -1578,7 +1578,7 @@ private fun FilterableCharacterSelector(
             repeat(characterCount) { index ->
                 val picks = selectedCharacter.split(" / ").toMutableList()
                 while (picks.size < characterCount) picks.add("")
-                FilterableCharacterSelector(gameTitle = gameTitle, label = label + " · Jugador " + (index + 1), selectedCharacter = picks[index], onCharacterSelected = { chosen ->
+                FilterableCharacterSelector(gameTitle = gameTitle, label = label + " · Player " + (index + 1), selectedCharacter = picks[index], onCharacterSelected = { chosen ->
                     picks[index] = chosen
                     onCharacterSelected(picks.joinToString(" / "))
                 })
@@ -1601,7 +1601,7 @@ private fun FilterableCharacterSelector(
         OutlinedTextField(
             value = filterText,
             onValueChange = { filterText = it },
-            label = { Text("Filtrar personaje") },
+            label = { Text("Filter characters") },
             modifier = Modifier.fillMaxWidth()
         )
         Box(
@@ -1619,7 +1619,7 @@ private fun FilterableCharacterSelector(
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 if (filteredCharacters.isEmpty()) {
-                    Text("No hay resultados", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("No results", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 } else {
                     filteredCharacters.forEach { characterName ->
                         val selected = selectedCharacter == characterName
@@ -1705,7 +1705,7 @@ private fun DesktopQuickReportResultDialog(
 
     DialogWindow(
         onCloseRequest = { if (!isSaving) onDismiss() },
-        title = "Anotacion rapida",
+        title = "Quick report",
         resizable = true,
         state = rememberDialogState(size = DpSize(860.dp, 760.dp))
     ) {
@@ -1717,13 +1717,13 @@ private fun DesktopQuickReportResultDialog(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 errorMessage?.let { Text(it, color = MaterialTheme.colorScheme.error) }
-                Text("Anotacion rapida", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                Text("Quick report", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                 Text(
-                    "Selecciona el resultado final y revisa los juegos antes de anotarlos de una sola vez.",
+                    "Select the final result and review games before submitting them together.",
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Text(
-                    "Modalidad del set: Bo$effectiveBestOf",
+                    "Set format: Bo$effectiveBestOf",
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontWeight = FontWeight.SemiBold,
                 )
@@ -1756,7 +1756,7 @@ private fun DesktopQuickReportResultDialog(
                             }
                         )
                     }
-                    Text("Resultado final", fontWeight = FontWeight.SemiBold)
+                    Text("Final result", fontWeight = FontWeight.SemiBold)
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         scoreOptions.forEach { option ->
                             val isSelected = option.key == selectedScoreKey
@@ -1775,7 +1775,7 @@ private fun DesktopQuickReportResultDialog(
                         }
                     }
                     if (games.isNotEmpty()) {
-                        Text("Resumen de juegos", fontWeight = FontWeight.SemiBold)
+                        Text("Game summary", fontWeight = FontWeight.SemiBold)
                         games.forEachIndexed { index, game ->
                             Card(
                                 colors = CardDefaults.cardColors(
@@ -1787,7 +1787,7 @@ private fun DesktopQuickReportResultDialog(
                                     modifier = Modifier.padding(12.dp),
                                     verticalArrangement = Arrangement.spacedBy(8.dp),
                                 ) {
-                                    Text("Juego ${index + 1}", fontWeight = FontWeight.SemiBold)
+                                    Text("Game ${index + 1}", fontWeight = FontWeight.SemiBold)
                                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                         Button(
                                             onClick = {
@@ -1849,7 +1849,7 @@ private fun DesktopQuickReportResultDialog(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End
                 ) {
-                    OutlinedButton(onClick = onDismiss, enabled = !isSaving) { Text("Cancelar") }
+                    OutlinedButton(onClick = onDismiss, enabled = !isSaving) { Text("Cancel") }
                     Spacer(Modifier.width(8.dp))
                     Button(
                         onClick = {
@@ -1858,7 +1858,7 @@ private fun DesktopQuickReportResultDialog(
                         },
                         enabled = canSubmit && !isSaving,
                     ) {
-                        Text(if (isSaving) "Guardando..." else "Anotar")
+                        Text(if (isSaving) "Guardando..." else "Report")
                     }
                 }
             }
@@ -1874,7 +1874,7 @@ private fun DesktopQuickReportBestOfDialog(
     onConfirm: (Int?) -> Unit,
 ) {
     val options = listOf(
-        null to "Por defecto del torneo (Bo$defaultBestOf)",
+        null to "Tournament default (Bo$defaultBestOf)",
         1 to "Bo1",
         3 to "Bo3",
         5 to "Bo5",
@@ -1883,7 +1883,7 @@ private fun DesktopQuickReportBestOfDialog(
 
     DialogWindow(
         onCloseRequest = onDismiss,
-        title = "Modalidad del set",
+        title = "Set format",
         resizable = false,
         state = rememberDialogState(size = DpSize(560.dp, 420.dp))
     ) {
@@ -1892,9 +1892,9 @@ private fun DesktopQuickReportBestOfDialog(
                 modifier = Modifier.fillMaxSize().padding(20.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Text("Modalidad del set", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                Text("Set format", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                 Text(
-                    "Antes de anotar, indica si este set se jugo con el formato por defecto del torneo o con una modalidad distinta.",
+                    "Before reporting, select whether this set used the default tournament format or a different one.",
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -1918,9 +1918,9 @@ private fun DesktopQuickReportBestOfDialog(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End
                 ) {
-                    OutlinedButton(onClick = onDismiss) { Text("Cancelar") }
+                    OutlinedButton(onClick = onDismiss) { Text("Cancel") }
                     Spacer(Modifier.width(8.dp))
-                    Button(onClick = { onConfirm(selectedOption) }) { Text("Continuar") }
+                    Button(onClick = { onConfirm(selectedOption) }) { Text("Continue") }
                 }
             }
         }
@@ -1985,7 +1985,7 @@ private fun buildDesktopQuickReportGames(
 
 private fun desktopWinnerNameForOption(match: DesktopMatchSummary, option: DesktopQuickReportScoreOption): String {
     val winnerIndex = match.participantIds.indexOf(option.winnerParticipantId)
-    return match.participantNames.getOrElse(winnerIndex) { "Ganador" }
+    return match.participantNames.getOrElse(winnerIndex) { "Winner" }
 }
 
 private fun currentDesktopQuickReportGames(match: DesktopMatchSummary): List<DesktopQuickReportGameDraft> {
@@ -2089,7 +2089,7 @@ private fun desktopSectionLabel(match: DesktopMatchSummary, forCompleted: Boolea
         return pool
     }
     return when (match.bracketStage.uppercase()) {
-        "WINNERS", "LOSERS", "FINALS" -> if (forCompleted) "Bracket final" else "Bracket final"
+        "WINNERS", "LOSERS", "FINALS" -> if (forCompleted) "Final bracket" else "Final bracket"
         else -> match.bracketStage.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
     }
 }
@@ -2097,7 +2097,7 @@ private fun desktopSectionLabel(match: DesktopMatchSummary, forCompleted: Boolea
 private fun desktopSectionSortOrder(label: String): Int {
     return when {
         label.startsWith("Pool", ignoreCase = true) -> 0
-        label.equals("Bracket final", ignoreCase = true) -> 1
+        label.equals("Final bracket", ignoreCase = true) -> 1
         else -> 2
     }
 }
@@ -2138,7 +2138,7 @@ private fun CollapsibleHeader(title: String, expanded: Boolean, onToggle: () -> 
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(title, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onPrimaryContainer)
-            Text(if (expanded) "Ocultar" else "Mostrar", color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f))
+            Text(if (expanded) "Hide" else "Show", color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f))
         }
     }
 }
@@ -2264,7 +2264,7 @@ private fun PoolBracketCluster(
             Row(horizontalArrangement = Arrangement.spacedBy(18.dp)) {
                 rounds.forEach { (round, roundMatches) ->
                     Column(modifier = Modifier.width(if (roundMatches.any { it.participantNames.size > 2 }) 320.dp else 280.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
-                        Text("Ronda $round", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text("Round $round", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         roundMatches.sortedBy { it.matchNumber }.forEach { match ->
                             RelationalMatchNode(
                                 match = match,
@@ -2340,7 +2340,7 @@ private fun isDesktopPoolMatch(match: DesktopMatchSummary): Boolean {
     if (!match.phaseGroupName.isNullOrBlank()) return true
     val phaseName = match.phaseName?.trim().orEmpty()
     if (phaseName.isBlank()) return false
-    return phaseName.startsWith("Pool", ignoreCase = true) || phaseName.startsWith("Grupo", ignoreCase = true)
+    return phaseName.startsWith("Pool", ignoreCase = true) || phaseName.startsWith("Group", ignoreCase = true)
 }
 
 private fun desktopHasExplicitPhaseStructure(match: DesktopMatchSummary): Boolean {
@@ -2389,11 +2389,11 @@ private fun buildDesktopModernSections(matches: List<DesktopMatchSummary>): List
 
     return sections.sortedBy { section ->
         when {
-            section.label.startsWith("Pool ", ignoreCase = true) || section.label.startsWith("Grupo ", ignoreCase = true) -> 0
+            section.label.startsWith("Pool ", ignoreCase = true) || section.label.startsWith("Group ", ignoreCase = true) -> 0
             section.label.equals("Pools", ignoreCase = true) -> 1
             section.label.equals("Winners bracket", ignoreCase = true) -> 2
             section.label.equals("Losers bracket", ignoreCase = true) -> 3
-            section.label.equals("Bracket final", ignoreCase = true) -> 4
+            section.label.equals("Final bracket", ignoreCase = true) -> 4
             else -> 5
         }.toString() + ":" + section.label
     }
@@ -2544,7 +2544,7 @@ private fun desktopTournamentBracketLabel(match: DesktopMatchSummary): String {
     return if (phaseName.isNotBlank() && !phaseName.equals(match.bracketStage, ignoreCase = true) && !phaseName.equals("bracket", ignoreCase = true)) {
         phaseName
     } else {
-        "Bracket final"
+        "Final bracket"
     }
 }
 
@@ -2627,7 +2627,7 @@ internal fun ModernBracketBoard(
     Column {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
             TextButton(enabled = fullscreen != null && !expanded, onClick = { fullscreen?.open(owner) { expandedContent.value() } }) {
-                Text("Pantalla completa")
+                Text("Fullscreen")
             }
         }
         if (expanded) {
@@ -2888,9 +2888,9 @@ internal fun RelationalMatchNode(
             if (isCalledState) {
                 Text("Tiempo restante: ${formatTimer(remainingSeconds)}", color = MainPalette.warning, fontWeight = FontWeight.SemiBold)
             } else if (isPlayingState) {
-                Text("Jugando: ${formatElapsedTimer(elapsedSeconds)}", color = MainPalette.success, fontWeight = FontWeight.SemiBold)
+                Text("Playing: ${formatElapsedTimer(elapsedSeconds)}", color = MainPalette.success, fontWeight = FontWeight.SemiBold)
             }
-            if (isMarioKart) Text("Heat de ${match.participantNames.size} jugadores · pasan ${match.advancersRequired}", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            if (isMarioKart) Text("Heat of ${match.participantNames.size} players · ${match.advancersRequired} advance", color = MaterialTheme.colorScheme.onSurfaceVariant)
             match.participantNames.forEachIndexed { index, name ->
                 val participantId = match.participantIds.getOrElse(index) { "" }
                 val advanced = if (isMarioKart) match.advancingParticipantIds.contains(participantId) else participantId == match.winnerParticipantId
@@ -3000,7 +3000,7 @@ private fun DesktopModernMatchActionsDialog(
     }
     DialogWindow(
         onCloseRequest = onDismiss,
-        title = "Operativa moderna · ${match.poolAwareLabel}",
+        title = "Modern match operations · ${match.poolAwareLabel}",
         resizable = true,
         state = rememberDialogState(size = DpSize(760.dp, 900.dp))
     ) {
@@ -3013,8 +3013,8 @@ private fun DesktopModernMatchActionsDialog(
                         .verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Text("Acciones del match", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-                    Text("Usa la misma operativa clasica, pero abierta desde la bracket moderna.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("Match actions", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                    Text("Use the same classic match actions from the modern bracket.", color = MaterialTheme.colorScheme.onSurfaceVariant)
                     MatchRow(
                         match = match,
                         gameTitle = tournament.game,
@@ -3039,7 +3039,7 @@ private fun DesktopModernMatchActionsDialog(
                         onResetMatch = onResetMatch
                     )
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                        Button(onClick = onDismiss) { Text("Cerrar") }
+                        Button(onClick = onDismiss) { Text("Close") }
                     }
                 }
             }
@@ -3053,7 +3053,7 @@ private fun roundTitle(stage: String, round: Int, totalRounds: Int): String {
         "WINNERS" -> "Winners"
         "LOSERS" -> "Losers"
         "FINALS" -> "Grand Final"
-        else -> "Ronda"
+        else -> "Round"
     }
     if (stage == "FINALS") return if (round > 1) "Grand Final Reset" else prefix
     return when {
@@ -3067,7 +3067,7 @@ private fun stageTitle(stage: String): String = when (stage.uppercase()) {
     "POOLS" -> "Pools"
     "WINNERS" -> "Winners bracket"
     "LOSERS" -> "Losers bracket"
-    "FINALS" -> "Bracket final"
+    "FINALS" -> "Final bracket"
     else -> stage.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
 }
 
@@ -3146,7 +3146,7 @@ fun CreateTournamentDialog(onDismiss: () -> Unit, onCreate: (CreateTournamentInp
     var title by remember { mutableStateOf("") }
     var gameTitle by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
-    var platform by remember { mutableStateOf("PC / Consola") }
+    var platform by remember { mutableStateOf("PC / Console") }
     var maxParticipants by remember { mutableStateOf("16") }
     var fortniteLobbySize by remember { mutableStateOf(20) }
     var fortniteGamesPerRound by remember { mutableStateOf(3) }
@@ -3166,7 +3166,7 @@ fun CreateTournamentDialog(onDismiss: () -> Unit, onCreate: (CreateTournamentInp
     var playAreaName by remember { mutableStateOf("") }
     DialogWindow(
         onCloseRequest = onDismiss,
-        title = "Nuevo torneo",
+        title = "New tournament",
         resizable = true,
         state = rememberDialogState(size = DpSize(860.dp, 820.dp))
     ) {
@@ -3180,53 +3180,53 @@ fun CreateTournamentDialog(onDismiss: () -> Unit, onCreate: (CreateTournamentInp
                         .verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
-                    Text("Crear torneo", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-                    FormField(title, { title = it }, "Nombre del torneo")
+                    Text("Create tournament", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                    FormField(title, { title = it }, "Tournament name")
                     LocalTournamentKind(if (teamSize > 1) "TEAMS" else bracketMode) { type ->
                         teamSize = if (type == "TEAMS") teamSize.takeIf { it > 1 } ?: 5 else 1
                         if (type != "TEAMS") { reserveCount = 0; allowSoloRegistration = false }
                         bracketMode = if (type == "TEAMS") "STANDARD" else type
                         if (type == "FORTNITE" && gameTitle.isBlank()) gameTitle = "Fortnite"
                     }
-                    FormField(gameTitle, { gameTitle = it }, "Videojuego")
-                    FormField(description, { description = it }, "Descripcion", 3)
-                    FormField(platform, { platform = it }, "Plataforma")
+                    FormField(gameTitle, { gameTitle = it }, "Game")
+                    FormField(description, { description = it }, "Description", 3)
+                    FormField(platform, { platform = it }, "Platform")
                     if (bracketMode == "FORTNITE") FortniteConfiguration(fortniteLobbySize, fortniteGamesPerRound) { size, games -> fortniteLobbySize = size; fortniteGamesPerRound = games }
                     if (teamSize > 1) TeamConfigurationFields(teamSize, reserveCount, allowSoloRegistration, showToggle = false) { size, reserves, solo ->
                         teamSize = size; reserveCount = reserves; allowSoloRegistration = solo
                         if (size > 1) bracketMode = "STANDARD"
                     }
-                    FormField(maxParticipants, { maxParticipants = it.filter(Char::isDigit) }, if (teamSize > 1) "Máximo de equipos" else "Maximo de participantes")
+                    FormField(maxParticipants, { maxParticipants = it.filter(Char::isDigit) }, if (teamSize > 1) "Maximum teams" else "Maximum participants")
                     if (bracketMode != "FORTNITE") {
-SegmentedChoiceRow("Formato", listOf("SINGLE_ELIMINATION" to "Elim. simple", "DOUBLE_ELIMINATION" to "Doble elim."), format) { format = it }
+SegmentedChoiceRow("Format", listOf("SINGLE_ELIMINATION" to "Elim. simple", "DOUBLE_ELIMINATION" to "Doble elim."), format) { format = it }
                     if (bracketMode == "MKART") {
-                        SegmentedChoiceRow("Bracket principal", listOf("1" to "MKART pasa 1", "2" to "MKART pasa 2"), mkartAdvanceCount) { mkartAdvanceCount = it }
+                        SegmentedChoiceRow("Main bracket", listOf("1" to "MKART pasa 1", "2" to "MKART pasa 2"), mkartAdvanceCount) { mkartAdvanceCount = it }
                         if (format == "DOUBLE_ELIMINATION") {
-                            SegmentedChoiceRow("Bracket de repesca", listOf("1" to "MKART pasa 1", "2" to "MKART pasa 2"), mkartLosersAdvanceCount) { mkartLosersAdvanceCount = it }
+                            SegmentedChoiceRow("Losers bracket", listOf("1" to "MKART pasa 1", "2" to "MKART pasa 2"), mkartLosersAdvanceCount) { mkartLosersAdvanceCount = it }
                         }
                     } else if (format == "DOUBLE_ELIMINATION") {
-                        SegmentedChoiceRow("Serie winners", listOf("1" to "Bo1", "3" to "Bo3", "5" to "Bo5"), winnersBestOf) { winnersBestOf = it }
-                        SegmentedChoiceRow("Serie losers", listOf("1" to "Bo1", "3" to "Bo3", "5" to "Bo5"), losersBestOf) { losersBestOf = it }
+                        SegmentedChoiceRow("Winners series", listOf("1" to "Bo1", "3" to "Bo3", "5" to "Bo5"), winnersBestOf) { winnersBestOf = it }
+                        SegmentedChoiceRow("Losers series", listOf("1" to "Bo1", "3" to "Bo3", "5" to "Bo5"), losersBestOf) { losersBestOf = it }
                     } else {
-                        SegmentedChoiceRow("Serie", listOf("1" to "Bo1", "3" to "Bo3", "5" to "Bo5"), winnersBestOf) { winnersBestOf = it }
+                        SegmentedChoiceRow("Series", listOf("1" to "Bo1", "3" to "Bo3", "5" to "Bo5"), winnersBestOf) { winnersBestOf = it }
                     }
-                    SegmentedChoiceRow("Seeding", listOf("MANUAL" to "Manual", "RANDOM" to "Aleatorio"), seedingMethod) { seedingMethod = it }
+                    SegmentedChoiceRow("Seeding", listOf("MANUAL" to "Manual", "RANDOM" to "Random"), seedingMethod) { seedingMethod = it }
 }
-                    FormField(callTimeout, { callTimeout = it.filter(Char::isDigit) }, "Minutos para llamada")
-                    FormField(setupCount, { setupCount = it.filter(Char::isDigit) }, "Numero de setups")
-                    SegmentedChoiceRow("Stream", listOf("0" to "Sin stream", "1" to "1 stream", "2" to "2 streams"), streamCountText) { streamCountText = it }
-                    FormField(playAreaName, { playAreaName = it.take(80) }, "Zona de juego (opcional)")
+                    FormField(callTimeout, { callTimeout = it.filter(Char::isDigit) }, "Call timeout in minutes")
+                    FormField(setupCount, { setupCount = it.filter(Char::isDigit) }, "Setup count")
+                    SegmentedChoiceRow("Stream", listOf("0" to "No stream", "1" to "1 stream", "2" to "2 streams"), streamCountText) { streamCountText = it }
+                    FormField(playAreaName, { playAreaName = it.take(80) }, "Play area (optional)")
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                        TextButton(onClick = onDismiss) { Text("Cancelar") }
+                        TextButton(onClick = onDismiss) { Text("Cancel") }
                         Spacer(Modifier.size(8.dp))
                         Button(onClick = {
                             val winners = winnersBestOf.toIntOrNull() ?: 3
                             onCreate(
                                 CreateTournamentInput(
-                                    title = title.ifBlank { "Nuevo torneo" },
-                                    gameTitle = gameTitle.ifBlank { "Videojuego" },
-                                    description = description.ifBlank { "Torneo privado" },
-                                    platform = platform.ifBlank { "PC / Consola" },
+                                    title = title.ifBlank { "New tournament" },
+                                    gameTitle = gameTitle.ifBlank { "Game" },
+                                    description = description.ifBlank { "Private tournament" },
+                                    platform = platform.ifBlank { "PC / Console" },
                                     maxParticipants = maxParticipants.toIntOrNull() ?: 16,
                                     fortniteLobbySize = fortniteLobbySize, fortniteGamesPerRound = fortniteGamesPerRound,
                                     teamSize = teamSize,
@@ -3250,7 +3250,7 @@ SegmentedChoiceRow("Formato", listOf("SINGLE_ELIMINATION" to "Elim. simple", "DO
                                     playAreaName = playAreaName.trim().takeIf { it.isNotEmpty() }
                                 )
                             )
-                        }) { Text("Crear") }
+                        }) { Text("Create") }
                     }
                 }
             }
@@ -3274,7 +3274,7 @@ fun CreateStartggTournamentDialog(
 
     DialogWindow(
         onCloseRequest = onDismiss,
-        title = "Nuevo torneo start.gg",
+        title = "New start.gg tournament",
         resizable = true,
         state = rememberDialogState(size = DpSize(920.dp, 860.dp))
     ) {
@@ -3288,21 +3288,21 @@ fun CreateStartggTournamentDialog(
                         .verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
-                    Text("Nuevo torneo start.gg", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-                    Text("Crea un torneo espejo de start.gg. Solo necesitas el link del event, el tiempo de llamada y el numero de setups.", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    FormField(eventUrl, { eventUrl = it }, "URL del event de start.gg", 3)
-                    FormField(callTimeout, { callTimeout = it.filter(Char::isDigit) }, "Minutos para llamada")
-                    FormField(setupCount, { setupCount = it.filter(Char::isDigit) }, "Numero de setups")
-                    SegmentedChoiceRow("Stream", listOf("0" to "Sin stream", "1" to "1 stream", "2" to "2 streams"), streamCountText) { streamCountText = it }
-                    Text("La importacion continuara en el servidor hasta terminar.")
+                    Text("New start.gg tournament", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                    Text("Create a start.gg mirror tournament. You only need the event link, call timeout and setup count.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    FormField(eventUrl, { eventUrl = it }, "start.gg event URL", 3)
+                    FormField(callTimeout, { callTimeout = it.filter(Char::isDigit) }, "Call timeout in minutes")
+                    FormField(setupCount, { setupCount = it.filter(Char::isDigit) }, "Setup count")
+                    SegmentedChoiceRow("Stream", listOf("0" to "No stream", "1" to "1 stream", "2" to "2 streams"), streamCountText) { streamCountText = it }
+                    Text("The import will continue on the server until it finishes.")
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                        TextButton(onClick = onDismiss, enabled = !loading) { Text("Cancelar") }
+                        TextButton(onClick = onDismiss, enabled = !loading) { Text("Cancel") }
                         Spacer(Modifier.size(8.dp))
                         Button(
                             onClick = { onCreate(eventUrl.trim(), callTimeout.toIntOrNull() ?: 10, setupCount.toIntOrNull() ?: 1, streamCountText.toIntOrNull() ?: 0) },
                             enabled = eventUrl.isNotBlank() && !loading
                         ) {
-                            Text("Crear torneo start.gg")
+                            Text("Create start.gg tournament")
                         }
                     }
                 }
@@ -3337,7 +3337,7 @@ fun ConfirmActionDialog(
                     Text(title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
                     Text(message, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                        TextButton(onClick = onDismiss) { Text("Cancelar") }
+                        TextButton(onClick = onDismiss) { Text("Cancel") }
                         Spacer(Modifier.size(8.dp))
                         Button(onClick = onConfirm) { Text(confirmLabel) }
                     }
@@ -3360,7 +3360,7 @@ fun StartggImportDialog(
 
     DialogWindow(
         onCloseRequest = onDismiss,
-        title = "Importar desde start.gg",
+        title = "Import from start.gg",
         resizable = true,
         state = rememberDialogState(size = DpSize(920.dp, 860.dp))
     ) {
@@ -3373,17 +3373,17 @@ fun StartggImportDialog(
                         .widthIn(max = 920.dp).fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
-                    Text("Importar desde start.gg", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-                    Text("Pega el link del event de start.gg para traer jugadores y seeds publicos.", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    FormField(eventUrl, { eventUrl = it }, "URL del event", 2)
-                    Text("Puedes cerrar la ventana: la importacion continuara en el servidor.")
+                    Text("Import from start.gg", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                    Text("Paste the start.gg event link to import players and public seeds.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    FormField(eventUrl, { eventUrl = it }, "Event URL", 2)
+                    Text("You can close this window: the import will continue on the server.")
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                        TextButton(onClick = onDismiss, enabled = !loading) { Text("Cancelar") }
+                        TextButton(onClick = onDismiss, enabled = !loading) { Text("Cancel") }
                         Spacer(Modifier.size(8.dp))
                         Button(
                             onClick = { onImport(eventUrl.trim()) },
                             enabled = eventUrl.isNotBlank() && !loading
-                        ) { Text("Importar") }
+                        ) { Text("Import") }
                     }
                 }
             }

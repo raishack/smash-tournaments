@@ -99,23 +99,23 @@ export function createDisplayAdminRouter(store: DisplayAdminStore) {
   route("post", "/credentials", requireAdmin, async (request, response) => {
     const parsed = credentialsSchema.safeParse(request.body);
     if (!parsed.success) {
-      return response.status(400).json({ message: "Datos invalidos" });
+      return response.status(400).json({ message: "Invalid data" });
     }
 
     try {
       await store.accounts.changePassword(response.locals.managementUser.id, parsed.data.currentPassword, parsed.data.password);
       return response.json({ ok: true });
     } catch (error) {
-      return response.status(400).json({ message: error instanceof Error ? error.message : "No se pudo actualizar" });
+      return response.status(400).json({ message: error instanceof Error ? error.message : "Could not update" });
     }
   });
 
   route("post", "/sounds/upload", requireAdmin, upload.single("file"), async (request, response) => {
     if (!request.file) {
-      return response.status(400).json({ message: "Falta el archivo" });
+      return response.status(400).json({ message: "File missing" });
     }
     if (!request.file.mimetype.startsWith("audio/")) {
-      return response.status(400).json({ message: "Solo se permiten archivos de audio" });
+      return response.status(400).json({ message: "Only audio files are allowed" });
     }
     const asset = await store.saveUploadedAsset("sound", request.file.originalname, request.file.mimetype, request.file.buffer, request.body?.name);
     return response.json(asset);
@@ -123,10 +123,10 @@ export function createDisplayAdminRouter(store: DisplayAdminStore) {
 
   route("post", "/images/upload", requireAdmin, upload.single("file"), async (request, response) => {
     if (!request.file) {
-      return response.status(400).json({ message: "Falta el archivo" });
+      return response.status(400).json({ message: "File missing" });
     }
     if (!request.file.mimetype.startsWith("image/") && !request.file.mimetype.startsWith("video/")) {
-      return response.status(400).json({ message: "Solo se permiten imagenes o videos" });
+      return response.status(400).json({ message: "Only images or videos are allowed" });
     }
     const asset = await store.saveUploadedAsset("image", request.file.originalname, request.file.mimetype, request.file.buffer, request.body?.name);
     return response.json(asset);
@@ -134,10 +134,10 @@ export function createDisplayAdminRouter(store: DisplayAdminStore) {
 
   route("post", "/sponsors/upload", requireAdmin, upload.single("file"), async (request, response) => {
     if (!request.file) {
-      return response.status(400).json({ message: "Falta el archivo" });
+      return response.status(400).json({ message: "File missing" });
     }
     if (!request.file.mimetype.startsWith("image/")) {
-      return response.status(400).json({ message: "Solo se permiten imagenes" });
+      return response.status(400).json({ message: "Only images are allowed" });
     }
     const asset = await store.saveUploadedAsset("sponsor", request.file.originalname, request.file.mimetype, request.file.buffer, request.body?.name);
     return response.json(asset);
@@ -146,20 +146,20 @@ export function createDisplayAdminRouter(store: DisplayAdminStore) {
   route("post", "/sounds/select", requireAdmin, async (request, response) => {
     const parsed = selectSoundSchema.safeParse(request.body);
     if (!parsed.success) {
-      return response.status(400).json({ message: "Seleccion invalida" });
+      return response.status(400).json({ message: "Invalid selection" });
     }
     try {
       await store.selectSound(parsed.data.soundId);
       return response.json({ ok: true });
     } catch (error) {
-      return response.status(400).json({ message: error instanceof Error ? error.message : "No se pudo seleccionar" });
+      return response.status(400).json({ message: error instanceof Error ? error.message : "Could not select" });
     }
   });
 
   route("post", "/themes/save", requireAdmin, async (request, response) => {
     const parsed = themeSchema.safeParse(request.body);
     if (!parsed.success) {
-      return response.status(400).json({ message: "Tema invalido" });
+      return response.status(400).json({ message: "Invalid theme" });
     }
     const themePayload: DisplayThemeRecord = {
       id: parsed.data.id ?? "",
@@ -176,7 +176,7 @@ export function createDisplayAdminRouter(store: DisplayAdminStore) {
   route("post", "/messages/save", requireAdmin, async (request, response) => {
     const parsed = messageTemplatesSchema.safeParse(request.body);
     if (!parsed.success) {
-      return response.status(400).json({ message: "Mensajes invalidos" });
+      return response.status(400).json({ message: "Invalid messages" });
     }
     await store.saveMessageTemplates(parsed.data as DisplayMessageTemplates);
     return response.json({ ok: true });
@@ -190,14 +190,14 @@ export function createDisplayAdminRouter(store: DisplayAdminStore) {
       await store.deleteTheme(themeId);
       return response.json({ ok: true });
     } catch (error) {
-      return response.status(400).json({ message: error instanceof Error ? error.message : "No se pudo eliminar el tema" });
+      return response.status(400).json({ message: error instanceof Error ? error.message : "Could not delete the theme" });
     }
   });
 
   route("post", "/sponsors/:sponsorId/active", requireAdmin, async (request, response) => {
     const parsed = sponsorToggleSchema.safeParse(request.body);
     if (!parsed.success) {
-      return response.status(400).json({ message: "Estado invalido" });
+      return response.status(400).json({ message: "Invalid status" });
     }
     const sponsorId = Array.isArray(request.params.sponsorId)
       ? request.params.sponsorId[0]
@@ -217,7 +217,7 @@ export function createDisplayAdminRouter(store: DisplayAdminStore) {
   route("post", "/settings/save", requireAdmin, async (request, response) => {
     const parsed = displaySettingsSchema.safeParse(request.body);
     if (!parsed.success) {
-      return response.status(400).json({ message: "Configuracion invalida" });
+      return response.status(400).json({ message: "Invalid configuration" });
     }
     await store.saveDisplaySettings(parsed.data);
     return response.json({ ok: true });
@@ -240,9 +240,9 @@ export function createDisplayAdminRouter(store: DisplayAdminStore) {
 
   router.use((error: unknown, _request: express.Request, response: express.Response, next: express.NextFunction) => {
     if (response.headersSent) return next(error);
-    if (error instanceof multer.MulterError) return response.status(400).json({ message: error.code === "LIMIT_FILE_SIZE" ? "El archivo supera los 20 MB permitidos" : "No se pudo subir el archivo" });
+    if (error instanceof multer.MulterError) return response.status(400).json({ message: error.code === "LIMIT_FILE_SIZE" ? "The file exceeds the 20 MB limit" : "Could not upload the file" });
     console.error("[display-admin]", error);
-    return response.status(500).json({ message: "No se pudo completar la operación del display. Inténtalo de nuevo." });
+    return response.status(500).json({ message: "Could not complete the display operation. Try again." });
   });
   return router;
 }

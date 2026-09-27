@@ -69,7 +69,7 @@ The server exposes its web/API at **its own** `http://127.0.0.1:4000`. Configure
 | [Screenshots](docs/en/SCREENSHOTS.md) | Real screens with synthetic demonstration data |
 | [Development](docs/en/DEVELOPMENT.md) | Architecture, tests and current limitations |
 
-**Language:** documentation is in English. The current interfaces are primarily Spanish; the user guide includes the labels you will see. Full English UI localization is not claimed.
+**Language:** the management apps, Players apps, web panels, API messages, notification templates and documentation use English. Tournament names and other user-provided content retain their original language.
 
 ## Example screens
 
@@ -88,3 +88,7 @@ The server exposes its web/API at **its own** `http://127.0.0.1:4000`. Configure
 Native apps are source projects, not preconfigured store downloads. Build them against your own server, use your own signing identities and configure your own optional service accounts. iOS signing and App Store distribution use your Apple developer account.
 
 Production databases, private configuration, signing keys and internal deployment history are excluded. The generic logo is original project artwork; game artwork and third-party catalogs have separate attribution in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+## License
+
+Source code and original project artwork are provided under the [MIT License](LICENSE). Third-party game artwork, trademarks and dependencies retain their own rights; see [Third-party notices](THIRD_PARTY_NOTICES.md).

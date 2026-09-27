@@ -33,7 +33,7 @@ class TournamentListController(
             }.onFailure {
                 state = TournamentListState(
                     isLoading = false,
-                    errorMessage = "No se pudo conectar con el servidor."
+                    errorMessage = "Could not connect to the server."
                 )
             }
         }
@@ -56,7 +56,7 @@ class TournamentListController(
                 state = TournamentListState(
                     isLoading = false,
                     tournaments = state.tournaments,
-                    errorMessage = "No se pudo eliminar el torneo."
+                    errorMessage = "Could not delete the tournament."
                 )
             }
         }

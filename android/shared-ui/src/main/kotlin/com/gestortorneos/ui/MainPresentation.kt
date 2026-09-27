@@ -48,7 +48,7 @@ fun CompactMatchRow(title: String, names: List<String>, scores: List<Int>, statu
             }
             MainStatusBadge(mainStatusLabel(status), status)
             if (!destination.isNullOrBlank()) Text(destination, style = MaterialTheme.typography.bodySmall)
-            Text(if (selected) "Acciones abiertas" else "Ver acciones ›", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
+            Text(if (selected) "Open actions" else "View actions ›", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
         }
     }
 }
@@ -76,7 +76,7 @@ fun MainMatchActionPanel(matchId: String, title: String, onDismiss: () -> Unit, 
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(title, Modifier.weight(1f), style = MaterialTheme.typography.titleMedium)
-                TextButton(onClick = onDismiss) { Text("Cerrar") }
+                TextButton(onClick = onDismiss) { Text("Close") }
             }
             HorizontalDivider()
             Column(Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {

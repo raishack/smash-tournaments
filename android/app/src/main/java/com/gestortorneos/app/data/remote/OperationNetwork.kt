@@ -26,7 +26,7 @@ object OperationNetwork {
         while (failures.size > 30) failures.removeFirst()
     }
     @Synchronized fun diagnostics(platform: String, version: String): String =
-        "Cliente: $platform $version\nÚltimos errores del cliente:\n" + failures.joinToString("\n")
+        "Client: $platform $version\nRecent client errors:\n" + failures.joinToString("\n")
 
     private fun sanitize(value: String): String = value
         .replace(Regex("Bearer\\s+[^\\s,;\"']+", RegexOption.IGNORE_CASE), "Bearer [oculto]")

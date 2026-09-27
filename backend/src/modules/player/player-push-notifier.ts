@@ -63,8 +63,8 @@ export class PlayerPushNotifier implements TournamentNotifier {
     const playAreaName = tournament.settings.playAreaName?.trim() || "";
     const stationLabel = [setupLabel, playAreaName].filter(Boolean).join(" · ");
     const body = stationLabel
-      ? `Te toca jugar. ${roundLabel}. Estacion ${stationLabel}.`
-      : `Te toca jugar. ${roundLabel}.`;
+      ? `Your turn to play. ${roundLabel}. Station ${stationLabel}.`
+      : `Your turn to play. ${roundLabel}.`;
 
     const response = await this.messaging.sendEachForMulticast({
       tokens: pushTokens.map((token) => token.token),
@@ -118,7 +118,7 @@ export class PlayerPushNotifier implements TournamentNotifier {
       return;
     }
 
-    const body = `Partida de ladder Bo${match.bestOf}${match.stationLabel ? " · " + match.stationLabel : ""}. Entra en la app y confirma que estás listo.`;
+    const body = `Bo${match.bestOf} ladder match${match.stationLabel ? " · " + match.stationLabel : ""}. Open the app and confirm you are ready.`;
 
     const response = await this.messaging.sendEachForMulticast({
       tokens: pushTokens.map((token) => token.token),
@@ -163,7 +163,7 @@ export class PlayerPushNotifier implements TournamentNotifier {
   async notifyLadderCompleted(_tournament: Tournament, _matches: Match[], _winnerName: string, _standings: LadderStanding[]): Promise<void> {}
 
   private buildPlayerRoundLabel(match: Match): string {
-    const baseLabel = `Ronda ${match.roundNumber} · Set ${match.matchNumber}`;
+    const baseLabel = `Round ${match.roundNumber} · Set ${match.matchNumber}`;
     const poolLabel = match.externalRef?.phaseGroupName?.trim()
       || match.externalRef?.phaseName?.trim();
     return poolLabel ? `${poolLabel} · ${baseLabel}` : baseLabel;

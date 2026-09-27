@@ -76,29 +76,29 @@ struct TournamentDetailView: View {
                     Text(currentTournament.status).foregroundStyle(.secondary)
                 }
 
-                SectionCard(title: "Pendientes") {
+                SectionCard(title: "Pending") {
                     if sortedPendingMatches.isEmpty {
-                        Text("No hay sets pendientes.")
+                        Text("No pending sets.")
                     } else {
                         ForEach(sortedPendingMatches) { MatchSummaryView(match: $0) }
                     }
                 }
 
-                SectionCard(title: "En juego o llamados") {
+                SectionCard(title: "Playing or called") {
                     if sortedActiveMatches.isEmpty {
-                        Text("No hay sets activos.")
+                        Text("No active sets.")
                     } else {
                         ForEach(sortedActiveMatches) { match in
                             MatchSummaryView(match: match)
                             if match.canPlayerReportMatch && match.opponentParticipantId != nil {
-                                Button("Anotacion rapida") {
+                                Button("Quick report") {
                                     pendingQuickReportMatch = match
                                     quickReportBestOfOverride = match.reportedBestOf
                                     showQuickReportModeDialog = true
                                 }
                                 .playerPrimaryButton()
                             } else if match.opponentParticipantId != nil {
-                                Text("El organizador ha deshabilitado el reporte de jugadores para este torneo.")
+                                Text("The organizer has disabled player reporting for this tournament.")
                                     .foregroundStyle(.secondary)
                             }
                         }
@@ -106,15 +106,15 @@ struct TournamentDetailView: View {
                 }
 
                 if !sortedCompletedMatches.isEmpty {
-                    SectionCard(title: "Partidas jugadas (\(sortedCompletedMatches.count))") {
+                    SectionCard(title: "Played matches (\(sortedCompletedMatches.count))") {
                         Button {
                             completedMatchesExpanded.toggle()
                         } label: {
                             HStack {
-                                Text(completedMatchesExpanded ? "Ocultar" : "Mostrar")
+                                Text(completedMatchesExpanded ? "Hide" : "Show")
                                     .font(.headline)
                                 Spacer()
-                                Text(completedMatchesExpanded ? "Contraer" : "Desplegar")
+                                Text(completedMatchesExpanded ? "Collapse" : "Expand")
                                     .foregroundStyle(.secondary)
                             }
                         }
@@ -129,33 +129,33 @@ struct TournamentDetailView: View {
                 }
 
                 if let ladder = currentTournament.ladder {
-                    SectionCard(title: "Ladder interna") {
-                        Text(ladder.options?.closing == true ? "Inscripciones cerradas · terminando sets" : ladder.options?.paused == true ? "Pausada · se conserva tu sitio en cola" : "Estado: \(ladder.status)")
-                        if let position = ladder.queuePosition { Text("Posición \(position) · \(ladder.waitingReason ?? "Buscando rival")") }
+                    SectionCard(title: "Internal ladder") {
+                        Text(ladder.options?.closing == true ? "Registration closed · finishing sets" : ladder.options?.paused == true ? "Paused · your queue position is preserved" : "Status: \(ladder.status)")
+                        if let position = ladder.queuePosition { Text("Position \(position) · \(ladder.waitingReason ?? "Finding opponent")") }
                         if normalizedLadderStatus == "ACTIVE"
                             && ladder.activeMatch == nil
                             && ladder.readyCheckMatch == nil
                             && ladder.queuedAt == nil && ladder.canJoin != false {
-                            Button("Buscar partida") {
+                            Button("Find match") {
                                 Task { await viewModel.queueForLadder(currentTournament) }
                             }
                             .playerPrimaryButton()
                         }
                         if normalizedLadderStatus == "ACTIVE" && ladder.queuedAt != nil {
-                            Button("Salir de la cola") {
+                            Button("Leave queue") {
                                 Task { await viewModel.leaveLadder(currentTournament) }
                             }
                         }
                         if let readyCheck = ladder.readyCheckMatch {
                             Divider()
-                            Text("Partida encontrada").font(.headline)
+                            Text("Match found").font(.headline)
                             MatchSummaryView(match: readyCheck)
                             HStack {
-                                Button("Estoy listo") {
+                                Button("I am ready") {
                                     Task { await viewModel.readyLadder(currentTournament, match: readyCheck) }
                                 }
                                 .playerPrimaryButton()
-                                Button("Cancelar") {
+                                Button("Cancel") {
                                     Task { await viewModel.cancelReadyCheck(currentTournament, match: readyCheck) }
                                 }
                             }
@@ -166,7 +166,7 @@ struct TournamentDetailView: View {
                             if let message = activeMatch.ladderMessage { Text(message).font(.caption) }
                             if activeMatch.canReviewLadderResult == true { PlayerLadderReviewButtons(tournament: currentTournament, match: activeMatch) }
                             MatchSummaryView(match: activeMatch)
-                            Button("Anotacion rapida") {
+                            Button("Quick report") {
                                 pendingLadderQuickReportMatch = activeMatch
                                 ladderQuickReportBestOfOverride = activeMatch.reportedBestOf
                                 showLadderQuickReportModeDialog = true
@@ -175,7 +175,7 @@ struct TournamentDetailView: View {
                         }
                         if !ladder.standings.isEmpty {
                             Divider()
-                            Text("Clasificacion").font(.headline)
+                            Text("Standings").font(.headline)
                             ForEach(Array(ladder.standings.enumerated()), id: \.element.id) { index, standing in
                                 Text("\(index + 1). \(standing.displayName) · \(standing.wins)–\(standing.losses) · \(standing.winRate ?? 0)%")
                                 if ladder.options?.settings.mode == "COMPETITIVE" { Text("Rating \(standing.rating ?? 1000)\(standing.eligible == true ? "" : " · provisional")").font(.caption) }
@@ -187,10 +187,10 @@ struct TournamentDetailView: View {
                                 ladderHistoryExpanded.toggle()
                             } label: {
                                 HStack {
-                                    Text("Historico")
+                                    Text("History")
                                         .font(.headline)
                                     Spacer()
-                                    Text(ladderHistoryExpanded ? "Ocultar" : "Mostrar")
+                                    Text(ladderHistoryExpanded ? "Hide" : "Show")
                                         .foregroundStyle(.secondary)
                                 }
                             }
@@ -205,10 +205,10 @@ struct TournamentDetailView: View {
             }
             .padding()
         }
-        .navigationTitle("Torneo")
-        .confirmationDialog("Modalidad del set", isPresented: $showQuickReportModeDialog, titleVisibility: .visible) {
+        .navigationTitle("Tournament")
+        .confirmationDialog("Set format", isPresented: $showQuickReportModeDialog, titleVisibility: .visible) {
             if let match = pendingQuickReportMatch {
-                Button("Formato del torneo (Bo\(match.effectiveBestOf))") {
+                Button("Tournament format (Bo\(match.effectiveBestOf))") {
                     quickReportBestOfOverride = nil
                     quickReportMatch = match
                     pendingQuickReportMatch = nil
@@ -229,15 +229,15 @@ struct TournamentDetailView: View {
                     pendingQuickReportMatch = nil
                 }
             }
-            Button("Cancelar", role: .cancel) {
+            Button("Cancel", role: .cancel) {
                 pendingQuickReportMatch = nil
             }
         } message: {
-            Text("Indica si este set se jugo con el formato por defecto del torneo o con otra modalidad.")
+            Text("Select whether this set used the default tournament format or a different one.")
         }
-        .confirmationDialog("Modalidad del set", isPresented: $showLadderQuickReportModeDialog, titleVisibility: .visible) {
+        .confirmationDialog("Set format", isPresented: $showLadderQuickReportModeDialog, titleVisibility: .visible) {
             if let match = pendingLadderQuickReportMatch {
-                Button("Formato del torneo (Bo\(match.effectiveBestOf))") {
+                Button("Tournament format (Bo\(match.effectiveBestOf))") {
                     ladderQuickReportBestOfOverride = nil
                     ladderQuickReportMatch = match
                     pendingLadderQuickReportMatch = nil
@@ -258,11 +258,11 @@ struct TournamentDetailView: View {
                     pendingLadderQuickReportMatch = nil
                 }
             }
-            Button("Cancelar", role: .cancel) {
+            Button("Cancel", role: .cancel) {
                 pendingLadderQuickReportMatch = nil
             }
         } message: {
-            Text("Indica si este set se jugo con el formato por defecto del torneo o con otra modalidad.")
+            Text("Select whether this set used the default tournament format or a different one.")
         }
         .sheet(item: $quickReportMatch) { match in
             QuickReportView(match: match, effectiveBestOf: quickReportBestOfOverride ?? match.effectiveBestOf) { games in
@@ -321,10 +321,10 @@ struct QuickReportView: View {
             Form {
                 if let error = viewModel.error { Section { Text(error).foregroundStyle(PlayerPalette.danger) } }
                 Section {
-                    Text("Modalidad del set: Bo\(effectiveBestOf)")
+                    Text("Set format: Bo\(effectiveBestOf)")
                 }
 
-                Section("Resultado final") {
+                Section("Final result") {
                     ForEach(scoreOptions(), id: \.label) { option in
                         Button(option.label) {
                             games = buildGames(myWins: option.myWins, opponentWins: option.opponentWins)
@@ -334,22 +334,22 @@ struct QuickReportView: View {
 
                 if !games.isEmpty {
                     if match.canReportCharacters {
-                        Section("Personajes base") {
-                            CharacterField(teamSize: match.entrantSize, gameTitle: match.gameTitle, title: "Mi personaje", value: $baseCharacterMine) { propagateCharacters() }
-                            CharacterField(teamSize: match.entrantSize, gameTitle: match.gameTitle, title: "Rival", value: $baseCharacterOpponent) { propagateCharacters() }
+                        Section("Base characters") {
+                            CharacterField(teamSize: match.entrantSize, gameTitle: match.gameTitle, title: "My character", value: $baseCharacterMine) { propagateCharacters() }
+                            CharacterField(teamSize: match.entrantSize, gameTitle: match.gameTitle, title: "Opponent", value: $baseCharacterOpponent) { propagateCharacters() }
                         }
                     }
 
-                    Section("Resumen de juegos") {
+                    Section("Game summary") {
                         ForEach(games.indices, id: \.self) { index in
                             VStack(alignment: .leading, spacing: 8) {
-                                Text("Juego \(index + 1)").font(.headline)
-                                Picker("Ganador", selection: Binding(
+                                Text("Game \(index + 1)").font(.headline)
+                                Picker("Winner", selection: Binding(
                                     get: { games[index].winnerParticipantId },
                                     set: { games[index].winnerParticipantId = $0 }
                                 )) {
                                     Text(match.myDisplayName).tag(match.myParticipantId)
-                                    Text(match.opponentDisplayName ?? "Rival").tag(match.opponentParticipantId ?? "")
+                                    Text(match.opponentDisplayName ?? "Opponent").tag(match.opponentParticipantId ?? "")
                                 }
                                 .pickerStyle(.segmented)
 
@@ -364,7 +364,7 @@ struct QuickReportView: View {
                                     )
                                     CharacterField(
                                         teamSize: match.entrantSize, gameTitle: match.gameTitle,
-                                        title: match.opponentDisplayName ?? "Rival",
+                                        title: match.opponentDisplayName ?? "Opponent",
                                         value: Binding(
                                             get: { games[index].selections[match.opponentParticipantId ?? ""] ?? "" },
                                             set: { games[index].selections[match.opponentParticipantId ?? ""] = $0 }
@@ -376,13 +376,13 @@ struct QuickReportView: View {
                     }
                 }
             }
-            .navigationTitle("Anotacion rapida")
+            .navigationTitle("Quick report")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancelar") { dismiss() }
+                    Button("Cancel") { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button(viewModel.isMutating ? "Enviando…" : "Anotar") { onSubmit(games) }
+                    Button(viewModel.isMutating ? "Sending…" : "Report") { onSubmit(games) }
                         .disabled(!canSubmit || viewModel.isMutating)
                 }
             }
@@ -400,7 +400,7 @@ struct QuickReportView: View {
     }
 
     private func scoreOptions() -> [(label: String, myWins: Int, opponentWins: Int)] {
-        let rival = match.opponentDisplayName ?? "Rival"
+        let rival = match.opponentDisplayName ?? "Opponent"
         return (0..<winsNeeded).flatMap { opponentWins in
             [
                 ("\(match.myDisplayName) \(winsNeeded)-\(opponentWins)", winsNeeded, opponentWins),
@@ -456,7 +456,7 @@ struct SingleCharacterField: View {
             } label: {
                 HStack {
                     if value.isEmpty {
-                        Text("Elegir personaje")
+                        Text("Choose character")
                     } else {
                         SmashCharacterInlineLabel(name: value)
                     }
@@ -498,11 +498,11 @@ struct CharacterPickerView: View {
                     SmashCharacterInlineLabel(name: character)
                 }
             }
-            .searchable(text: $filter, prompt: "Filtrar personaje")
-            .navigationTitle("Elegir personaje")
+            .searchable(text: $filter, prompt: "Filter characters")
+            .navigationTitle("Choose character")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cerrar") { dismiss() }
+                    Button("Close") { dismiss() }
                 }
             }
         }
@@ -518,7 +518,7 @@ struct CharacterField: View {
     var body: some View {
         ForEach(0..<max(1, min(8, teamSize)), id: \.self) { index in
             SingleCharacterField(gameTitle: gameTitle,
-                title: teamSize > 1 ? "\(title) · Jugador \(index + 1)" : title,
+                title: teamSize > 1 ? "\(title) · Player \(index + 1)" : title,
                 value: Binding(get: {
                     let names = value.components(separatedBy: " / ")
                     return index < names.count ? names[index] : ""
@@ -534,11 +534,11 @@ struct CharacterField: View {
 
 func playerLadderStatus(_ status: String) -> String {
     switch status {
-    case "PLAYING": return "En juego"
-    case "SUSPENDED": return "Esperando bracket / setup"
-    case "AWAITING_CONFIRMATION": return "Resultado pendiente del rival"
-    case "DISPUTED": return "Disputa · organización revisará el resultado"
-    case "READY_CHECK": return "Confirmando asistencia"
+    case "PLAYING": return "Playing"
+    case "SUSPENDED": return "Waiting for bracket / setup"
+    case "AWAITING_CONFIRMATION": return "Result awaiting opponent"
+    case "DISPUTED": return "Disputed · staff will review the result"
+    case "READY_CHECK": return "Confirming attendance"
     default: return status
     }
 }
@@ -550,12 +550,12 @@ struct PlayerLadderReviewButtons: View {
     @State private var showDispute = false
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Resultado propuesto: \(match.myScore)–\(match.opponentScore ?? 0)")
-            Button("Confirmar resultado") { Task { await viewModel.reviewLadder(tournament, match: match, action: "CONFIRM", reason: nil) } }.playerPrimaryButton()
-            Button("No estoy de acuerdo") { showDispute.toggle() }.buttonStyle(.bordered)
+            Text("Proposed result: \(match.myScore)–\(match.opponentScore ?? 0)")
+            Button("Confirm result") { Task { await viewModel.reviewLadder(tournament, match: match, action: "CONFIRM", reason: nil) } }.playerPrimaryButton()
+            Button("I disagree") { showDispute.toggle() }.buttonStyle(.bordered)
             if showDispute {
-                TextField("Motivo de la disputa", text: $reason).textFieldStyle(.roundedBorder)
-                Button("Enviar a organización") { Task { await viewModel.reviewLadder(tournament, match: match, action: "DISPUTE", reason: reason.trimmingCharacters(in: .whitespacesAndNewlines)) } }.disabled(!(3...500).contains(reason.trimmingCharacters(in: .whitespacesAndNewlines).count))
+                TextField("Dispute reason", text: $reason).textFieldStyle(.roundedBorder)
+                Button("Send to staff") { Task { await viewModel.reviewLadder(tournament, match: match, action: "DISPUTE", reason: reason.trimmingCharacters(in: .whitespacesAndNewlines)) } }.disabled(!(3...500).contains(reason.trimmingCharacters(in: .whitespacesAndNewlines).count))
             }
         }.disabled(viewModel.isMutating)
     }

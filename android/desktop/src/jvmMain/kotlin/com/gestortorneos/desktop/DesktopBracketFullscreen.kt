@@ -47,8 +47,8 @@ internal fun DesktopBracketFullscreenOverlay(snackbarHostState: SnackbarHostStat
         Box(Modifier.fillMaxSize()) {
             Column(Modifier.fillMaxSize().padding(12.dp)) {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text("Bracket moderna", style = MaterialTheme.typography.titleLarge)
-                    TextButton(onClick = { state.close() }) { Text("Salir de pantalla completa (Esc)") }
+                    Text("Modern bracket", style = MaterialTheme.typography.titleLarge)
+                    TextButton(onClick = { state.close() }) { Text("Exit fullscreen (Esc)") }
                 }
                 Box(Modifier.weight(1f).fillMaxWidth()) { content() }
             }

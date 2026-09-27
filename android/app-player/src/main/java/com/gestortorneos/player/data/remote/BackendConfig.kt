@@ -24,7 +24,7 @@ object BackendConfig {
 
     private fun normalizeBaseUrl(value: String): String {
         val trimmed = value.trim()
-        require(trimmed.isNotEmpty()) { "La URL del backend no puede estar vacia" }
+        require(trimmed.isNotEmpty()) { "The backend URL cannot be empty" }
         val withScheme = if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) trimmed else "http://$trimmed"
         return if (withScheme.endsWith("/")) withScheme else "$withScheme/"
     }

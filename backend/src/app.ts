@@ -92,10 +92,10 @@ export async function createApp() {
   const registrationService = new RegistrationService(repository, tournamentsService, new SmtpRegistrationMailer(), process.env.PUBLIC_BASE_URL);
   await repository.cleanExpiredRegistrations();
   const registrationCleanup = setInterval(() => {
-    void repository.cleanExpiredRegistrations().catch(() => console.error("[registration] No se pudo completar la limpieza"));
+    void repository.cleanExpiredRegistrations().catch(() => console.error("[registration] Could not complete cleanup"));
   }, 3600000);
   registrationCleanup.unref();
-  const registrationWorker=setInterval(()=>{void registrationService.maintenance().catch(()=>console.error('[registration] Trabajo pendiente; se reintentará'));},30000);
+  const registrationWorker=setInterval(()=>{void registrationService.maintenance().catch(()=>console.error('[registration] Work pending; retrying later'));},30000);
   registrationWorker.unref();
   const playerService = new PlayerService(
     playerRepository,
@@ -114,7 +114,7 @@ export async function createApp() {
   await tournamentsService.resumePendingSyncs();
   await tournamentsService.resumeBackgroundImports();
   const syncRecoveryTimer = setInterval(() => {
-    void tournamentsService.resumePendingSyncs().catch(() => console.error("[startgg:recovery] No se pudo recuperar la cola pendiente"));
+    void tournamentsService.resumePendingSyncs().catch(() => console.error("[startgg:recovery] Could not recover the pending queue"));
   }, 15000);
   syncRecoveryTimer.unref();
   void ladderService.tick().catch(error => console.error("[ladder-worker]", error));

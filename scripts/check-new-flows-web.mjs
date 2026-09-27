@@ -23,12 +23,12 @@ const errors=[];
 try{
   const page=await browser.newPage({viewport:{width:390,height:844},acceptDownloads:true});page.on('pageerror',e=>errors.push(e.message));page.on('dialog',d=>d.accept());
   await page.goto(base+'/register/?tournamentId='+id);await page.locator('#registration').waitFor();
-  await page.locator('#team-name').fill('Community Team');await page.locator('#nickname').fill('Capitán Uno');await page.locator('#email').fill('captain@example.test');await page.locator('#game-id').fill('Captain#Tournament Platform');await page.locator('#preferred-role').fill('Soporte');await page.locator('#registration button').click();await page.waitForFunction(()=>document.getElementById('message').textContent.includes('correo'));
+  await page.locator('#team-name').fill('Community Team');await page.locator('#nickname').fill('Captain Uno');await page.locator('#email').fill('captain@example.test');await page.locator('#game-id').fill('Captain#Tournament Platform');await page.locator('#preferred-role').fill('Soporte');await page.locator('#registration button').click();await page.waitForFunction(()=>document.getElementById('message').textContent.includes('email'));
   const token=new URLSearchParams(new URL(messages.at(-1).url).hash.slice(1)).get('token');await page.goto(base+'/register/?tournamentId='+id+'#token='+token);await page.locator('#confirm').click();await page.locator('#team-invite').waitFor();const code=await page.locator('#invite-code').textContent();
   const signup=async(nick,mode)=>{await registration.request(id,{nickname:nick,email:nick+'@example.test',mode,teamCode:mode==='TEAM_JOIN'?code:undefined},'127.0.0.1');const tok=new URLSearchParams(new URL(messages.at(-1).url).hash.slice(1)).get('token');return registration.confirm(tok);};
   await signup('Mate','TEAM_JOIN');await signup('Solo','SOLO');let roster=await teams.overview(id),solo=roster.unassigned[0];await teams.action(id,{action:'MOVE_MEMBER',id:solo.id,revision:solo.revision,teamId:roster.teams[0].id,role:'RESERVE'});
   const ticket=await(await fetch(base+'/api/tournaments/'+id+'/registration-admin/session',{method:'POST',headers:{Authorization:'Bearer test-only'}})).json();await page.goto(base+'/registration-admin/?tournamentId='+id+new URL(ticket.url).hash);await page.locator('#panel').waitFor();
-  await page.locator('#deadline').fill('2027-10-01T12:30');await page.locator('#waitlist').check();await page.locator('#save').click();await page.waitForFunction(()=>document.getElementById('message').textContent.includes('Guardado'));
+  await page.locator('#deadline').fill('2027-10-01T12:30');await page.locator('#waitlist').check();await page.locator('#save').click();await page.waitForFunction(()=>document.getElementById('message').textContent.includes('Saved'));
   assert.equal((await f.repo.getTournament(id)).settings.registrationWaitlist,true);
   // Failed saves, refresh and team actions must keep the option draft and expanded team.
   await page.locator('#deadline').fill('2027-11-02T13:45');
@@ -36,47 +36,47 @@ try{
   await page.locator('#save').click();await page.getByText('Fallo temporal de prueba',{exact:true}).waitFor();
   assert.equal(await page.locator('#deadline').inputValue(),'2027-11-02T13:45');
   assert.equal(await page.locator('#options-note').isVisible(),true);
-  await page.locator('#rosters summary').click();await page.getByRole('button',{name:'Confirmar asistencia',exact:true}).click();await page.waitForFunction(()=>document.querySelector('#rosters summary').textContent.includes('Asistencia confirmada'));
+  await page.locator('#rosters summary').click();await page.getByRole('button',{name:'Confirm attendance',exact:true}).click();await page.waitForFunction(()=>document.querySelector('#rosters summary').textContent.includes('Attendance confirmed'));
   assert.equal(await page.locator('#rosters details').evaluate(e=>e.open),true);
   assert.equal(await page.locator('#deadline').inputValue(),'2027-11-02T13:45');
-  await page.locator('#refresh').click();await page.waitForFunction(()=>document.getElementById('message').textContent==='Datos actualizados.');
+  await page.locator('#refresh').click();await page.waitForFunction(()=>document.getElementById('message').textContent==='Data refreshed.');
   assert.equal(await page.locator('#deadline').inputValue(),'2027-11-02T13:45');
   await page.locator('#save').click();await page.waitForFunction(()=>document.getElementById('options-note').hidden);
 
-  await page.getByRole('button',{name:'Realizar sustitución',exact:true}).click();await page.waitForFunction(()=>document.querySelector('#rosters').textContent.includes('Solo · Titular'));
+  await page.getByRole('button',{name:'Make substitution',exact:true}).click();await page.waitForFunction(()=>document.querySelector('#rosters').textContent.includes('Solo · Starter'));
   assert.equal(await page.locator('#rosters details').evaluate(e=>e.open),true);assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);await page.screenshot({path:path.join(output,'admin-mobile.png'),fullPage:true});
-  await registration.maintenance();assert(messages.some(m=>m.notice?.includes('asignación')));
+  await registration.maintenance();assert(messages.some(m=>m.notice?.includes('assignment')));
   // Recovery is available even after closing; it loads status without adding a participant.
   await registration.updateOptions(id,{registrationEnabled:false});const record=await f.repo.registrationByEmail(id,'captain@example.test');await f.repo.saveRegistration({...record,sentAt:new Date(Date.now()-120000).toISOString()});await registration.recover(id,'captain@example.test','127.0.0.1');await registration.maintenance();
   const recovered=new URLSearchParams(new URL(messages.at(-1).url).hash.slice(1)).get('token');await page.goto(base+'/register/?tournamentId='+id+'#token='+recovered);await page.locator('#success').waitFor();assert.equal(await page.locator('#confirm').isVisible(),false);await page.screenshot({path:path.join(output,'registration-status-mobile.png'),fullPage:true});
   // Team poster uses the real roster; cloud projects can be continued in another browser context.
   await f.repo.saveTournament({...await f.repo.getTournament(id),status:'COMPLETED'});
   const topTicket=async()=>new URL((await(await fetch(base+'/api/tournaments/'+id+'/top8-session',{method:'POST'})).json()).url).hash;
-  await page.goto(base+'/top8/?tournamentId='+id+await topTicket());await page.locator('#editor').waitFor();assert.equal(await page.locator('#layout').inputValue(),'teams');assert((await page.getByLabel('Plantilla (separar con ·)').inputValue()).includes('Solo'));
-  await page.getByLabel('Puesto',{exact:true}).fill('1');await page.locator('#title').fill('Ganadores · diseño compartido');await page.locator('#backgroundColor').fill('#224466');await page.locator('summary').filter({hasText:'Guardar y recuperar'}).click();await page.locator('#cloud-save').click();await page.waitForFunction(()=>document.getElementById('status').textContent.includes('Diseño guardado en el servidor'));
-  const page2=await browser.newPage({viewport:{width:1600,height:1100},acceptDownloads:true});page2.on('pageerror',e=>errors.push(e.message));page2.on('dialog',d=>d.accept());await page2.goto(base+'/top8/?tournamentId='+id+await topTicket());await page2.locator('#restore-draft').click();await page2.locator('#editor').waitFor();assert.equal(await page2.locator('#title').inputValue(),'Ganadores · diseño compartido');assert.equal(await page2.locator('#backgroundColor').inputValue(),'#224466');
-  await page2.locator('summary').filter({hasText:'Guardar y recuperar'}).click();await page2.locator('#refresh-results').click();await page2.waitForFunction(()=>!document.getElementById('refresh-results').disabled);assert.equal(await page2.locator('#title').inputValue(),'Ganadores · diseño compartido');assert.equal(await page2.locator('#backgroundColor').inputValue(),'#224466');
+  await page.goto(base+'/top8/?tournamentId='+id+await topTicket());await page.locator('#editor').waitFor();assert.equal(await page.locator('#layout').inputValue(),'teams');assert((await page.getByLabel('Roster (separate with ·)').inputValue()).includes('Solo'));
+  await page.getByLabel('Placement',{exact:true}).fill('1');await page.locator('#title').fill('Winners · shared design');await page.locator('#backgroundColor').fill('#224466');await page.locator('summary').filter({hasText:'Save and restore'}).click();await page.locator('#cloud-save').click();await page.waitForFunction(()=>document.getElementById('status').textContent.includes('Design saved on the server'));
+  const page2=await browser.newPage({viewport:{width:1600,height:1100},acceptDownloads:true});page2.on('pageerror',e=>errors.push(e.message));page2.on('dialog',d=>d.accept());await page2.goto(base+'/top8/?tournamentId='+id+await topTicket());await page2.locator('#restore-draft').click();await page2.locator('#editor').waitFor();assert.equal(await page2.locator('#title').inputValue(),'Winners · shared design');assert.equal(await page2.locator('#backgroundColor').inputValue(),'#224466');
+  await page2.locator('summary').filter({hasText:'Save and restore'}).click();await page2.locator('#refresh-results').click();await page2.waitForFunction(()=>!document.getElementById('refresh-results').disabled);assert.equal(await page2.locator('#title').inputValue(),'Winners · shared design');assert.equal(await page2.locator('#backgroundColor').inputValue(),'#224466');
   // Official placement is intentionally unknown for a fixture with no matches; editor keeps manual correction possible.
-  await page2.getByLabel('Puesto',{exact:true}).fill('1');await page2.screenshot({path:path.join(output,'teams-top-desktop.png'),fullPage:true});
+  await page2.getByLabel('Placement',{exact:true}).fill('1');await page2.screenshot({path:path.join(output,'teams-top-desktop.png'),fullPage:true});
   const download=page2.waitForEvent('download');await page2.locator('#export').click();const file=await download;await file.saveAs(path.join(output,'team-top-4k.png'));
   // Reload keeps the saved revision; a concurrent editor must still get a conflict.
-  await page2.locator('#cloud-save').click();await page2.waitForFunction(()=>document.getElementById('status').textContent.includes('Diseño guardado en el servidor'));
+  await page2.locator('#cloud-save').click();await page2.waitForFunction(()=>document.getElementById('status').textContent.includes('Design saved on the server'));
   await page2.reload();await page2.locator('#editor').waitFor();
   await page2.locator('#title').fill('Recargado sin perder revisión');
-  await page2.getByText('Guardar y recuperar',{exact:true}).click();
-  await page2.locator('#cloud-save').click();await page2.waitForFunction(()=>document.getElementById('status').textContent.includes('Diseño guardado en el servidor'));
-  await page.locator('#cloud-save').click();await page.waitForFunction(()=>document.getElementById('status').textContent.includes('Otro'));
+  await page2.getByText('Save and restore',{exact:true}).click();
+  await page2.locator('#cloud-save').click();await page2.waitForFunction(()=>document.getElementById('status').textContent.includes('Design saved on the server'));
+  await page.locator('#cloud-save').click();await page.waitForFunction(()=>document.getElementById('status').textContent.includes('Another'));
   assert.equal((await f.repo.getTopProject(id)).project.design.title,'Recargado sin perder revisión');
   // Saving an earlier snapshot must not claim edits made in flight were saved too.
   let releaseSave, saveSeen;const heldSave=new Promise(r=>releaseSave=r),seenSave=new Promise(r=>saveSeen=r);
   await page2.route('**/api/top8/project',async route=>{if(route.request().method()!=='POST')return route.continue();const response=await route.fetch();saveSeen();await heldSave;await route.fulfill({response});},{times:1});
   await page2.locator('#title').fill('Versión enviada');await page2.locator('#cloud-save').click();await seenSave;
-  await page2.locator('#title').fill('Edición durante el guardado');releaseSave();
-  await page2.waitForFunction(()=>document.getElementById('status').textContent.includes('cambios posteriores'));
+  await page2.locator('#title').fill('Edición durante el saved');releaseSave();
+  await page2.waitForFunction(()=>document.getElementById('status').textContent.includes('newer unsent changes'));
   assert.equal((await f.repo.getTopProject(id)).project.design.title,'Versión enviada');
-  assert.equal(await page2.locator('#title').inputValue(),'Edición durante el guardado');
-  await page2.locator('#cloud-save').click();await page2.waitForFunction(()=>document.getElementById('status').textContent.includes('Diseño guardado en el servidor'));
-  assert.equal((await f.repo.getTopProject(id)).project.design.title,'Edición durante el guardado');
+  assert.equal(await page2.locator('#title').inputValue(),'Edición durante el saved');
+  await page2.locator('#cloud-save').click();await page2.waitForFunction(()=>document.getElementById('status').textContent.includes('Design saved on the server'));
+  assert.equal((await f.repo.getTopProject(id)).project.design.title,'Edición durante el saved');
   // Slow loads and result refreshes must not overwrite edits made after confirmation.
   for(const [endpoint,control] of [['project','cloud-load'],['data','refresh-results']]){
     let releaseLoad,loadSeen;
@@ -85,25 +85,25 @@ try{
       const response=await route.fetch();loadSeen();await hold;await route.fulfill({response});
     },{times:1});
     await page2.locator('#'+control).click();await seen;
-    await page2.getByLabel('Nombre',{exact:true}).fill('Edición mientras carga '+endpoint);
+    await page2.getByLabel('Name',{exact:true}).fill('Edición mientras carga '+endpoint);
     releaseLoad();await page2.waitForFunction(()=>!document.getElementById('cloud-load').disabled);
-    assert.equal(await page2.getByLabel('Nombre',{exact:true}).inputValue(),'Edición mientras carga '+endpoint);
-    assert.match(await page2.locator('#status').innerText(),/Has editado el diseño/);
+    assert.equal(await page2.getByLabel('Name',{exact:true}).inputValue(),'Edición mientras carga '+endpoint);
+    assert.match(await page2.locator('#status').innerText(),/You edited the design/);
     // Explicit retry without new edits still performs the requested load.
     await page2.locator('#'+control).click();await page2.waitForFunction(()=>!document.getElementById('cloud-load').disabled);
-    assert.equal(await page2.getByLabel('Nombre',{exact:true}).inputValue(),'Community Team');
+    assert.equal(await page2.getByLabel('Name',{exact:true}).inputValue(),'Community Team');
   }
   // A failed cloud draft request must still leave the fresh results editable.
   const fallback=await browser.newPage({viewport:{width:390,height:844}});fallback.on('pageerror',e=>errors.push(e.message));
   await fallback.route('**/api/top8/project',route=>route.fulfill({status:503,contentType:'application/json',body:'{}'}));
   await fallback.goto(base+'/top8/?tournamentId='+id+await topTicket());await fallback.locator('#editor').waitFor();
-  await fallback.waitForFunction(()=>document.getElementById('status').textContent.includes('No se pudo recuperar'));
+  await fallback.waitForFunction(()=>document.getElementById('status').textContent.includes('Could not retrieve'));
   assert.equal(await fallback.locator('#title').isEnabled(),true);await fallback.close();
   // A captain removed by the organiser must not see a false confirmation.
   const withdrawn=(await f.repo.listRegistrations(id)).find(r=>r.email==='captain@example.test');
   await f.repo.deleteTeamMember(id,withdrawn.memberId);
   await page.goto(base+'/register/?tournamentId='+id+'#token='+recovered);
-  await page.getByText('Inscripción retirada por la organización',{exact:true}).waitFor();
+  await page.getByText('Registration removed by staff',{exact:true}).waitFor();
   assert.equal(await page.locator('#confirm').isVisible(),false);assert.equal(await page.locator('#cancel').isVisible(),false);
   assert.deepEqual(errors,[]);console.log('PASS new flows: real backend + mobile registration, recovery, admin deadlines/check-in/substitution, team poster, cross-device cloud save and 4K PNG.');
 }finally{await browser.close();await new Promise(r=>server.close(r));for(const fn of cleanup)await fn();if(oldKey===undefined)delete process.env.ADMIN_DELETE_KEY;else process.env.ADMIN_DELETE_KEY=oldKey;}

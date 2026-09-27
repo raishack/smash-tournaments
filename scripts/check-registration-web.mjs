@@ -6,7 +6,7 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const { chromium } = require(process.env.PLAYWRIGHT_PATH || 'playwright');
 const output = path.resolve('build/registration-review'); await fs.mkdir(output, { recursive: true });
-const info = { title: 'Torneo <b>Tournament Platform</b>', gameTitle: 'Tekken 8', platform: 'PC', startsAt: '2026-10-01T16:00:00Z', availablePlaces: 12, maxParticipants: 32, open: true };
+const info = { title: 'Tournament <b>Tournament Platform</b>', gameTitle: 'Tekken 8', platform: 'PC', startsAt: '2026-10-01T16:00:00Z', availablePlaces: 12, maxParticipants: 32, open: true };
 let fail = false; let confirmation;let confirmed=false; const posts = []; const errors = [];
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://localhost');
@@ -16,8 +16,8 @@ const server = http.createServer(async (req, res) => {
       if(url.pathname.endsWith('/confirm'))confirmed=true;
       posts.push({ path: url.pathname, body: JSON.parse(body), key: req.headers['x-app-key'] });
     }
-    const data = fail ? { message: 'No se ha podido enviar el correo. Vuelve a intentarlo.' }
-      : url.pathname.endsWith('/request') ? { message: 'Revisa tu correo para confirmar.' }
+    const data = fail ? { message: 'Could not send the email. Try again.' }
+      : url.pathname.endsWith('/request') ? { message: 'Check your email to confirm.' }
       : url.pathname.endsWith('/status') ? {confirmed,...(confirmed?(confirmation||{nickname:'<img src=x onerror=alert(1)>',title:info.title}):{})} : url.pathname.endsWith('/confirm') ? confirmation || { nickname: '<img src=x onerror=alert(1)>', title: info.title } : info;
     res.writeHead(fail ? 503 : 200, { 'Content-Type': 'application/json' }).end(JSON.stringify(data)); return;
   }
@@ -41,11 +41,11 @@ try {
   await page.screenshot({ path: path.join(output, 'registration-mobile.png'), fullPage: true });
   await page.locator('#nickname').fill('Player Uno'); await page.locator('#email').fill('uno@example.test');
   fail = true; await page.locator('#registration button').click();
-  await page.waitForFunction(() => document.querySelector('#message').textContent.includes('enviar el correo'));
+  await page.waitForFunction(() => document.querySelector('#message').textContent.includes('send the email'));
   assert.equal(await page.locator('#nickname').inputValue(), 'Player Uno');
   assert.equal(await page.locator('#email').inputValue(), 'uno@example.test');
   fail = false; await page.locator('#registration button').click();
-  await page.waitForFunction(() => document.querySelector('#message').textContent.includes('Revisa'));
+  await page.waitForFunction(() => document.querySelector('#message').textContent.includes('Check'));
   assert(posts.every(p => p.key === undefined));
   const before = posts.length;
   await page.goto(base + '#token=' + 'a'.repeat(64)); await page.locator('#verification').waitFor();
@@ -56,10 +56,10 @@ try {
   assert.equal(new URL(page.url()).hash, '');
   await page.screenshot({ path: path.join(output, 'registration-confirmed.png'), fullPage: true });
   info.open = false; await page.goto(base);
-  await page.waitForFunction(() => document.querySelector('#availability').textContent.includes('cerradas'));
+  await page.waitForFunction(() => document.querySelector('#availability').textContent.includes('closed'));
   assert.equal(await page.locator('#registration').isVisible(), false);
   info.open = true; info.availablePlaces = 0; await page.reload();
-  await page.waitForFunction(() => document.querySelector('#availability').textContent.includes('completo'));
+  await page.waitForFunction(() => document.querySelector('#availability').textContent.includes('full'));
   assert.equal(await page.locator('#registration').isVisible(), false);
   info.availablePlaces = 12; await page.setViewportSize({ width: 1440, height: 1000 }); await page.reload();
   await page.locator('#registration').waitFor();
@@ -70,7 +70,7 @@ try {
   await page.locator('#team-name').fill('Community Team');
   await page.locator('#nickname').fill('Captain'); await page.locator('#email').fill('captain@example.test');
   await page.locator('#registration button').click();
-  await page.waitForFunction(() => document.querySelector('#message').textContent.includes('Revisa'));
+  await page.waitForFunction(() => document.querySelector('#message').textContent.includes('Check'));
   assert.equal(posts.at(-1).body.mode,'TEAM_CREATE'); assert.equal(posts.at(-1).body.teamName,'Community Team');
   assert.equal(posts.at(-1).body.teamCode,undefined);
   await page.screenshot({path:path.join(output,'teams-captain-mobile.png'),fullPage:true});
@@ -83,7 +83,7 @@ try {
   assert.equal(posts.at(-1).body.teamName,undefined);
   await page.locator('#registration-mode').selectOption('SOLO');
   assert.equal(await page.locator('#team-code').isVisible(),false);
-  assert((await page.locator('#team-help').textContent()).includes('no garantiza'));
+  assert((await page.locator('#team-help').textContent()).includes('does not guarantee'));
   await page.locator('#registration button').click();
   await page.waitForFunction(() => !document.querySelector('#registration button').disabled);
   assert.equal(posts.at(-1).body.mode,'SOLO'); assert.equal(posts.at(-1).body.teamCode,undefined);
@@ -102,10 +102,10 @@ try {
   confirmation = {kind:'TEAM_MEMBER',nickname:'Solo Player',title:info.title,role:'PLAYER',waitingForTeam:true};
   confirmed=false;await page.goto(base+'#token='+'c'.repeat(64)); await page.locator('#confirm').click(); await page.locator('#success').waitFor();
   assert.equal(await page.locator('#team-invite').isVisible(),false);
-  assert((await page.locator('#success-hint').textContent()).includes('lista sin equipo'));
+  assert((await page.locator('#success-hint').textContent()).includes('solo player list'));
   assert.deepEqual(errors, []);
   Object.assign(info,{teamSize:1,bracketMode:'FORTNITE',fortniteLobbySize:20,fortniteGamesPerRound:3,availablePlaces:12});
-  await page.goto(base);await page.locator('#format-rules').waitFor();assert((await page.locator('#format-rules').textContent()).includes('3 partidas por ronda'));
+  await page.goto(base);await page.locator('#format-rules').waitFor();assert((await page.locator('#format-rules').textContent()).includes('3 games per round'));
   assert.equal(await page.locator('#team-fields').isVisible(),false);
   console.log('PASS registration: individual/team mobile and desktop, captain/join/reserve/solo, full teams, private codes, safe text, confirmation, closed/full states.');
 } finally { await browser.close(); await new Promise(resolve => server.close(resolve)); }

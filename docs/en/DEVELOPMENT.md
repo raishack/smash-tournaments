@@ -59,3 +59,9 @@ See [Updates](UPDATES.md). Never add real `.env`, tokens, player databases, sign
 ## Known verification limits
 
 Automated fixtures do not prove real SMTP delivery, start.gg permissions/rate behavior, APNs/FCM, device installer prompts or third-party asset availability. Configure these services for your own installation and exercise them before an event. Review `npm audit` and upstream release notes when upgrading dependencies.
+
+## Interface language
+
+This template uses English directly in its Kotlin, Swift and web source strings, including accessibility labels and server-generated messages. It does not currently offer a language selector. Keep new screens, API errors, email templates and user documentation in English. Preserve user-entered names and upstream game/character names.
+
+When editing visible labels, update browser/Compose selectors without removing their behavioral assertions. Check narrow screens, large text, dark mode and long participant names.

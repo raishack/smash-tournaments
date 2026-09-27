@@ -225,21 +225,21 @@ data class AddParticipantInput(
 val sampleFeaturedTournaments = listOf(
     TournamentSummary(
         id = "tor_1",
-        title = "Liga Primavera FC 26",
+        title = "FC 26 Spring League",
         game = "EA Sports FC 26",
-        status = "En curso",
+        status = "In progress",
         participants = 32,
-        format = "Doble eliminacion",
-        nextAction = "3 partidas llamadas"
+        format = "Double elimination",
+        nextAction = "3 called matches"
     ),
     TournamentSummary(
         id = "tor_2",
         title = "Open Tekken 8 Madrid",
         game = "Tekken 8",
-        status = "Listo",
+        status = "Ready",
         participants = 16,
-        format = "Eliminacion simple",
-        nextAction = "Generar bracket"
+        format = "Single elimination",
+        nextAction = "Generate bracket"
     )
 )
 
@@ -249,8 +249,8 @@ val sampleMatches = listOf(
         bracketStage = "WINNERS",
         roundNumber = 1,
         matchNumber = 3,
-        label = "Ronda 1 - Match 3",
-        status = "Llamado",
+        label = "Round 1 - Match 3",
+        status = "Called",
         participantsLabel = "Neko vs Blitz",
         participantNames = listOf("Neko", "Blitz"),
         participantIds = listOf("p1", "p2"),
@@ -268,8 +268,8 @@ val sampleMatches = listOf(
         bracketStage = "WINNERS",
         roundNumber = 1,
         matchNumber = 4,
-        label = "Ronda 1 - Match 4",
-        status = "Pendiente",
+        label = "Round 1 - Match 4",
+        status = "Pending",
         participantsLabel = "Vortex vs Kairo",
         participantNames = listOf("Vortex", "Kairo"),
         participantIds = listOf("p3", "p4"),
@@ -287,7 +287,7 @@ val sampleMatches = listOf(
         roundNumber = 2,
         matchNumber = 1,
         label = "Winners Semifinal",
-        status = "En juego",
+        status = "Playing",
         participantsLabel = "TBD vs TBD",
         participantNames = listOf("TBD", "TBD"),
         participantIds = listOf("winner_a", "winner_b"),
